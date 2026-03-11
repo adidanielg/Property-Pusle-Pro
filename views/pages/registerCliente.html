@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro Cliente | PropertyPulse</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<div class="auth-page" style="align-items:flex-start; padding-top:3rem;">
+    <div class="auth-card" style="max-width:520px; margin:0 auto;">
+
+        <div class="auth-logo">
+            <div class="mark">🏢</div>
+            <h1>Property<span>Pulse</span></h1>
+            <p>Crear cuenta de cliente</p>
+        </div>
+
+        <form id="registerForm" onsubmit="registrar(event)">
+
+            <div class="form-group">
+                <label class="form-label">Tipo de cuenta</label>
+                <select name="tipo_cliente" id="tipo_cliente" class="form-select" onchange="toggleEmpresa()">
+                    <option value="Individual">Cliente Individual</option>
+                    <option value="Compania">Compañía / Empresa</option>
+                </select>
+            </div>
+
+            <div id="campo_empresa" class="form-group" style="display:none">
+                <label class="form-label">Nombre de la Empresa</label>
+                <input type="text" name="nombre_empresa" id="nombre_empresa" class="form-input" placeholder="Ej. Inmobiliaria Sur S.A.">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Nombre</label>
+                    <input type="text" name="nombre" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Apellido</label>
+                    <input type="text" name="apellido" class="form-input" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Teléfono</label>
+                    <input type="text" name="telefono" class="form-input" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Contraseña</label>
+                    <input type="password" name="password" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirmar contraseña</label>
+                    <input type="password" name="confirm_password" class="form-input" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full mt-2" id="btnSubmit">
+                Crear mi cuenta
+            </button>
+
+            <p class="text-small text-muted mt-2" style="text-align:center">
+                ¿Ya tienes cuenta? <a href="/auth/login" style="color:var(--accent);font-weight:600">Inicia sesión</a>
+            </p>
+        </form>
+
+    </div>
+</div>
+
+<!-- Modal éxito -->
+<div id="successModal" class="modal-overlay">
+    <div class="modal" style="text-align:center">
+        <div style="font-size:2.5rem;margin-bottom:1rem">🎉</div>
+        <h2 style="margin-bottom:.5rem">¡Cuenta creada!</h2>
+        <p class="text-muted mb-3">Guarda tu nombre de usuario para iniciar sesión:</p>
+        <div style="background:var(--accent-soft);padding:1rem;border-radius:var(--radius);font-family:var(--font-mono);font-size:1.25rem;font-weight:700;color:var(--accent);margin-bottom:1.5rem" id="usernameDisplay"></div>
+        <a href="/auth/login" class="btn btn-primary btn-full">Ir a iniciar sesión →</a>
+    </div>
+</div>
+
+<script>
+    function toggleEmpresa() {
+        const tipo  = document.getElementById('tipo_cliente').value;
+        const campo = document.getElementById('campo_empresa');
+        const input = document.getElementById('nombre_empresa');
+        campo.style.display = tipo === 'Compania' ? 'block' : 'none';
+        input.required = tipo === 'Compania';
+        if (tipo !== 'Compania') input.value = '';
+    }
+
+    async function registrar(e) {
+        e.preventDefault();
+        const form = e.target;
+        const btn  = document.getElementById('btnSubmit');
+        const data = Object.fromEntries(new FormData(form));
+        data.role  = 'cliente';
+
+        if (data.password !== data.confirm_password) {
+            alert('Las contraseñas no coinciden'); return;
+        }
+
+        btn.disabled = true; btn.innerText = 'Creando cuenta...';
+
+        try {
+            const res    = await fetch('/auth/register', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
+            const result = await res.json();
+
+            if (result.success) {
+                document.getElementById('usernameDisplay').innerText = result.username;
+                document.getElementById('successModal').classList.add('open');
+            } else {
+                alert('Error: ' + result.error);
+            }
+        } catch (err) {
+            alert('Error de conexión');
+        } finally {
+            btn.disabled = false; btn.innerText = 'Crear mi cuenta';
+        }
+    }
+</script>
+
+</body>
+</html>

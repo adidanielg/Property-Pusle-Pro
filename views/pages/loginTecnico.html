@@ -1,0 +1,43 @@
+<%- include('../layouts/mainLayout.html') %>
+
+<div class="auth-page">
+    <div class="auth-card">
+
+        <div class="auth-logo">
+            <div class="mark">🔧</div>
+            <h1>Property<span>Pulse</span></h1>
+            <p>Portal de Técnicos</p>
+        </div>
+
+        <% if (error) { %>
+            <div class="form-error"><%= error %></div>
+        <% } %>
+
+        <form action="/auth/login" method="POST">
+            <input type="hidden" name="role" value="tecnico">
+
+            <div class="form-group">
+                <label class="form-label">Usuario</label>
+                <input type="text" name="username" class="form-input" placeholder="Tu nombre de usuario" required autofocus>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Contraseña</label>
+                <input type="password" name="password" class="form-input" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="btn btn-full mt-2" style="background:var(--text-1);color:#fff">Ingresar</button>
+        </form>
+
+        <p class="text-small text-muted mt-3" style="text-align:center">
+            ¿No tienes cuenta? <a href="/auth/register-tecnico" style="color:var(--accent);font-weight:600">Aplicar como técnico</a>
+        </p>
+        <p class="text-small text-muted mt-1" style="text-align:center">
+            ¿Eres cliente? <a href="/auth/login" style="color:var(--accent)">Ingresa aquí</a>
+        </p>
+
+    </div>
+</div>
+
+</body>
+</html>

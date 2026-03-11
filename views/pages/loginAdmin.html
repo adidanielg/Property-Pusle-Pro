@@ -1,0 +1,46 @@
+<%- include('../layouts/mainLayout.html') %>
+
+<div class="auth-page" style="background: linear-gradient(135deg, #0d0f14 0%, #1a1d2e 100%);">
+    <div class="auth-card" style="background:#1a1d2e; border-color:#2a2d3e;">
+
+        <div class="auth-logo">
+            <div class="mark" style="background:#3b82f6">🛡️</div>
+            <h1 style="color:#fff">Property<span>Pulse</span></h1>
+            <p style="color:#9aa0ab">Acceso Administrativo</p>
+        </div>
+
+        <% if (error) { %>
+            <div class="form-error"><%= error %></div>
+        <% } %>
+
+        <form action="/auth/login" method="POST">
+            <input type="hidden" name="role" value="admin">
+
+            <div class="form-group">
+                <label class="form-label" style="color:#9aa0ab">Usuario Maestro</label>
+                <input type="text" name="username" class="form-input"
+                    style="background:#0d0f14;border-color:#2a2d3e;color:#fff"
+                    placeholder="admin" required autofocus>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" style="color:#9aa0ab">Contraseña</label>
+                <input type="password" name="password" class="form-input"
+                    style="background:#0d0f14;border-color:#2a2d3e;color:#fff"
+                    placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="btn btn-full mt-2" style="background:#3b82f6;color:#fff">
+                Ingresar al Sistema
+            </button>
+        </form>
+
+        <p class="text-small mt-3" style="text-align:center">
+            <a href="/" style="color:#5c6370">← Volver al inicio</a>
+        </p>
+
+    </div>
+</div>
+
+</body>
+</html>
