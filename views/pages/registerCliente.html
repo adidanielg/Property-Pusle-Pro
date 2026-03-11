@@ -5,6 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro Cliente | PropertyPulse</title>
     <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .tipo-grid { display:grid; grid-template-columns:1fr 1fr; gap:.5rem; margin-top:.25rem; }
+        .tipo-btn {
+            padding:.7rem; border-radius:var(--radius-sm);
+            font-size:.875rem; font-weight:500; cursor:pointer;
+            transition:all .18s; text-align:center;
+            border:2px solid var(--border);
+            background:var(--surface); color:var(--text-2);
+        }
+        .tipo-btn.active {
+            border-color:var(--accent);
+            background:var(--accent-soft);
+            color:var(--accent); font-weight:700;
+        }
+        .tipo-btn:hover:not(.active) { background:var(--surface-2); color:var(--text-1); }
+    </style>
 </head>
 <body>
 
@@ -21,15 +37,21 @@
 
             <div class="form-group">
                 <label class="form-label">Tipo de cuenta</label>
-                <select name="tipo_cliente" id="tipo_cliente" class="form-select" onchange="toggleEmpresa()">
-                    <option value="Individual">Cliente Individual</option>
-                    <option value="Compania">Compañía / Empresa</option>
-                </select>
+                <div class="tipo-grid">
+                    <div class="tipo-btn active" id="tab_individual" onclick="setTipo('Individual')">
+                        👤 Individual
+                    </div>
+                    <div class="tipo-btn" id="tab_compania" onclick="setTipo('Compania')">
+                        🏢 Compañía
+                    </div>
+                </div>
+                <input type="hidden" name="tipo_cliente" id="tipo_cliente" value="Individual">
             </div>
 
             <div id="campo_empresa" class="form-group" style="display:none">
                 <label class="form-label">Nombre de la Empresa</label>
-                <input type="text" name="nombre_empresa" id="nombre_empresa" class="form-input" placeholder="Ej. Inmobiliaria Sur S.A.">
+                <input type="text" name="nombre_empresa" id="nombre_empresa"
+                    class="form-input" placeholder="Ej. Inmobiliaria Sur S.A.">
             </div>
 
             <div class="form-row">
@@ -73,29 +95,56 @@
                 ¿Ya tienes cuenta? <a href="/auth/login" style="color:var(--accent);font-weight:600">Inicia sesión</a>
             </p>
         </form>
-
     </div>
 </div>
 
 <!-- Modal éxito -->
 <div id="successModal" class="modal-overlay">
-    <div class="modal" style="text-align:center">
-        <div style="font-size:2.5rem;margin-bottom:1rem">🎉</div>
-        <h2 style="margin-bottom:.5rem">¡Cuenta creada!</h2>
-        <p class="text-muted mb-3">Guarda tu nombre de usuario para iniciar sesión:</p>
-        <div style="background:var(--accent-soft);padding:1rem;border-radius:var(--radius);font-family:var(--font-mono);font-size:1.25rem;font-weight:700;color:var(--accent);margin-bottom:1.5rem" id="usernameDisplay"></div>
+    <div class="modal" style="max-width:400px;text-align:center">
+        <div style="font-size:3rem;margin-bottom:1rem">🎉</div>
+        <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:.5rem">¡Cuenta creada!</h2>
+        <p style="color:#5c6370;margin-bottom:1rem;font-size:.9rem">
+            Guarda tu nombre de usuario para iniciar sesión:
+        </p>
+        <div id="usernameDisplay" style="
+            background:#ede9ff;
+            border:2px solid #6c63ff;
+            padding:1rem 1.5rem;
+            border-radius:10px;
+            font-size:1.35rem;
+            font-weight:700;
+            color:#6c63ff;
+            margin-bottom:.75rem;
+            letter-spacing:.05em;
+        "></div>
+        <p style="color:#9aa0ab;font-size:.8rem;margin-bottom:1.5rem">
+            📋 Cópialo — lo necesitarás para iniciar sesión
+        </p>
         <a href="/auth/login" class="btn btn-primary btn-full">Ir a iniciar sesión →</a>
     </div>
 </div>
 
 <script>
-    function toggleEmpresa() {
-        const tipo  = document.getElementById('tipo_cliente').value;
-        const campo = document.getElementById('campo_empresa');
-        const input = document.getElementById('nombre_empresa');
-        campo.style.display = tipo === 'Compania' ? 'block' : 'none';
-        input.required = tipo === 'Compania';
-        if (tipo !== 'Compania') input.value = '';
+    function setTipo(tipo) {
+        document.getElementById('tipo_cliente').value = tipo;
+        const tabInd = document.getElementById('tab_individual');
+        const tabCom = document.getElementById('tab_compania');
+        const campo  = document.getElementById('campo_empresa');
+        const input  = document.getElementById('nombre_empresa');
+
+        if (tipo === 'Compania') {
+            tabCom.classList.add('active');
+            tabInd.classList.remove('active');
+            campo.style.display = 'block';
+            input.required = true;
+            input.focus();
+        } else {
+            tabInd.classList.add('active');
+            tabCom.classList.remove('active');
+            campo.style.display = 'none';
+            input.required = false;
+            input.value = '';
+        }
     }
 
     async function registrar(e) {
@@ -104,6 +153,9 @@
         const data = Object.fromEntries(new FormData(e.target));
         data.role  = 'cliente';
 
+        if (data.tipo_cliente === 'Compania' && !data.nombre_empresa?.trim()) {
+            alert('Ingresa el nombre de la empresa'); return;
+        }
         if (data.password !== data.confirm_password) {
             alert('Las contraseñas no coinciden'); return;
         }
@@ -117,12 +169,11 @@
                 body:    JSON.stringify(data)
             });
             const result = await res.json();
-
             if (result.success) {
                 document.getElementById('usernameDisplay').innerText = result.username;
                 document.getElementById('successModal').classList.add('open');
             } else {
-                alert('Error: ' + result.error);
+                alert('Error: ' + (result.error || 'Error desconocido'));
             }
         } catch (err) {
             alert('Error de conexión');

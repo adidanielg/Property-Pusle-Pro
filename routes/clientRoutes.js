@@ -1,169 +1,75 @@
-const express    = require('express');
-const router     = express.Router();
-const multer     = require('multer');
-const { requireAuth }     = require('../middleware/authMiddleware');
-const supabase            = require('../services/supabaseClient');
-const notificationService = require('../services/notificationService');
+const express     = require('express');
+const router      = express.Router();
+const authService = require('../services/authService');
 
-const upload = multer({ storage: multer.memoryStorage() });
+// ── Vistas login ──────────────────────────────────────────────
+router.get('/login',         (req, res) => res.render('pages/loginCliente.html', { error: null }));
+router.get('/login-tecnico', (req, res) => res.render('pages/loginTecnico.html', { error: null }));
+router.get('/login-admin',   (req, res) => res.render('pages/loginAdmin.html',   { error: null }));
 
-router.use(requireAuth(['cliente']));
+// ── Vistas registro ───────────────────────────────────────────
+router.get('/register-cliente', (req, res) => res.render('pages/registerCliente.html'));
+router.get('/register-tecnico', (req, res) => res.render('pages/registerTecnico.html'));
 
-// ── Dashboard ─────────────────────────────────────────────────
-router.get('/dashboard', async (req, res) => {
+// ── POST /auth/register ───────────────────────────────────────
+router.post('/register', async (req, res) => {
     try {
-        const id = req.user.id;
-        const [{ data: propiedades }, { data: tickets }, { data: misCalificaciones }] = await Promise.all([
-            supabase.from('propiedades')
-                .select('*')
-                .eq('compania_id', id)
-                .order('created_at', { ascending: false }),
-            supabase.from('tickets')
-                .select('*, propiedades(direccion), tecnicos:tecnico_asignado(nombre)')
-                .eq('cliente_id', id)
-                .order('created_at', { ascending: false }),
-            supabase.from('calificaciones')
-                .select('ticket_id')
-                .eq('cliente_id', id)
-        ]);
+        const { confirm_password, role, ...userData } = req.body;
 
-        // IDs de tickets ya calificados
-        const ticketsCalificados = new Set((misCalificaciones || []).map(c => c.ticket_id));
+        if (!role)
+            return res.status(400).json({ error: 'Rol no especificado' });
+        if (userData.password !== confirm_password)
+            return res.status(400).json({ error: 'Las contraseñas no coinciden' });
 
-        res.render('pages/dashboardCliente.html', {
-            title:              'Mi Panel | PropertyPulse',
-            cliente:            req.user,
-            propiedades:        propiedades        || [],
-            tickets:            tickets            || [],
-            ticketsCalificados
+        const username = await authService.register(userData, role);
+        res.json({ success: true, username });
+
+    } catch (err) {
+        console.error('[REGISTER]', err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── POST /auth/login ──────────────────────────────────────────
+router.post('/login', async (req, res) => {
+    const { username, password, role } = req.body;
+
+    const vistas = {
+        cliente: 'pages/loginCliente.html',
+        tecnico: 'pages/loginTecnico.html',
+        admin:   'pages/loginAdmin.html'
+    };
+    const vista = vistas[role] || 'pages/loginCliente.html';
+
+    try {
+        if (!role) throw new Error('Rol no especificado');
+
+        const { token } = await authService.login(username, password, role);
+
+        res.cookie('jwt', token, {
+            httpOnly: true,
+            secure:   process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge:   8 * 60 * 60 * 1000 // 8 horas
         });
+
+        const dashboards = {
+            cliente: '/cliente/dashboard',
+            tecnico: '/tecnico/dashboard',
+            admin:   '/admin/dashboard'
+        };
+        return res.redirect(dashboards[role]);
+
     } catch (err) {
-        console.error('[CLIENT DASHBOARD]', err);
-        res.status(500).send('Error cargando el panel');
+        console.error('[LOGIN]', err.message);
+        return res.status(401).render(vista, { error: err.message });
     }
 });
 
-// ── Crear ticket → notificar técnicos ─────────────────────────
-router.post('/tickets', upload.single('foto'), async (req, res) => {
-    try {
-        const { propiedad_id, categoria, motivo, descripcion } = req.body;
-        let foto_url = null;
-
-        if (req.file) {
-            const ext      = req.file.mimetype.split('/')[1];
-            const fileName = `ticket-${Date.now()}.${ext}`;
-            const { error: upErr } = await supabase.storage
-                .from('tickets-fotos')
-                .upload(fileName, req.file.buffer, { contentType: req.file.mimetype });
-
-            if (!upErr) {
-                const { data: urlData } = supabase.storage
-                    .from('tickets-fotos')
-                    .getPublicUrl(fileName);
-                foto_url = urlData.publicUrl;
-            }
-        }
-
-        const { data: ticket, error } = await supabase
-            .from('tickets')
-            .insert([{ propiedad_id, cliente_id: req.user.id, motivo, descripcion, categoria, estado: 'pendiente', foto_url }])
-            .select('*, propiedades(direccion), tecnicos:tecnico_asignado(nombre)')
-            .single();
-
-        if (error) throw error;
-
-        notificationService.notificarTecnicos(ticket)
-            .catch(err => console.error('[PUSH técnicos]', err.message));
-
-        res.status(201).json({ success: true, ticket });
-
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// ── Calificar técnico ─────────────────────────────────────────
-router.post('/calificar', async (req, res) => {
-    try {
-        const { ticket_id, estrellas, comentario } = req.body;
-
-        // Verificar que el ticket pertenece a este cliente y está completado
-        const { data: ticket, error: tErr } = await supabase
-            .from('tickets')
-            .select('id, cliente_id, tecnico_asignado, estado')
-            .eq('id', ticket_id)
-            .eq('cliente_id', req.user.id)
-            .eq('estado', 'completado')
-            .single();
-
-        if (tErr || !ticket)
-            return res.status(403).json({ error: 'Ticket no válido para calificar' });
-
-        if (!ticket.tecnico_asignado)
-            return res.status(400).json({ error: 'Este ticket no tiene técnico asignado' });
-
-        // Insertar calificación (UNIQUE en ticket_id previene duplicados)
-        const { data, error } = await supabase
-            .from('calificaciones')
-            .insert([{
-                ticket_id,
-                cliente_id: req.user.id,
-                tecnico_id: ticket.tecnico_asignado,
-                estrellas:  parseInt(estrellas),
-                comentario: comentario || null
-            }])
-            .select().single();
-
-        if (error) {
-            if (error.code === '23505')
-                return res.status(400).json({ error: 'Ya calificaste este servicio' });
-            throw error;
-        }
-
-        res.json({ success: true, calificacion: data });
-
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// ── Propiedades CRUD ──────────────────────────────────────────
-router.post('/propiedades', async (req, res) => {
-    try {
-        const { direccion, servicios_contratados } = req.body;
-        const { data, error } = await supabase
-            .from('propiedades')
-            .insert([{ direccion, servicios_contratados, compania_id: req.user.id }])
-            .select().single();
-        if (error) throw error;
-        res.json({ success: true, propiedad: data });
-    } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-router.put('/propiedades/:id', async (req, res) => {
-    try {
-        const { direccion, servicios_contratados } = req.body;
-        const { data, error } = await supabase
-            .from('propiedades')
-            .update({ direccion, servicios_contratados })
-            .eq('id', req.params.id)
-            .eq('compania_id', req.user.id)
-            .select().single();
-        if (error) throw error;
-        res.json({ success: true, propiedad: data });
-    } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-router.delete('/propiedades/:id', async (req, res) => {
-    try {
-        const { error } = await supabase
-            .from('propiedades')
-            .delete()
-            .eq('id', req.params.id)
-            .eq('compania_id', req.user.id);
-        if (error) throw error;
-        res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: err.message }); }
+// ── GET /auth/logout ──────────────────────────────────────────
+router.get('/logout', (req, res) => {
+    res.clearCookie('jwt');
+    res.redirect('/');
 });
 
 module.exports = router;

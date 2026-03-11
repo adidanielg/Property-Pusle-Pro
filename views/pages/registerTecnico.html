@@ -79,17 +79,31 @@
                 ¿Ya tienes cuenta? <a href="/auth/login-tecnico" style="color:var(--accent);font-weight:600">Inicia sesión</a>
             </p>
         </form>
-
     </div>
 </div>
 
 <!-- Modal éxito -->
 <div id="successModal" class="modal-overlay">
-    <div class="modal" style="text-align:center">
-        <div style="font-size:2.5rem;margin-bottom:1rem">✅</div>
-        <h2 style="margin-bottom:.5rem">¡Registro exitoso!</h2>
-        <p class="text-muted mb-3">Guarda tu nombre de usuario para iniciar sesión:</p>
-        <div style="background:var(--accent-soft);padding:1rem;border-radius:var(--radius);font-family:var(--font-mono);font-size:1.25rem;font-weight:700;color:var(--accent);margin-bottom:1.5rem" id="usernameDisplay"></div>
+    <div class="modal" style="max-width:400px;text-align:center">
+        <div style="font-size:3rem;margin-bottom:1rem">✅</div>
+        <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:.5rem">¡Registro exitoso!</h2>
+        <p style="color:#5c6370;margin-bottom:1rem;font-size:.9rem">
+            Guarda tu nombre de usuario para iniciar sesión:
+        </p>
+        <div id="usernameDisplay" style="
+            background:#ede9ff;
+            border:2px solid #6c63ff;
+            padding:1rem 1.5rem;
+            border-radius:10px;
+            font-size:1.35rem;
+            font-weight:700;
+            color:#6c63ff;
+            margin-bottom:.75rem;
+            letter-spacing:.05em;
+        "></div>
+        <p style="color:#9aa0ab;font-size:.8rem;margin-bottom:1.5rem">
+            📋 Cópialo — lo necesitarás para iniciar sesión
+        </p>
         <a href="/auth/login-tecnico" class="btn btn-full" style="background:var(--text-1);color:#fff">Ir a iniciar sesión →</a>
     </div>
 </div>
@@ -114,12 +128,11 @@
                 body:    JSON.stringify(data)
             });
             const result = await res.json();
-
             if (result.success) {
                 document.getElementById('usernameDisplay').innerText = result.username;
                 document.getElementById('successModal').classList.add('open');
             } else {
-                alert('Error: ' + result.error);
+                alert('Error: ' + (result.error || 'Error desconocido'));
             }
         } catch (err) {
             alert('Error de conexión');
