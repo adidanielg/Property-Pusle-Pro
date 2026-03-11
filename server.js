@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const express      = require('express');
 const path         = require('path');
+const ejs          = require('ejs');
 const cookieParser = require('cookie-parser');
 
 const authRoutes         = require('./routes/authRoutes');
@@ -14,10 +15,14 @@ const app = express();
 app.set('trust proxy', 1);
 
 // ── Motor de vistas ───────────────────────────────────────────
-app.engine('html', require('ejs').renderFile);
-app.set('view engine', 'html');
+// root le dice a EJS dónde resolver los includes con path relativo
+const viewsRoot = path.join(__dirname, 'views');
 
-app.set('views', path.join(__dirname, 'views', 'pages'));
+app.engine('html', (filePath, options, callback) => {
+    ejs.renderFile(filePath, options, { root: viewsRoot }, callback);
+});
+app.set('view engine', 'html');
+app.set('views', path.join(viewsRoot, 'pages'));
 
 // ── Middlewares ───────────────────────────────────────────────
 app.use(express.json({ limit: '2mb' }));
