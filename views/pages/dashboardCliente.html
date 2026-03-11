@@ -258,6 +258,70 @@
         finally { btn.disabled = false; btn.innerText = 'Enviar reporte'; }
     }
 </script>
+// ============================================================
+// PropertyPulse — notifications.js
+// Registra el Service Worker y gestiona suscripciones push
+// Incluir en: dashboardCliente.html y dashboardTecnico.html
+// ============================================================
+
+// VAPID public key — reemplaza con la tuya (ver README)
+const VAPID_PUBLIC_KEY = 'REEMPLAZA_CON_TU_VAPID_PUBLIC_KEY';
+
+// ── Convertir VAPID key a Uint8Array ──────────────────────────
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64  = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = atob(base64);
+    return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+}
+
+// ── Inicializar notificaciones ────────────────────────────────
+async function initNotifications() {
+    // Verificar soporte del navegador
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        console.log('Push notifications no soportadas en este navegador');
+        return;
+    }
+
+    try {
+        // Registrar el Service Worker
+        const registration = await navigator.serviceWorker.register('/sw.js');
+        console.log('✅ Service Worker registrado');
+
+        // Pedir permiso al usuario
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+            console.log('Permiso de notificaciones denegado');
+            return;
+        }
+
+        // Verificar si ya existe una suscripción
+        let subscription = await registration.pushManager.getSubscription();
+
+        // Si no existe, crear una nueva
+        if (!subscription) {
+            subscription = await registration.pushManager.subscribe({
+                userVisibleOnly:      true,
+                applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+            });
+        }
+
+        // Enviar la suscripción al servidor
+        await fetch('/notificaciones/suscribir', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify(subscription)
+        });
+
+        console.log('✅ Suscripción push activa');
+
+    } catch (err) {
+        console.error('Error inicializando notificaciones:', err);
+    }
+}
+
+// Arrancar automáticamente cuando carga el dashboard
+document.addEventListener('DOMContentLoaded', initNotifications);
 
 </body>
 </html>

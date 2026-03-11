@@ -7,15 +7,12 @@
             <div class="logo-mark" style="background:#3b82f6">🛡️</div>
             <div class="logo-text" style="color:#fff">Property<span>Pulse</span></div>
         </div>
-
         <nav class="sidebar-nav">
             <div class="nav-section" style="color:#5c6370">Panel</div>
-            <a class="nav-item active" href="/admin/dashboard"
-                style="color:#e2e8f0;--surface-2:#1a1d2e">
+            <a class="nav-item active" href="/admin/dashboard" style="color:#e2e8f0">
                 <span class="icon">📊</span> Centro de Control
             </a>
         </nav>
-
         <div class="sidebar-footer" style="border-color:#1a1d2e">
             <div class="user-pill">
                 <div class="avatar" style="background:#1e3a5f;color:#3b82f6">A</div>
@@ -34,20 +31,20 @@
 
         <div class="page-header">
             <h1>Centro de Control</h1>
-            <p>Métricas globales y supervisión del sistema.</p>
+            <p>Métricas globales y gestión de clientes.</p>
         </div>
 
         <!-- Stats -->
         <div class="stats-grid">
             <div class="stat-card" style="border-left:3px solid var(--accent)">
-                <div class="stat-icon">👥</div>
-                <div class="stat-label">Total Clientes</div>
-                <div class="stat-value"><%= metricas.totalClientes %></div>
+                <div class="stat-icon">👤</div>
+                <div class="stat-label">Clientes Individuales</div>
+                <div class="stat-value"><%= individuales.length %></div>
             </div>
-            <div class="stat-card" style="border-left:3px solid var(--green)">
-                <div class="stat-icon">🔧</div>
-                <div class="stat-label">Técnicos Activos</div>
-                <div class="stat-value"><%= metricas.totalTecnicos %></div>
+            <div class="stat-card" style="border-left:3px solid #3b82f6">
+                <div class="stat-icon">🏢</div>
+                <div class="stat-label">Compañías</div>
+                <div class="stat-value"><%= companias.length %></div>
             </div>
             <div class="stat-card" style="border-left:3px solid var(--yellow)">
                 <div class="stat-icon">⏳</div>
@@ -61,11 +58,110 @@
             </div>
         </div>
 
-        <!-- Tabla de tickets -->
-        <div class="section-header mb-3">
-            <h2>Últimos Tickets del Sistema</h2>
+        <!-- Clientes Individuales -->
+        <div class="section-header mb-3 mt-4">
+            <h2>👤 Clientes Individuales <span class="text-muted text-small">(<%= individuales.length %>)</span></h2>
+        </div>
+        <div class="table-wrapper mb-4">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Usuario</th>
+                        <th>Email</th>
+                        <th>Teléfono</th>
+                        <th>Registro</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (individuales.length === 0) { %>
+                        <tr><td colspan="6" style="text-align:center;color:var(--text-2);padding:1.5rem">No hay clientes individuales.</td></tr>
+                    <% } %>
+                    <% individuales.forEach(function(c) { %>
+                    <tr>
+                        <td class="fw-600"><%= c.nombre_contacto %></td>
+                        <td class="text-mono text-small"><%= c.username %></td>
+                        <td class="text-muted text-small"><%= c.email %></td>
+                        <td class="text-muted text-small"><%= c.telefono %></td>
+                        <td class="text-muted text-small"><%= new Date(c.created_at).toLocaleDateString('es') %></td>
+                        <td>
+                            <div class="flex gap-1">
+                                <button class="btn btn-secondary btn-sm"
+                                    data-id="<%= c.id %>"
+                                    data-nombre="<%= c.nombre_contacto %>"
+                                    data-empresa="<%= c.nombre_empresa %>"
+                                    data-email="<%= c.email %>"
+                                    data-telefono="<%= c.telefono %>"
+                                    data-tipo="<%= c.tipo_cliente %>"
+                                    onclick="abrirEditar(this)">✏️ Editar</button>
+                                <button class="btn btn-danger btn-sm"
+                                    data-id="<%= c.id %>"
+                                    data-nombre="<%= c.nombre_contacto %>"
+                                    onclick="confirmarEliminar(this)">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
         </div>
 
+        <!-- Compañías -->
+        <div class="section-header mb-3">
+            <h2>🏢 Compañías / Empresas <span class="text-muted text-small">(<%= companias.length %>)</span></h2>
+        </div>
+        <div class="table-wrapper mb-4">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Empresa</th>
+                        <th>Contacto</th>
+                        <th>Usuario</th>
+                        <th>Email</th>
+                        <th>Teléfono</th>
+                        <th>Registro</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (companias.length === 0) { %>
+                        <tr><td colspan="7" style="text-align:center;color:var(--text-2);padding:1.5rem">No hay compañías registradas.</td></tr>
+                    <% } %>
+                    <% companias.forEach(function(c) { %>
+                    <tr>
+                        <td class="fw-600"><%= c.nombre_empresa %></td>
+                        <td><%= c.nombre_contacto %></td>
+                        <td class="text-mono text-small"><%= c.username %></td>
+                        <td class="text-muted text-small"><%= c.email %></td>
+                        <td class="text-muted text-small"><%= c.telefono %></td>
+                        <td class="text-muted text-small"><%= new Date(c.created_at).toLocaleDateString('es') %></td>
+                        <td>
+                            <div class="flex gap-1">
+                                <button class="btn btn-secondary btn-sm"
+                                    data-id="<%= c.id %>"
+                                    data-nombre="<%= c.nombre_contacto %>"
+                                    data-empresa="<%= c.nombre_empresa %>"
+                                    data-email="<%= c.email %>"
+                                    data-telefono="<%= c.telefono %>"
+                                    data-tipo="<%= c.tipo_cliente %>"
+                                    onclick="abrirEditar(this)">✏️ Editar</button>
+                                <button class="btn btn-danger btn-sm"
+                                    data-id="<%= c.id %>"
+                                    data-nombre="<%= c.nombre_empresa %>"
+                                    onclick="confirmarEliminar(this)">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Últimos Tickets -->
+        <div class="section-header mb-3">
+            <h2>🎫 Últimos Tickets del Sistema</h2>
+        </div>
         <div class="table-wrapper">
             <table>
                 <thead>
@@ -80,32 +176,16 @@
                 </thead>
                 <tbody>
                     <% if (tickets.length === 0) { %>
-                        <tr>
-                            <td colspan="6" style="text-align:center;color:var(--text-2);padding:2rem">
-                                No hay tickets registrados aún.
-                            </td>
-                        </tr>
+                        <tr><td colspan="6" style="text-align:center;color:var(--text-2);padding:1.5rem">No hay tickets registrados.</td></tr>
                     <% } %>
                     <% tickets.forEach(function(ticket) { %>
                     <tr>
-                        <td class="fw-600">
-                            <%= ticket.companias ? ticket.companias.nombre_empresa || ticket.companias.nombre_contacto : '—' %>
-                        </td>
-                        <td class="text-muted text-small">
-                            <%= ticket.propiedades ? ticket.propiedades.direccion : '—' %>
-                        </td>
+                        <td class="fw-600"><%= ticket.companias ? ticket.companias.nombre_empresa || ticket.companias.nombre_contacto : '—' %></td>
+                        <td class="text-muted text-small"><%= ticket.propiedades ? ticket.propiedades.direccion : '—' %></td>
                         <td><%= ticket.motivo %></td>
-                        <td>
-                            <span class="badge badge-<%= ticket.estado %>">
-                                <%= ticket.estado.replace('_', ' ') %>
-                            </span>
-                        </td>
-                        <td class="text-muted text-small">
-                            <%= ticket.tecnicos ? ticket.tecnicos.nombre : 'Sin asignar' %>
-                        </td>
-                        <td class="text-muted text-small">
-                            <%= new Date(ticket.created_at).toLocaleDateString('es') %>
-                        </td>
+                        <td><span class="badge badge-<%= ticket.estado %>"><%= ticket.estado.replace('_',' ') %></span></td>
+                        <td class="text-muted text-small"><%= ticket.tecnicos ? ticket.tecnicos.nombre : 'Sin asignar' %></td>
+                        <td class="text-muted text-small"><%= new Date(ticket.created_at).toLocaleDateString('es') %></td>
                     </tr>
                     <% }); %>
                 </tbody>
@@ -114,6 +194,126 @@
 
     </main>
 </div>
+
+<!-- Modal: Editar Cliente -->
+<div id="editarModal" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Editar Cliente</h2>
+            <button class="modal-close" onclick="cerrarModal('editarModal')">✕</button>
+        </div>
+        <form onsubmit="guardarCliente(event)">
+            <input type="hidden" id="edit_id">
+            <div class="form-group">
+                <label class="form-label">Tipo de cliente</label>
+                <select id="edit_tipo" class="form-select">
+                    <option value="Individual">Individual</option>
+                    <option value="Compania">Compañía</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Nombre de empresa</label>
+                <input type="text" id="edit_empresa" class="form-input" placeholder="Solo para compañías">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Nombre de contacto</label>
+                <input type="text" id="edit_nombre" class="form-input" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="edit_email" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Teléfono</label>
+                    <input type="text" id="edit_telefono" class="form-input" required>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full" id="btnGuardar">Guardar cambios</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Confirmar Eliminar -->
+<div id="eliminarModal" class="modal-overlay">
+    <div class="modal" style="max-width:400px;text-align:center">
+        <div style="font-size:2.5rem;margin-bottom:1rem">⚠️</div>
+        <h2 style="margin-bottom:.5rem">¿Eliminar cliente?</h2>
+        <p class="text-muted mb-2 fw-600" id="eliminarNombre"></p>
+        <p class="text-small mb-4" style="color:var(--red)">
+            Se eliminarán también todas sus propiedades y tickets asociados.
+        </p>
+        <div class="flex gap-2">
+            <button class="btn btn-secondary btn-full" onclick="cerrarModal('eliminarModal')">Cancelar</button>
+            <button class="btn btn-full" id="btnEliminar"
+                style="background:var(--red);color:#fff"
+                onclick="ejecutarEliminar()">Sí, eliminar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let clienteIdAEliminar = null;
+
+    function cerrarModal(id) { document.getElementById(id).classList.remove('open'); }
+
+    document.querySelectorAll('.modal-overlay').forEach(el => {
+        el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+    });
+
+    function abrirEditar(btn) {
+        document.getElementById('edit_id').value       = btn.dataset.id;
+        document.getElementById('edit_nombre').value   = btn.dataset.nombre;
+        document.getElementById('edit_empresa').value  = btn.dataset.empresa !== 'Individual' ? btn.dataset.empresa : '';
+        document.getElementById('edit_email').value    = btn.dataset.email;
+        document.getElementById('edit_telefono').value = btn.dataset.telefono;
+        document.getElementById('edit_tipo').value     = btn.dataset.tipo;
+        document.getElementById('editarModal').classList.add('open');
+    }
+
+    async function guardarCliente(e) {
+        e.preventDefault();
+        const id  = document.getElementById('edit_id').value;
+        const btn = document.getElementById('btnGuardar');
+        btn.disabled = true; btn.innerText = 'Guardando...';
+        try {
+            const res  = await fetch(`/admin/clientes/${id}`, {
+                method:  'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nombre_contacto: document.getElementById('edit_nombre').value,
+                    nombre_empresa:  document.getElementById('edit_empresa').value || 'Individual',
+                    email:           document.getElementById('edit_email').value,
+                    telefono:        document.getElementById('edit_telefono').value,
+                    tipo_cliente:    document.getElementById('edit_tipo').value
+                })
+            });
+            const data = await res.json();
+            if (data.success) location.reload();
+            else alert('Error: ' + data.error);
+        } catch (err) { alert('Error de conexión'); }
+        finally { btn.disabled = false; btn.innerText = 'Guardar cambios'; }
+    }
+
+    function confirmarEliminar(btn) {
+        clienteIdAEliminar = btn.dataset.id;
+        document.getElementById('eliminarNombre').innerText = btn.dataset.nombre;
+        document.getElementById('eliminarModal').classList.add('open');
+    }
+
+    async function ejecutarEliminar() {
+        if (!clienteIdAEliminar) return;
+        const btn = document.getElementById('btnEliminar');
+        btn.disabled = true; btn.innerText = 'Eliminando...';
+        try {
+            const res  = await fetch(`/admin/clientes/${clienteIdAEliminar}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (data.success) location.reload();
+            else alert('Error: ' + data.error);
+        } catch (err) { alert('Error de conexión'); }
+        finally { btn.disabled = false; btn.innerText = 'Sí, eliminar'; clienteIdAEliminar = null; }
+    }
+</script>
 
 </body>
 </html>

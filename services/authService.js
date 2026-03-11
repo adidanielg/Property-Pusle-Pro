@@ -4,18 +4,18 @@ const supabase = require('./supabaseClient');
 
 const authService = {
 
-    // ── LOGIN ────────────────────────────────────────────────
+    // ── LOGIN ─────────────────────────────────────────────────
     async login(username, password, role) {
 
-        // Admin por variables de entorno
+        // Admin vive en variables de entorno, no en Supabase
         if (role === 'admin') {
-            if (username === process.env.ADMIN_USERNAME &&
-                password === process.env.ADMIN_PASSWORD) {
-                const payload = { id: 'admin', username: 'Administrador', role: 'admin' };
-                const token   = jwt.sign(payload, process.env.SESSION_SECRET, { expiresIn: '12h' });
-                return { user: payload, token };
+            if (username !== process.env.ADMIN_USERNAME ||
+                password !== process.env.ADMIN_PASSWORD) {
+                throw new Error('Credenciales de administrador inválidas');
             }
-            throw new Error('Credenciales de administrador inválidas');
+            const payload = { id: 'admin', username: 'Administrador', role: 'admin' };
+            const token   = jwt.sign(payload, process.env.SESSION_SECRET, { expiresIn: '12h' });
+            return { user: payload, token };
         }
 
         // Cliente o Técnico — buscar en Supabase
@@ -39,11 +39,11 @@ const authService = {
         return { user, token };
     },
 
-    // ── REGISTRO ─────────────────────────────────────────────
+    // ── REGISTRO ──────────────────────────────────────────────
     async register(data, role) {
         const table = role === 'tecnico' ? 'tecnicos' : 'companias';
 
-        // Username: nombre+apellido en minúsculas + número random
+        // Generar username: nombre+apellido normalizado + 2 dígitos random
         const base = `${data.nombre}${data.apellido}`
             .toLowerCase()
             .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -57,18 +57,18 @@ const authService = {
                 nombre:       `${data.nombre} ${data.apellido}`,
                 email:        data.email,
                 telefono:     data.telefono,
+                especialidad: data.especialidad,
                 username,
-                password:     hashedPassword,
-                especialidad: data.especialidad
+                password:     hashedPassword
               }
             : {
                 nombre_contacto: `${data.nombre} ${data.apellido}`,
                 nombre_empresa:  data.nombre_empresa || 'Individual',
                 email:           data.email,
                 telefono:        data.telefono,
+                tipo_cliente:    data.tipo_cliente || 'Individual',
                 username,
-                password:        hashedPassword,
-                tipo_cliente:    data.tipo_cliente || 'Individual'
+                password:        hashedPassword
               };
 
         const { data: newUser, error } = await supabase

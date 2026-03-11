@@ -8,8 +8,8 @@
 </head>
 <body>
 
-<div class="auth-page" style="align-items:flex-start; padding-top:3rem;">
-    <div class="auth-card" style="max-width:520px; margin:0 auto;">
+<div class="auth-page" style="align-items:flex-start;padding-top:3rem">
+    <div class="auth-card" style="max-width:520px;margin:0 auto">
 
         <div class="auth-logo">
             <div class="mark">🏢</div>
@@ -100,9 +100,8 @@
 
     async function registrar(e) {
         e.preventDefault();
-        const form = e.target;
         const btn  = document.getElementById('btnSubmit');
-        const data = Object.fromEntries(new FormData(form));
+        const data = Object.fromEntries(new FormData(e.target));
         data.role  = 'cliente';
 
         if (data.password !== data.confirm_password) {
@@ -112,7 +111,11 @@
         btn.disabled = true; btn.innerText = 'Creando cuenta...';
 
         try {
-            const res    = await fetch('/auth/register', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
+            const res    = await fetch('/auth/register', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify(data)
+            });
             const result = await res.json();
 
             if (result.success) {

@@ -1,21 +1,27 @@
-const express     = require('express');
-const router      = express.Router();
-const multer      = require('multer');
-const { requireAuth } = require('../middleware/authMiddleware');
-const supabase    = require('../services/supabaseClient');
+const express    = require('express');
+const router     = express.Router();
+const multer     = require('multer');
+const { requireAuth }     = require('../middleware/authMiddleware');
+const supabase            = require('../services/supabaseClient');
+const notificationService = require('../services/notificationService');
 
 const upload = multer({ storage: multer.memoryStorage() });
 
 router.use(requireAuth(['cliente']));
 
-// ── Dashboard ────────────────────────────────────────────────
+// ── Dashboard ─────────────────────────────────────────────────
 router.get('/dashboard', async (req, res) => {
     try {
         const id = req.user.id;
-
         const [{ data: propiedades }, { data: tickets }] = await Promise.all([
-            supabase.from('propiedades').select('*').eq('compania_id', id).order('created_at', { ascending: false }),
-            supabase.from('tickets').select('*, propiedades(direccion)').eq('cliente_id', id).order('created_at', { ascending: false })
+            supabase.from('propiedades')
+                .select('*')
+                .eq('compania_id', id)
+                .order('created_at', { ascending: false }),
+            supabase.from('tickets')
+                .select('*, propiedades(direccion)')
+                .eq('cliente_id', id)
+                .order('created_at', { ascending: false })
         ]);
 
         res.render('pages/dashboardCliente.html', {
@@ -30,31 +36,47 @@ router.get('/dashboard', async (req, res) => {
     }
 });
 
-// ── Tickets ──────────────────────────────────────────────────
+// ── Crear ticket → notificar técnicos ─────────────────────────
 router.post('/tickets', upload.single('foto'), async (req, res) => {
     try {
         const { propiedad_id, motivo, descripcion } = req.body;
         let foto_url = null;
 
+        // Subir foto a Supabase Storage si se adjuntó
         if (req.file) {
-            const fileName = `ticket-${Date.now()}.${req.file.mimetype.split('/')[1]}`;
+            const ext      = req.file.mimetype.split('/')[1];
+            const fileName = `ticket-${Date.now()}.${ext}`;
             const { error: upErr } = await supabase.storage
                 .from('tickets-fotos')
                 .upload(fileName, req.file.buffer, { contentType: req.file.mimetype });
 
             if (!upErr) {
-                const { data: urlData } = supabase.storage.from('tickets-fotos').getPublicUrl(fileName);
+                const { data: urlData } = supabase.storage
+                    .from('tickets-fotos')
+                    .getPublicUrl(fileName);
                 foto_url = urlData.publicUrl;
             }
         }
 
         const { data: ticket, error } = await supabase
             .from('tickets')
-            .insert([{ propiedad_id, cliente_id: req.user.id, motivo, descripcion, estado: 'pendiente', foto_url }])
+            .insert([{
+                propiedad_id,
+                cliente_id:  req.user.id,
+                motivo,
+                descripcion,
+                estado:      'pendiente',
+                foto_url
+            }])
             .select('*, propiedades(direccion)')
             .single();
 
         if (error) throw error;
+
+        // Notificar técnicos sin bloquear la respuesta
+        notificationService.notificarTecnicos(ticket)
+            .catch(err => console.error('[PUSH técnicos]', err.message));
+
         res.status(201).json({ success: true, ticket });
 
     } catch (err) {
@@ -62,7 +84,7 @@ router.post('/tickets', upload.single('foto'), async (req, res) => {
     }
 });
 
-// ── Propiedades CRUD ─────────────────────────────────────────
+// ── Propiedades CRUD ──────────────────────────────────────────
 router.post('/propiedades', async (req, res) => {
     try {
         const { direccion, servicios_contratados } = req.body;
@@ -81,7 +103,8 @@ router.put('/propiedades/:id', async (req, res) => {
         const { data, error } = await supabase
             .from('propiedades')
             .update({ direccion, servicios_contratados })
-            .eq('id', req.params.id).eq('compania_id', req.user.id)
+            .eq('id', req.params.id)
+            .eq('compania_id', req.user.id) // seguridad: solo su propiedad
             .select().single();
         if (error) throw error;
         res.json({ success: true, propiedad: data });
@@ -93,7 +116,8 @@ router.delete('/propiedades/:id', async (req, res) => {
         const { error } = await supabase
             .from('propiedades')
             .delete()
-            .eq('id', req.params.id).eq('compania_id', req.user.id);
+            .eq('id', req.params.id)
+            .eq('compania_id', req.user.id); // seguridad: solo su propiedad
         if (error) throw error;
         res.json({ success: true });
     } catch (err) { res.status(500).json({ error: err.message }); }

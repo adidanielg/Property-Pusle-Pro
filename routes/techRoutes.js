@@ -5,7 +5,7 @@ const ticketService   = require('../services/ticketService');
 
 router.use(requireAuth(['tecnico']));
 
-// ── Dashboard ────────────────────────────────────────────────
+// ── Dashboard ─────────────────────────────────────────────────
 router.get('/dashboard', async (req, res) => {
     try {
         const tickets = await ticketService.getTicketsParaTecnico(req.user.id);
@@ -20,7 +20,7 @@ router.get('/dashboard', async (req, res) => {
     }
 });
 
-// ── Cambiar estado de ticket ─────────────────────────────────
+// ── Cambiar estado → notifica al cliente automáticamente ──────
 router.post('/tickets/:id/estado', async (req, res) => {
     try {
         const { estado } = req.body;
@@ -29,7 +29,11 @@ router.post('/tickets/:id/estado', async (req, res) => {
         if (!validos.includes(estado))
             return res.status(400).json({ error: 'Estado no válido' });
 
-        const ticket = await ticketService.actualizarEstado(req.params.id, req.user.id, estado);
+        const ticket = await ticketService.actualizarEstado(
+            req.params.id,
+            req.user.id,
+            estado
+        );
         res.json({ success: true, ticket });
 
     } catch (err) {

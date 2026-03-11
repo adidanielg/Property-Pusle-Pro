@@ -7,14 +7,12 @@
             <div class="logo-mark">🔧</div>
             <div class="logo-text">Property<span>Pulse</span></div>
         </div>
-
         <nav class="sidebar-nav">
             <div class="nav-section">Panel</div>
             <a class="nav-item active" href="/tecnico/dashboard">
                 <span class="icon">🔧</span> Mis trabajos
             </a>
         </nav>
-
         <div class="sidebar-footer">
             <div class="user-pill">
                 <div class="avatar" style="background:var(--green-soft);color:var(--green)">
@@ -78,9 +76,7 @@
                         <%= new Date(ticket.created_at).toLocaleDateString('es') %>
                     </span>
                 </div>
-
                 <div class="ticket-title"><%= ticket.motivo %></div>
-
                 <div class="ticket-meta">
                     🏢 <%= ticket.companias ? ticket.companias.nombre_empresa || ticket.companias.nombre_contacto : 'Cliente' %>
                 </div>
@@ -132,5 +128,6 @@
     }
 </script>
 
+<script src="/js/notifications.js"></script>
 </body>
 </html>
