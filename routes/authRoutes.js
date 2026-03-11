@@ -3,13 +3,13 @@ const router      = express.Router();
 const authService = require('../services/authService');
 
 // ── Vistas login ──────────────────────────────────────────────
-router.get('/login',         (req, res) => res.render('pages/loginCliente.html', { error: null }));
-router.get('/login-tecnico', (req, res) => res.render('pages/loginTecnico.html', { error: null }));
-router.get('/login-admin',   (req, res) => res.render('pages/loginAdmin.html',   { error: null }));
+router.get('/login',         (req, res) => res.render('loginCliente.html', { error: null }));
+router.get('/login-tecnico', (req, res) => res.render('loginTecnico.html', { error: null }));
+router.get('/login-admin',   (req, res) => res.render('loginAdmin.html',   { error: null }));
 
 // ── Vistas registro ───────────────────────────────────────────
-router.get('/register-cliente', (req, res) => res.render('pages/registerCliente.html'));
-router.get('/register-tecnico', (req, res) => res.render('pages/registerTecnico.html'));
+router.get('/register-cliente', (req, res) => res.render('registerCliente.html'));
+router.get('/register-tecnico', (req, res) => res.render('registerTecnico.html'));
 
 // ── POST /auth/register ───────────────────────────────────────
 router.post('/register', async (req, res) => {
@@ -35,11 +35,11 @@ router.post('/login', async (req, res) => {
     const { username, password, role } = req.body;
 
     const vistas = {
-        cliente: 'pages/loginCliente.html',
-        tecnico: 'pages/loginTecnico.html',
-        admin:   'pages/loginAdmin.html'
+        cliente: 'loginCliente.html',
+        tecnico: 'loginTecnico.html',
+        admin:   'loginAdmin.html'
     };
-    const vista = vistas[role] || 'pages/loginCliente.html';
+    const vista = vistas[role] || 'loginCliente.html';
 
     try {
         if (!role) throw new Error('Rol no especificado');

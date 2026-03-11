@@ -22,7 +22,7 @@ router.get('/dashboard', async (req, res) => {
             ? (calificaciones.reduce((acc, c) => acc + c.estrellas, 0) / totalCalif).toFixed(1)
             : null;
 
-        res.render('pages/dashboardTecnico.html', {
+        res.render('dashboardTecnico.html', {
             title:          'Panel Técnico | PropertyPulse',
             tecnico:        req.user,
             tickets:        tickets        || [],

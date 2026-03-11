@@ -56,7 +56,7 @@ router.get('/dashboard', async (req, res) => {
             totalCalif: statsCalif[t.id]?.total || 0
         }));
 
-        res.render('pages/adminDashboard.html', {
+        res.render('adminDashboard.html', {
             title:    'Admin | PropertyPulse',
             admin:    req.user,
             metricas: {
