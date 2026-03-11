@@ -36,7 +36,7 @@
             <p>Aquí están los trabajos disponibles y tus servicios en curso.</p>
         </div>
 
-        <!-- Stats -->
+        <!-- Stats + Rating -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon">⏳</div>
@@ -53,8 +53,23 @@
                 <div class="stat-label">Completados</div>
                 <div class="stat-value"><%= tickets.filter(t => t.estado === 'completado').length %></div>
             </div>
+            <div class="stat-card" style="border-left:3px solid #f59e0b">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-label">Mi calificación</div>
+                <div class="stat-value">
+                    <% if (promedio) { %>
+                        <%= promedio %> <span class="text-small text-muted fw-400">/ 5</span>
+                    <% } else { %>
+                        <span class="text-muted text-small" style="font-size:1rem">Sin calificaciones</span>
+                    <% } %>
+                </div>
+                <% if (totalCalif > 0) { %>
+                    <div class="text-small text-muted"><%= totalCalif %> reseña<%= totalCalif > 1 ? 's' : '' %></div>
+                <% } %>
+            </div>
         </div>
 
+        <!-- Tickets -->
         <div class="section-header mb-3">
             <h2>Tickets disponibles y activos</h2>
         </div>
@@ -69,13 +84,16 @@
             <% tickets.forEach(function(ticket) { %>
             <div class="ticket-card" id="ticket-<%= ticket.id %>">
                 <div class="ticket-header">
-                    <span class="badge badge-<%= ticket.estado %>" id="badge-<%= ticket.id %>">
+                    <span class="badge badge-<%= ticket.estado %>">
                         <%= ticket.estado.replace('_',' ') %>
                     </span>
                     <span class="text-small text-muted">
                         <%= new Date(ticket.created_at).toLocaleDateString('es') %>
                     </span>
                 </div>
+                <% if (ticket.categoria) { %>
+                <div class="text-small mb-1" style="color:var(--accent);font-weight:600">🏷️ <%= ticket.categoria %></div>
+                <% } %>
                 <div class="ticket-title"><%= ticket.motivo %></div>
                 <div class="ticket-meta">
                     🏢 <%= ticket.companias ? ticket.companias.nombre_empresa || ticket.companias.nombre_contacto : 'Cliente' %>
@@ -84,6 +102,9 @@
                     📍 <%= ticket.propiedades ? ticket.propiedades.direccion : 'N/A' %>
                 </div>
                 <div class="ticket-desc"><%= ticket.descripcion %></div>
+                <% if (ticket.foto_url) { %>
+                    <a href="<%= ticket.foto_url %>" target="_blank" class="text-small" style="color:var(--accent)">📸 Ver foto del problema</a>
+                <% } %>
 
                 <div id="actions-<%= ticket.id %>">
                     <% if (ticket.estado === 'pendiente') { %>
@@ -103,6 +124,32 @@
                         </button>
                     <% } %>
                 </div>
+            </div>
+            <% }); %>
+        </div>
+        <% } %>
+
+        <!-- Calificaciones recibidas -->
+        <% if (calificaciones.length > 0) { %>
+        <div class="section-header mb-3 mt-4">
+            <h2>⭐ Mis calificaciones</h2>
+            <span class="text-muted text-small">Promedio: <strong style="color:#f59e0b"><%= promedio %>/5</strong></span>
+        </div>
+        <div class="cards-grid">
+            <% calificaciones.forEach(function(c) { %>
+            <div class="card" style="padding:1.25rem">
+                <div class="flex-between mb-1">
+                    <div style="color:#f59e0b;font-size:1.2rem;letter-spacing:2px">
+                        <% for(var i=1; i<=5; i++) { %><%= i <= c.estrellas ? '★' : '☆' %><% } %>
+                    </div>
+                    <span class="text-small text-muted"><%= new Date(c.created_at).toLocaleDateString('es') %></span>
+                </div>
+                <div class="fw-600 text-small mb-1">
+                    <%= c.companias ? c.companias.nombre_empresa !== 'Individual' ? c.companias.nombre_empresa : c.companias.nombre_contacto : 'Cliente' %>
+                </div>
+                <% if (c.comentario) { %>
+                    <div class="text-small text-muted" style="font-style:italic">"<%= c.comentario %>"</div>
+                <% } %>
             </div>
             <% }); %>
         </div>

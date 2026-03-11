@@ -31,20 +31,20 @@
 
         <div class="page-header">
             <h1>Centro de Control</h1>
-            <p>Métricas globales y gestión de clientes.</p>
+            <p>Métricas globales, gestión de clientes y técnicos.</p>
         </div>
 
         <!-- Stats -->
         <div class="stats-grid">
             <div class="stat-card" style="border-left:3px solid var(--accent)">
-                <div class="stat-icon">👤</div>
-                <div class="stat-label">Clientes Individuales</div>
-                <div class="stat-value"><%= individuales.length %></div>
+                <div class="stat-icon">👥</div>
+                <div class="stat-label">Total Clientes</div>
+                <div class="stat-value"><%= metricas.totalClientes %></div>
             </div>
             <div class="stat-card" style="border-left:3px solid #3b82f6">
-                <div class="stat-icon">🏢</div>
-                <div class="stat-label">Compañías</div>
-                <div class="stat-value"><%= companias.length %></div>
+                <div class="stat-icon">🔧</div>
+                <div class="stat-label">Técnicos</div>
+                <div class="stat-value"><%= metricas.totalTecnicos %></div>
             </div>
             <div class="stat-card" style="border-left:3px solid var(--yellow)">
                 <div class="stat-icon">⏳</div>
@@ -58,8 +58,73 @@
             </div>
         </div>
 
-        <!-- Clientes Individuales -->
+        <!-- ── Técnicos ── -->
         <div class="section-header mb-3 mt-4">
+            <h2>🔧 Técnicos <span class="text-muted text-small">(<%= tecnicos.length %>)</span></h2>
+        </div>
+        <div class="table-wrapper mb-4">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Especialidad</th>
+                        <th>Email</th>
+                        <th>Teléfono</th>
+                        <th>Calificación</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (tecnicos.length === 0) { %>
+                        <tr><td colspan="7" style="text-align:center;color:var(--text-2);padding:1.5rem">No hay técnicos registrados.</td></tr>
+                    <% } %>
+                    <% tecnicos.forEach(function(t) { %>
+                    <tr>
+                        <td class="fw-600"><%= t.nombre %></td>
+                        <td><span class="badge" style="background:var(--accent-soft);color:var(--accent)"><%= t.especialidad %></span></td>
+                        <td class="text-muted text-small"><%= t.email %></td>
+                        <td class="text-muted text-small"><%= t.telefono %></td>
+                        <td>
+                            <% if (t.promedio) { %>
+                                <span style="color:#f59e0b;font-weight:700"><%= t.promedio %> ★</span>
+                                <span class="text-small text-muted">(<%= t.totalCalif %>)</span>
+                            <% } else { %>
+                                <span class="text-muted text-small">Sin reseñas</span>
+                            <% } %>
+                        </td>
+                        <td>
+                            <% if (t.activo) { %>
+                                <span class="badge badge-completado">Activo</span>
+                            <% } else { %>
+                                <span class="badge badge-pendiente">Inactivo</span>
+                            <% } %>
+                        </td>
+                        <td>
+                            <div class="flex gap-1">
+                                <button class="btn btn-secondary btn-sm"
+                                    data-id="<%= t.id %>"
+                                    data-nombre="<%= t.nombre %>"
+                                    data-email="<%= t.email %>"
+                                    data-telefono="<%= t.telefono %>"
+                                    data-especialidad="<%= t.especialidad %>"
+                                    data-activo="<%= t.activo %>"
+                                    onclick="abrirEditarTecnico(this)">✏️ Editar</button>
+                                <button class="btn btn-danger btn-sm"
+                                    data-id="<%= t.id %>"
+                                    data-nombre="<%= t.nombre %>"
+                                    data-tipo="tecnico"
+                                    onclick="confirmarEliminar(this)">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ── Clientes Individuales ── -->
+        <div class="section-header mb-3">
             <h2>👤 Clientes Individuales <span class="text-muted text-small">(<%= individuales.length %>)</span></h2>
         </div>
         <div class="table-wrapper mb-4">
@@ -94,10 +159,11 @@
                                     data-email="<%= c.email %>"
                                     data-telefono="<%= c.telefono %>"
                                     data-tipo="<%= c.tipo_cliente %>"
-                                    onclick="abrirEditar(this)">✏️ Editar</button>
+                                    onclick="abrirEditarCliente(this)">✏️ Editar</button>
                                 <button class="btn btn-danger btn-sm"
                                     data-id="<%= c.id %>"
                                     data-nombre="<%= c.nombre_contacto %>"
+                                    data-tipo="cliente"
                                     onclick="confirmarEliminar(this)">🗑️</button>
                             </div>
                         </td>
@@ -107,9 +173,9 @@
             </table>
         </div>
 
-        <!-- Compañías -->
+        <!-- ── Compañías ── -->
         <div class="section-header mb-3">
-            <h2>🏢 Compañías / Empresas <span class="text-muted text-small">(<%= companias.length %>)</span></h2>
+            <h2>🏢 Compañías <span class="text-muted text-small">(<%= companias.length %>)</span></h2>
         </div>
         <div class="table-wrapper mb-4">
             <table>
@@ -145,10 +211,11 @@
                                     data-email="<%= c.email %>"
                                     data-telefono="<%= c.telefono %>"
                                     data-tipo="<%= c.tipo_cliente %>"
-                                    onclick="abrirEditar(this)">✏️ Editar</button>
+                                    onclick="abrirEditarCliente(this)">✏️ Editar</button>
                                 <button class="btn btn-danger btn-sm"
                                     data-id="<%= c.id %>"
                                     data-nombre="<%= c.nombre_empresa %>"
+                                    data-tipo="cliente"
                                     onclick="confirmarEliminar(this)">🗑️</button>
                             </div>
                         </td>
@@ -158,9 +225,32 @@
             </table>
         </div>
 
-        <!-- Últimos Tickets -->
+        <!-- ── Últimos Tickets ── -->
         <div class="section-header mb-3">
-            <h2>🎫 Últimos Tickets del Sistema</h2>
+            <h2>🎫 Tickets del Sistema <span class="text-muted text-small" id="ticketCount"></span></h2>
+            <div class="flex gap-1">
+                <select id="filtroCategoria" class="form-select" style="font-size:.8rem;padding:.35rem .75rem" onchange="filtrarTickets()">
+                    <option value="">Todas las categorías</option>
+                    <option>Climatización (HVAC)</option>
+                    <option>Electricidad</option>
+                    <option>Plomería</option>
+                    <option>Piscina</option>
+                    <option>Jardinería / Landscaping</option>
+                    <option>Irrigation / Sistema de riego</option>
+                    <option>Pest Control</option>
+                    <option>Limpieza / Pressure Washing</option>
+                    <option>Electrodomésticos</option>
+                    <option>Estructura / Reparaciones</option>
+                    <option>Seguridad</option>
+                    <option>General</option>
+                </select>
+                <select id="filtroEstado" class="form-select" style="font-size:.8rem;padding:.35rem .75rem" onchange="filtrarTickets()">
+                    <option value="">Todos los estados</option>
+                    <option value="pendiente">Pendiente</option>
+                    <option value="en_proceso">En proceso</option>
+                    <option value="completado">Completado</option>
+                </select>
+            </div>
         </div>
         <div class="table-wrapper">
             <table>
@@ -168,20 +258,24 @@
                     <tr>
                         <th>Cliente</th>
                         <th>Dirección</th>
+                        <th>Categoría</th>
                         <th>Motivo</th>
                         <th>Estado</th>
                         <th>Técnico</th>
                         <th>Fecha</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="ticketsBody">
                     <% if (tickets.length === 0) { %>
-                        <tr><td colspan="6" style="text-align:center;color:var(--text-2);padding:1.5rem">No hay tickets registrados.</td></tr>
+                        <tr><td colspan="7" style="text-align:center;color:var(--text-2);padding:1.5rem">No hay tickets registrados.</td></tr>
                     <% } %>
                     <% tickets.forEach(function(ticket) { %>
-                    <tr>
+                    <tr class="ticket-row"
+                        data-categoria="<%= ticket.categoria || '' %>"
+                        data-estado="<%= ticket.estado %>">
                         <td class="fw-600"><%= ticket.companias ? ticket.companias.nombre_empresa || ticket.companias.nombre_contacto : '—' %></td>
                         <td class="text-muted text-small"><%= ticket.propiedades ? ticket.propiedades.direccion : '—' %></td>
+                        <td><% if (ticket.categoria) { %><span class="badge" style="background:var(--accent-soft);color:var(--accent);font-size:.7rem"><%= ticket.categoria %></span><% } else { %><span class="text-muted text-small">—</span><% } %></td>
                         <td><%= ticket.motivo %></td>
                         <td><span class="badge badge-<%= ticket.estado %>"><%= ticket.estado.replace('_',' ') %></span></td>
                         <td class="text-muted text-small"><%= ticket.tecnicos ? ticket.tecnicos.nombre : 'Sin asignar' %></td>
@@ -195,41 +289,87 @@
     </main>
 </div>
 
+<!-- Modal: Editar Técnico -->
+<div id="editarTecnicoModal" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Editar Técnico</h2>
+            <button class="modal-close" onclick="cerrarModal('editarTecnicoModal')">✕</button>
+        </div>
+        <form onsubmit="guardarTecnico(event)">
+            <input type="hidden" id="tec_id">
+            <div class="form-group">
+                <label class="form-label">Nombre completo</label>
+                <input type="text" id="tec_nombre" class="form-input" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="tec_email" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Teléfono</label>
+                    <input type="text" id="tec_telefono" class="form-input" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Especialidad</label>
+                <select id="tec_especialidad" class="form-select" required>
+                    <option value="Plomería">Plomería</option>
+                    <option value="Electricidad">Electricidad</option>
+                    <option value="Climatización (HVAC)">Climatización (HVAC)</option>
+                    <option value="Mantenimiento General">Mantenimiento General</option>
+                    <option value="Carpintería">Carpintería</option>
+                    <option value="Pintura">Pintura</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Estado</label>
+                <select id="tec_activo" class="form-select">
+                    <option value="true">Activo</option>
+                    <option value="false">Inactivo</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full" id="btnGuardarTec">Guardar cambios</button>
+        </form>
+    </div>
+</div>
+
 <!-- Modal: Editar Cliente -->
-<div id="editarModal" class="modal-overlay">
+<div id="editarClienteModal" class="modal-overlay">
     <div class="modal">
         <div class="modal-header">
             <h2>Editar Cliente</h2>
-            <button class="modal-close" onclick="cerrarModal('editarModal')">✕</button>
+            <button class="modal-close" onclick="cerrarModal('editarClienteModal')">✕</button>
         </div>
         <form onsubmit="guardarCliente(event)">
-            <input type="hidden" id="edit_id">
+            <input type="hidden" id="cli_id">
             <div class="form-group">
                 <label class="form-label">Tipo de cliente</label>
-                <select id="edit_tipo" class="form-select">
+                <select id="cli_tipo" class="form-select">
                     <option value="Individual">Individual</option>
                     <option value="Compania">Compañía</option>
                 </select>
             </div>
             <div class="form-group">
                 <label class="form-label">Nombre de empresa</label>
-                <input type="text" id="edit_empresa" class="form-input" placeholder="Solo para compañías">
+                <input type="text" id="cli_empresa" class="form-input" placeholder="Solo para compañías">
             </div>
             <div class="form-group">
                 <label class="form-label">Nombre de contacto</label>
-                <input type="text" id="edit_nombre" class="form-input" required>
+                <input type="text" id="cli_nombre" class="form-input" required>
             </div>
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label">Email</label>
-                    <input type="email" id="edit_email" class="form-input" required>
+                    <input type="email" id="cli_email" class="form-input" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Teléfono</label>
-                    <input type="text" id="edit_telefono" class="form-input" required>
+                    <input type="text" id="cli_telefono" class="form-input" required>
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary btn-full" id="btnGuardar">Guardar cambios</button>
+            <button type="submit" class="btn btn-primary btn-full" id="btnGuardarCli">Guardar cambios</button>
         </form>
     </div>
 </div>
@@ -238,10 +378,10 @@
 <div id="eliminarModal" class="modal-overlay">
     <div class="modal" style="max-width:400px;text-align:center">
         <div style="font-size:2.5rem;margin-bottom:1rem">⚠️</div>
-        <h2 style="margin-bottom:.5rem">¿Eliminar cliente?</h2>
+        <h2 style="margin-bottom:.5rem">¿Eliminar registro?</h2>
         <p class="text-muted mb-2 fw-600" id="eliminarNombre"></p>
         <p class="text-small mb-4" style="color:var(--red)">
-            Se eliminarán también todas sus propiedades y tickets asociados.
+            Esta acción no se puede deshacer. Se eliminarán todos los datos asociados.
         </p>
         <div class="flex gap-2">
             <button class="btn btn-secondary btn-full" onclick="cerrarModal('eliminarModal')">Cancelar</button>
@@ -253,7 +393,70 @@
 </div>
 
 <script>
-    let clienteIdAEliminar = null;
+    // ── Filtros de tickets ────────────────────────────────────
+    const TICKETS_POR_PAGINA = 15;
+    let paginaActual = 1;
+
+    function filtrarTickets() {
+        paginaActual = 1;
+        renderTickets();
+    }
+
+    function renderTickets() {
+        const cat    = document.getElementById('filtroCategoria').value.toLowerCase();
+        const estado = document.getElementById('filtroEstado').value.toLowerCase();
+        const filas  = [...document.querySelectorAll('.ticket-row')];
+
+        const visibles = filas.filter(tr => {
+            const matchCat    = !cat    || tr.dataset.categoria.toLowerCase() === cat;
+            const matchEstado = !estado || tr.dataset.estado.toLowerCase()    === estado;
+            return matchCat && matchEstado;
+        });
+
+        const total  = visibles.length;
+        const inicio = (paginaActual - 1) * TICKETS_POR_PAGINA;
+        const fin    = inicio + TICKETS_POR_PAGINA;
+
+        filas.forEach(tr => tr.style.display = 'none');
+        visibles.forEach((tr, i) => tr.style.display = (i >= inicio && i < fin) ? '' : 'none');
+
+        // Contador
+        document.getElementById('ticketCount').innerText = `(${total} resultado${total !== 1 ? 's' : ''})`;
+
+        // Paginación
+        renderPaginacion(total);
+    }
+
+    function renderPaginacion(total) {
+        const totalPags = Math.ceil(total / TICKETS_POR_PAGINA);
+        let el = document.getElementById('paginacion');
+        if (!el) {
+            el = document.createElement('div');
+            el.id = 'paginacion';
+            el.style.cssText = 'display:flex;justify-content:center;gap:.5rem;margin-top:1rem;flex-wrap:wrap';
+            document.querySelector('.table-wrapper').after(el);
+        }
+        if (totalPags <= 1) { el.innerHTML = ''; return; }
+
+        let html = '';
+        for (let i = 1; i <= totalPags; i++) {
+            const activo = i === paginaActual
+                ? 'background:var(--accent);color:#fff;border-color:var(--accent)'
+                : 'background:var(--surface);color:var(--text-1)';
+            html += `<button onclick="irPagina(${i})" class="btn btn-sm"
+                style="${activo};min-width:2.2rem;padding:.3rem .6rem">${i}</button>`;
+        }
+        el.innerHTML = html;
+    }
+
+    function irPagina(n) { paginaActual = n; renderTickets(); }
+
+    // Inicializar al cargar
+    document.addEventListener('DOMContentLoaded', renderTickets);
+
+    // ── Modales ───────────────────────────────────────────────
+    let idAEliminar   = null;
+    let tipoAEliminar = null;
 
     function cerrarModal(id) { document.getElementById(id).classList.remove('open'); }
 
@@ -261,31 +464,32 @@
         el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
     });
 
-    function abrirEditar(btn) {
-        document.getElementById('edit_id').value       = btn.dataset.id;
-        document.getElementById('edit_nombre').value   = btn.dataset.nombre;
-        document.getElementById('edit_empresa').value  = btn.dataset.empresa !== 'Individual' ? btn.dataset.empresa : '';
-        document.getElementById('edit_email').value    = btn.dataset.email;
-        document.getElementById('edit_telefono').value = btn.dataset.telefono;
-        document.getElementById('edit_tipo').value     = btn.dataset.tipo;
-        document.getElementById('editarModal').classList.add('open');
+    // ── Editar Técnico ────────────────────────────────────────
+    function abrirEditarTecnico(btn) {
+        document.getElementById('tec_id').value           = btn.dataset.id;
+        document.getElementById('tec_nombre').value       = btn.dataset.nombre;
+        document.getElementById('tec_email').value        = btn.dataset.email;
+        document.getElementById('tec_telefono').value     = btn.dataset.telefono;
+        document.getElementById('tec_especialidad').value = btn.dataset.especialidad;
+        document.getElementById('tec_activo').value       = btn.dataset.activo;
+        document.getElementById('editarTecnicoModal').classList.add('open');
     }
 
-    async function guardarCliente(e) {
+    async function guardarTecnico(e) {
         e.preventDefault();
-        const id  = document.getElementById('edit_id').value;
-        const btn = document.getElementById('btnGuardar');
+        const id  = document.getElementById('tec_id').value;
+        const btn = document.getElementById('btnGuardarTec');
         btn.disabled = true; btn.innerText = 'Guardando...';
         try {
-            const res  = await fetch(`/admin/clientes/${id}`, {
+            const res  = await fetch(`/admin/tecnicos/${id}`, {
                 method:  'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    nombre_contacto: document.getElementById('edit_nombre').value,
-                    nombre_empresa:  document.getElementById('edit_empresa').value || 'Individual',
-                    email:           document.getElementById('edit_email').value,
-                    telefono:        document.getElementById('edit_telefono').value,
-                    tipo_cliente:    document.getElementById('edit_tipo').value
+                    nombre:       document.getElementById('tec_nombre').value,
+                    email:        document.getElementById('tec_email').value,
+                    telefono:     document.getElementById('tec_telefono').value,
+                    especialidad: document.getElementById('tec_especialidad').value,
+                    activo:       document.getElementById('tec_activo').value === 'true'
                 })
             });
             const data = await res.json();
@@ -295,23 +499,65 @@
         finally { btn.disabled = false; btn.innerText = 'Guardar cambios'; }
     }
 
+    // ── Editar Cliente ────────────────────────────────────────
+    function abrirEditarCliente(btn) {
+        document.getElementById('cli_id').value      = btn.dataset.id;
+        document.getElementById('cli_nombre').value  = btn.dataset.nombre;
+        document.getElementById('cli_empresa').value = btn.dataset.empresa !== 'Individual' ? btn.dataset.empresa : '';
+        document.getElementById('cli_email').value   = btn.dataset.email;
+        document.getElementById('cli_telefono').value= btn.dataset.telefono;
+        document.getElementById('cli_tipo').value    = btn.dataset.tipo;
+        document.getElementById('editarClienteModal').classList.add('open');
+    }
+
+    async function guardarCliente(e) {
+        e.preventDefault();
+        const id  = document.getElementById('cli_id').value;
+        const btn = document.getElementById('btnGuardarCli');
+        btn.disabled = true; btn.innerText = 'Guardando...';
+        try {
+            const res  = await fetch(`/admin/clientes/${id}`, {
+                method:  'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nombre_contacto: document.getElementById('cli_nombre').value,
+                    nombre_empresa:  document.getElementById('cli_empresa').value || 'Individual',
+                    email:           document.getElementById('cli_email').value,
+                    telefono:        document.getElementById('cli_telefono').value,
+                    tipo_cliente:    document.getElementById('cli_tipo').value
+                })
+            });
+            const data = await res.json();
+            if (data.success) location.reload();
+            else alert('Error: ' + data.error);
+        } catch (err) { alert('Error de conexión'); }
+        finally { btn.disabled = false; btn.innerText = 'Guardar cambios'; }
+    }
+
+    // ── Eliminar (clientes y técnicos) ────────────────────────
     function confirmarEliminar(btn) {
-        clienteIdAEliminar = btn.dataset.id;
+        idAEliminar   = btn.dataset.id;
+        tipoAEliminar = btn.dataset.tipo;
         document.getElementById('eliminarNombre').innerText = btn.dataset.nombre;
         document.getElementById('eliminarModal').classList.add('open');
     }
 
     async function ejecutarEliminar() {
-        if (!clienteIdAEliminar) return;
+        if (!idAEliminar) return;
         const btn = document.getElementById('btnEliminar');
         btn.disabled = true; btn.innerText = 'Eliminando...';
+
+        const url = tipoAEliminar === 'tecnico'
+            ? `/admin/tecnicos/${idAEliminar}`
+            : `/admin/clientes/${idAEliminar}`;
+
         try {
-            const res  = await fetch(`/admin/clientes/${clienteIdAEliminar}`, { method: 'DELETE' });
+            const res  = await fetch(url, { method: 'DELETE' });
             const data = await res.json();
             if (data.success) location.reload();
             else alert('Error: ' + data.error);
         } catch (err) { alert('Error de conexión'); }
-        finally { btn.disabled = false; btn.innerText = 'Sí, eliminar'; clienteIdAEliminar = null; }
+        finally { btn.disabled = false; btn.innerText = 'Sí, eliminar'; idAEliminar = null; tipoAEliminar = null; }
     }
 </script>
 

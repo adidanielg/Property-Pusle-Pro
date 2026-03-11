@@ -8,8 +8,8 @@
 </head>
 <body>
 
-<div class="auth-page" style="align-items:flex-start; padding-top:3rem;">
-    <div class="auth-card" style="max-width:500px; margin:0 auto;">
+<div class="auth-page" style="align-items:flex-start;padding-top:3rem">
+    <div class="auth-card" style="max-width:500px;margin:0 auto">
 
         <div class="auth-logo">
             <div class="mark">🔧</div>
@@ -42,15 +42,21 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label">Especialidad</label>
+                <label class="form-label">Especialidad principal</label>
                 <select name="especialidad" class="form-select" required>
                     <option value="">Selecciona una especialidad...</option>
-                    <option value="Plomería">Plomería</option>
-                    <option value="Electricidad">Electricidad</option>
-                    <option value="Climatización (HVAC)">Climatización (HVAC)</option>
-                    <option value="Mantenimiento General">Mantenimiento General</option>
-                    <option value="Carpintería">Carpintería</option>
-                    <option value="Pintura">Pintura</option>
+                    <option value="Climatización (HVAC)">❄️ Climatización (HVAC)</option>
+                    <option value="Electricidad">⚡ Electricidad</option>
+                    <option value="Plomería">🔧 Plomería</option>
+                    <option value="Piscina">🏊 Piscina</option>
+                    <option value="Jardinería / Landscaping">🌿 Jardinería / Landscaping</option>
+                    <option value="Irrigation / Sistema de riego">💧 Irrigation / Sistema de riego</option>
+                    <option value="Pest Control">🐛 Pest Control</option>
+                    <option value="Limpieza / Pressure Washing">🧹 Limpieza / Pressure Washing</option>
+                    <option value="Electrodomésticos">🏠 Electrodomésticos</option>
+                    <option value="Estructura / Reparaciones">🏗️ Estructura / Reparaciones</option>
+                    <option value="Seguridad">🔒 Seguridad</option>
+                    <option value="General">🛠️ Mantenimiento General</option>
                 </select>
             </div>
 
@@ -91,9 +97,8 @@
 <script>
     async function registrar(e) {
         e.preventDefault();
-        const form = e.target;
         const btn  = document.getElementById('btnSubmit');
-        const data = Object.fromEntries(new FormData(form));
+        const data = Object.fromEntries(new FormData(e.target));
         data.role  = 'tecnico';
 
         if (data.password !== data.confirm_password) {
@@ -103,7 +108,11 @@
         btn.disabled = true; btn.innerText = 'Procesando...';
 
         try {
-            const res    = await fetch('/auth/register', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
+            const res    = await fetch('/auth/register', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify(data)
+            });
             const result = await res.json();
 
             if (result.success) {

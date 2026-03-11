@@ -15,16 +15,18 @@ router.get('/dashboard', async (req, res) => {
             { count: ticketsResueltos },
             { data: ultimosTickets    },
             { data: individuales      },
-            { data: companias         }
+            { data: companias         },
+            { data: tecnicos          },
+            { data: calificaciones    }
         ] = await Promise.all([
             supabase.from('companias').select('*', { count: 'exact', head: true }),
             supabase.from('tecnicos').select('*',  { count: 'exact', head: true }),
             supabase.from('tickets').select('*',   { count: 'exact', head: true }).neq('estado', 'completado'),
             supabase.from('tickets').select('*',   { count: 'exact', head: true }).eq('estado', 'completado'),
             supabase.from('tickets')
-                .select('*, companias(nombre_empresa, nombre_contacto), tecnicos(nombre), propiedades(direccion)')
+                .select('*, companias(nombre_empresa, nombre_contacto), tecnicos:tecnico_asignado(nombre), propiedades(direccion)')
                 .order('created_at', { ascending: false })
-                .limit(20),
+                .limit(200),
             supabase.from('companias')
                 .select('*')
                 .eq('tipo_cliente', 'Individual')
@@ -32,8 +34,27 @@ router.get('/dashboard', async (req, res) => {
             supabase.from('companias')
                 .select('*')
                 .eq('tipo_cliente', 'Compania')
-                .order('created_at', { ascending: false })
+                .order('created_at', { ascending: false }),
+            supabase.from('tecnicos')
+                .select('id, nombre, email, telefono, especialidad, activo, created_at')
+                .order('created_at', { ascending: false }),
+            supabase.from('calificaciones')
+                .select('tecnico_id, estrellas')
         ]);
+
+        // Calcular promedio y total de reseñas por técnico
+        const statsCalif = {};
+        (calificaciones || []).forEach(c => {
+            if (!statsCalif[c.tecnico_id]) statsCalif[c.tecnico_id] = { suma: 0, total: 0 };
+            statsCalif[c.tecnico_id].suma  += c.estrellas;
+            statsCalif[c.tecnico_id].total += 1;
+        });
+
+        const tecnicosConRating = (tecnicos || []).map(t => ({
+            ...t,
+            promedio:   statsCalif[t.id] ? (statsCalif[t.id].suma / statsCalif[t.id].total).toFixed(1) : null,
+            totalCalif: statsCalif[t.id]?.total || 0
+        }));
 
         res.render('pages/adminDashboard.html', {
             title:    'Admin | PropertyPulse',
@@ -44,9 +65,10 @@ router.get('/dashboard', async (req, res) => {
                 ticketsAbiertos:  ticketsAbiertos  || 0,
                 ticketsResueltos: ticketsResueltos || 0
             },
-            tickets:      ultimosTickets || [],
-            individuales: individuales   || [],
-            companias:    companias      || []
+            tickets:      ultimosTickets    || [],
+            individuales: individuales      || [],
+            companias:    companias         || [],
+            tecnicos:     tecnicosConRating || []
         });
 
     } catch (err) {
@@ -76,6 +98,36 @@ router.delete('/clientes/:id', async (req, res) => {
     try {
         const { error } = await supabase
             .from('companias')
+            .delete()
+            .eq('id', req.params.id);
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── Editar técnico ────────────────────────────────────────────
+router.put('/tecnicos/:id', async (req, res) => {
+    try {
+        const { nombre, email, telefono, especialidad, activo } = req.body;
+        const { data, error } = await supabase
+            .from('tecnicos')
+            .update({ nombre, email, telefono, especialidad, activo })
+            .eq('id', req.params.id)
+            .select().single();
+        if (error) throw error;
+        res.json({ success: true, tecnico: data });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── Eliminar técnico ──────────────────────────────────────────
+router.delete('/tecnicos/:id', async (req, res) => {
+    try {
+        const { error } = await supabase
+            .from('tecnicos')
             .delete()
             .eq('id', req.params.id);
         if (error) throw error;

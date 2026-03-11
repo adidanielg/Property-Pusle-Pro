@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 — PropertyPulse</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .error-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+            gap: 1rem;
+            padding: 2rem;
+        }
+        .error-code {
+            font-size: 6rem;
+            font-weight: 800;
+            line-height: 1;
+            background: linear-gradient(135deg, var(--accent), #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+        }
+        .error-title { font-size: 1.5rem; font-weight: 700; color: var(--text-1); }
+        .error-sub   { color: var(--text-2); max-width: 380px; }
+        .error-btns  { display: flex; gap: .75rem; margin-top: .5rem; flex-wrap: wrap; justify-content: center; }
+    </style>
+</head>
+<body>
+<div class="error-page">
+    <div style="font-size:3rem">🏚️</div>
+    <div class="error-code">404</div>
+    <div class="error-title">Página no encontrada</div>
+    <p class="error-sub">La dirección que buscas no existe o fue movida. Verifica la URL o regresa al inicio.</p>
+    <div class="error-btns">
+        <a href="/" class="btn btn-primary">🏠 Ir al inicio</a>
+        <a href="javascript:history.back()" class="btn btn-secondary">← Volver</a>
+    </div>
+</div>
+</body>
+</html>

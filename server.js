@@ -34,7 +34,7 @@ app.use('/notificaciones', notificationRoutes);
 
 // ── 404 ───────────────────────────────────────────────────────
 app.use((req, res) => {
-    res.status(404).send('<h2>404 — Página no encontrada</h2><a href="/">Volver al inicio</a>');
+    res.status(404).render('pages/404.html');
 });
 
 // ── Servidor local (no en Vercel) ─────────────────────────────
