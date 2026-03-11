@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PropertyPulse — Gestión de Mantenimiento</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<div class="landing">
+
+    <div class="landing-logo">
+        <div class="mark">🏢</div>
+        <h1>Property<span>Pulse</span></h1>
+    </div>
+
+    <p class="landing-tagline">
+        Plataforma profesional de gestión de mantenimiento para propiedades.<br>
+        Conecta clientes, técnicos y administradores en un solo lugar.
+    </p>
+
+    <div class="portal-grid">
+
+        <div class="portal-card">
+            <div class="portal-icon">👤</div>
+            <h2>Portal de Clientes</h2>
+            <p>Gestiona tus propiedades y reporta problemas de mantenimiento fácilmente.</p>
+            <div class="btns">
+                <a href="/auth/login" class="btn btn-primary">Iniciar Sesión</a>
+                <a href="/auth/register-cliente" class="btn btn-secondary">Crear Cuenta</a>
+            </div>
+        </div>
+
+        <div class="portal-card">
+            <div class="portal-icon">🔧</div>
+            <h2>Portal de Técnicos</h2>
+            <p>Recibe trabajos de mantenimiento y gestiona tus servicios en campo.</p>
+            <div class="btns">
+                <a href="/auth/login-tecnico" class="btn btn-primary" style="background: var(--text-1);">Entrar al Panel</a>
+                <a href="/auth/register-tecnico" class="btn btn-secondary">Aplicar como Técnico</a>
+            </div>
+        </div>
+
+    </div>
+
+    <p style="margin-top: 2.5rem; font-size: .8rem; color: var(--text-3);">
+        ¿Eres administrador? <a href="/auth/login-admin" style="color: var(--accent);">Acceso restringido →</a>
+    </p>
+
+</div>
+
+</body>
+</html>

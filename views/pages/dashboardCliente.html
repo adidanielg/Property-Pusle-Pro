@@ -1,0 +1,263 @@
+<%- include('../layouts/mainLayout.html') %>
+
+<div class="dashboard-layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-mark">🏢</div>
+            <div class="logo-text">Property<span>Pulse</span></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section">Panel</div>
+            <a class="nav-item active" href="/cliente/dashboard">
+                <span class="icon">📊</span> Dashboard
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-pill">
+                <div class="avatar"><%= cliente.username.charAt(0).toUpperCase() %></div>
+                <div class="user-info">
+                    <div class="name"><%= cliente.username %></div>
+                    <div class="role">Cliente</div>
+                </div>
+            </div>
+            <a href="/auth/logout" class="nav-item" style="color:var(--red)">
+                <span class="icon">🚪</span> Cerrar sesión
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main-content">
+
+        <div class="page-header">
+            <h1>Bienvenido, <%= cliente.username %> 👋</h1>
+            <p>Gestiona tus propiedades y reporta problemas de mantenimiento.</p>
+        </div>
+
+        <!-- Stats rápidas -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">🏠</div>
+                <div class="stat-label">Propiedades</div>
+                <div class="stat-value"><%= propiedades.length %></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🎫</div>
+                <div class="stat-label">Tickets totales</div>
+                <div class="stat-value"><%= tickets.length %></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-label">Pendientes</div>
+                <div class="stat-value"><%= tickets.filter(t => t.estado === 'pendiente').length %></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-label">Completados</div>
+                <div class="stat-value"><%= tickets.filter(t => t.estado === 'completado').length %></div>
+            </div>
+        </div>
+
+        <!-- Propiedades -->
+        <div class="section-header mb-3">
+            <h2>Mis Propiedades</h2>
+            <button class="btn btn-secondary btn-sm" onclick="abrirModal('propiedadModal')">+ Añadir</button>
+        </div>
+
+        <% if (propiedades.length === 0) { %>
+            <div class="card mb-4" style="text-align:center;padding:2.5rem;color:var(--text-2)">
+                <div style="font-size:2rem;margin-bottom:.75rem">🏠</div>
+                <p>No tienes propiedades registradas. Añade una para comenzar.</p>
+            </div>
+        <% } else { %>
+        <div class="cards-grid mb-4">
+            <% propiedades.forEach(function(prop) { %>
+            <div class="property-card">
+                <div class="flex-between mb-2">
+                    <span style="font-size:1.2rem">🏢</span>
+                    <div class="flex gap-1">
+                        <button class="btn btn-secondary btn-sm"
+                            data-id="<%= prop.id %>"
+                            data-dir="<%= prop.direccion %>"
+                            data-srv="<%= prop.servicios_contratados || '' %>"
+                            onclick="editarPropiedad(this)">Editar</button>
+                        <button class="btn btn-danger btn-sm" onclick="eliminarPropiedad('<%= prop.id %>')">Eliminar</button>
+                    </div>
+                </div>
+                <div class="fw-600 mb-1"><%= prop.direccion %></div>
+                <div class="text-small text-muted">
+                    <% if (prop.servicios_contratados) { %>
+                        📋 <%= prop.servicios_contratados %>
+                    <% } else { %>
+                        Sin servicios especificados
+                    <% } %>
+                </div>
+            </div>
+            <% }); %>
+        </div>
+        <% } %>
+
+        <!-- Tickets -->
+        <div class="section-header mb-3">
+            <h2>Historial de Reportes</h2>
+            <button class="btn btn-primary btn-sm" onclick="abrirModal('ticketModal')">+ Nuevo reporte</button>
+        </div>
+
+        <% if (tickets.length === 0) { %>
+            <div class="card" style="text-align:center;padding:2.5rem;color:var(--text-2)">
+                <div style="font-size:2rem;margin-bottom:.75rem">🎫</div>
+                <p>No has reportado ningún problema aún.</p>
+            </div>
+        <% } else { %>
+        <div class="cards-grid">
+            <% tickets.forEach(function(ticket) { %>
+            <div class="ticket-card">
+                <div class="ticket-header">
+                    <span class="badge badge-<%= ticket.estado %>"><%= ticket.estado.replace('_',' ') %></span>
+                    <span class="text-small text-muted"><%= new Date(ticket.created_at).toLocaleDateString('es') %></span>
+                </div>
+                <div class="ticket-title"><%= ticket.motivo %></div>
+                <div class="ticket-meta">📍 <%= ticket.propiedades ? ticket.propiedades.direccion : 'Propiedad eliminada' %></div>
+                <div class="ticket-desc"><%= ticket.descripcion %></div>
+                <% if (ticket.foto_url) { %>
+                    <a href="<%= ticket.foto_url %>" target="_blank" class="text-small" style="color:var(--accent)">📸 Ver foto</a>
+                <% } %>
+            </div>
+            <% }); %>
+        </div>
+        <% } %>
+
+    </main>
+</div>
+
+<!-- Modal: Nuevo Ticket -->
+<div id="ticketModal" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Nuevo Reporte</h2>
+            <button class="modal-close" onclick="cerrarModal('ticketModal')">✕</button>
+        </div>
+        <form id="ticketForm" onsubmit="enviarTicket(event)">
+            <div class="form-group">
+                <label class="form-label">Propiedad afectada</label>
+                <select name="propiedad_id" class="form-select" required>
+                    <option value="">Selecciona una propiedad...</option>
+                    <% propiedades.forEach(function(p) { %>
+                        <option value="<%= p.id %>"><%= p.direccion %></option>
+                    <% }); %>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Motivo</label>
+                <input type="text" name="motivo" class="form-input" placeholder="Ej. Fuga de agua en cocina" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Descripción</label>
+                <textarea name="descripcion" class="form-textarea" placeholder="Describe el problema con detalle..." required></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Foto (opcional)</label>
+                <input type="file" name="foto" accept="image/*" class="form-input">
+            </div>
+            <button type="submit" class="btn btn-primary btn-full" id="btnTicket">Enviar reporte</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Propiedad -->
+<div id="propiedadModal" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 id="propModalTitle">Añadir Propiedad</h2>
+            <button class="modal-close" onclick="cerrarModal('propiedadModal')">✕</button>
+        </div>
+        <form id="propiedadForm" onsubmit="guardarPropiedad(event)">
+            <input type="hidden" id="prop_id">
+            <div class="form-group">
+                <label class="form-label">Dirección completa</label>
+                <input type="text" id="prop_dir" name="direccion" class="form-input" placeholder="Ej. Av. Siempre Viva 742" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Servicios de interés (opcional)</label>
+                <input type="text" id="prop_srv" name="servicios_contratados" class="form-input" placeholder="Ej. Plomería, Electricidad">
+            </div>
+            <button type="submit" class="btn btn-primary btn-full" id="btnProp">Guardar</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // ── Modales ───────────────────────────────────────────────
+    function abrirModal(id)  { document.getElementById(id).classList.add('open'); }
+    function cerrarModal(id) { document.getElementById(id).classList.remove('open'); }
+
+    // Cerrar al hacer click fuera
+    document.querySelectorAll('.modal-overlay').forEach(el => {
+        el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+    });
+
+    // ── Propiedades ───────────────────────────────────────────
+    function editarPropiedad(btn) {
+        document.getElementById('propModalTitle').innerText = 'Editar Propiedad';
+        document.getElementById('prop_id').value  = btn.dataset.id;
+        document.getElementById('prop_dir').value = btn.dataset.dir;
+        document.getElementById('prop_srv').value = btn.dataset.srv !== 'null' ? btn.dataset.srv : '';
+        abrirModal('propiedadModal');
+    }
+
+    async function guardarPropiedad(e) {
+        e.preventDefault();
+        const id  = document.getElementById('prop_id').value;
+        const btn = document.getElementById('btnProp');
+        const body = JSON.stringify({
+            direccion:             document.getElementById('prop_dir').value,
+            servicios_contratados: document.getElementById('prop_srv').value
+        });
+
+        btn.disabled = true; btn.innerText = 'Guardando...';
+
+        try {
+            const res = await fetch(id ? `/cliente/propiedades/${id}` : '/cliente/propiedades', {
+                method:  id ? 'PUT' : 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body
+            });
+            const data = await res.json();
+            if (data.success) location.reload();
+            else alert('Error: ' + data.error);
+        } catch (err) { alert('Error de conexión'); }
+        finally { btn.disabled = false; btn.innerText = 'Guardar'; }
+    }
+
+    async function eliminarPropiedad(id) {
+        if (!confirm('¿Eliminar esta propiedad? También se eliminarán los tickets asociados.')) return;
+        try {
+            const res = await fetch(`/cliente/propiedades/${id}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (data.success) location.reload();
+            else alert('Error: ' + data.error);
+        } catch (err) { alert('Error de conexión'); }
+    }
+
+    // ── Tickets ───────────────────────────────────────────────
+    async function enviarTicket(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnTicket');
+        btn.disabled = true; btn.innerText = 'Enviando...';
+
+        try {
+            const res  = await fetch('/cliente/tickets', { method: 'POST', body: new FormData(e.target) });
+            const data = await res.json();
+            if (data.success) location.reload();
+            else alert('Error: ' + data.error);
+        } catch (err) { alert('Error de conexión'); }
+        finally { btn.disabled = false; btn.innerText = 'Enviar reporte'; }
+    }
+</script>
+
+</body>
+</html>

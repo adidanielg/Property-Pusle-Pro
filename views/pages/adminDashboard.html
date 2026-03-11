@@ -1,0 +1,119 @@
+<%- include('../layouts/mainLayout.html') %>
+
+<div class="dashboard-layout">
+
+    <aside class="sidebar" style="background:#0d0f14;border-color:#1a1d2e">
+        <div class="sidebar-logo">
+            <div class="logo-mark" style="background:#3b82f6">🛡️</div>
+            <div class="logo-text" style="color:#fff">Property<span>Pulse</span></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section" style="color:#5c6370">Panel</div>
+            <a class="nav-item active" href="/admin/dashboard"
+                style="color:#e2e8f0;--surface-2:#1a1d2e">
+                <span class="icon">📊</span> Centro de Control
+            </a>
+        </nav>
+
+        <div class="sidebar-footer" style="border-color:#1a1d2e">
+            <div class="user-pill">
+                <div class="avatar" style="background:#1e3a5f;color:#3b82f6">A</div>
+                <div class="user-info">
+                    <div class="name" style="color:#e2e8f0">Administrador</div>
+                    <div class="role">Admin</div>
+                </div>
+            </div>
+            <a href="/auth/logout" class="nav-item" style="color:#ef4444">
+                <span class="icon">🚪</span> Cerrar sesión
+            </a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <div class="page-header">
+            <h1>Centro de Control</h1>
+            <p>Métricas globales y supervisión del sistema.</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card" style="border-left:3px solid var(--accent)">
+                <div class="stat-icon">👥</div>
+                <div class="stat-label">Total Clientes</div>
+                <div class="stat-value"><%= metricas.totalClientes %></div>
+            </div>
+            <div class="stat-card" style="border-left:3px solid var(--green)">
+                <div class="stat-icon">🔧</div>
+                <div class="stat-label">Técnicos Activos</div>
+                <div class="stat-value"><%= metricas.totalTecnicos %></div>
+            </div>
+            <div class="stat-card" style="border-left:3px solid var(--yellow)">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-label">Tickets Abiertos</div>
+                <div class="stat-value"><%= metricas.ticketsAbiertos %></div>
+            </div>
+            <div class="stat-card" style="border-left:3px solid var(--green)">
+                <div class="stat-icon">✅</div>
+                <div class="stat-label">Tickets Resueltos</div>
+                <div class="stat-value"><%= metricas.ticketsResueltos %></div>
+            </div>
+        </div>
+
+        <!-- Tabla de tickets -->
+        <div class="section-header mb-3">
+            <h2>Últimos Tickets del Sistema</h2>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Dirección</th>
+                        <th>Motivo</th>
+                        <th>Estado</th>
+                        <th>Técnico</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (tickets.length === 0) { %>
+                        <tr>
+                            <td colspan="6" style="text-align:center;color:var(--text-2);padding:2rem">
+                                No hay tickets registrados aún.
+                            </td>
+                        </tr>
+                    <% } %>
+                    <% tickets.forEach(function(ticket) { %>
+                    <tr>
+                        <td class="fw-600">
+                            <%= ticket.companias ? ticket.companias.nombre_empresa || ticket.companias.nombre_contacto : '—' %>
+                        </td>
+                        <td class="text-muted text-small">
+                            <%= ticket.propiedades ? ticket.propiedades.direccion : '—' %>
+                        </td>
+                        <td><%= ticket.motivo %></td>
+                        <td>
+                            <span class="badge badge-<%= ticket.estado %>">
+                                <%= ticket.estado.replace('_', ' ') %>
+                            </span>
+                        </td>
+                        <td class="text-muted text-small">
+                            <%= ticket.tecnicos ? ticket.tecnicos.nombre : 'Sin asignar' %>
+                        </td>
+                        <td class="text-muted text-small">
+                            <%= new Date(ticket.created_at).toLocaleDateString('es') %>
+                        </td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+</div>
+
+</body>
+</html>

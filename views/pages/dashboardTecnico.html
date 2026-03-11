@@ -1,0 +1,136 @@
+<%- include('../layouts/mainLayout.html') %>
+
+<div class="dashboard-layout">
+
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-mark">🔧</div>
+            <div class="logo-text">Property<span>Pulse</span></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section">Panel</div>
+            <a class="nav-item active" href="/tecnico/dashboard">
+                <span class="icon">🔧</span> Mis trabajos
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-pill">
+                <div class="avatar" style="background:var(--green-soft);color:var(--green)">
+                    <%= tecnico.username.charAt(0).toUpperCase() %>
+                </div>
+                <div class="user-info">
+                    <div class="name"><%= tecnico.username %></div>
+                    <div class="role">Técnico</div>
+                </div>
+            </div>
+            <a href="/auth/logout" class="nav-item" style="color:var(--red)">
+                <span class="icon">🚪</span> Cerrar sesión
+            </a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <div class="page-header">
+            <h1>Hola, <%= tecnico.username %> 👋</h1>
+            <p>Aquí están los trabajos disponibles y tus servicios en curso.</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-label">Pendientes</div>
+                <div class="stat-value"><%= tickets.filter(t => t.estado === 'pendiente').length %></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🔄</div>
+                <div class="stat-label">En proceso</div>
+                <div class="stat-value"><%= tickets.filter(t => t.estado === 'en_proceso').length %></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-label">Completados</div>
+                <div class="stat-value"><%= tickets.filter(t => t.estado === 'completado').length %></div>
+            </div>
+        </div>
+
+        <div class="section-header mb-3">
+            <h2>Tickets disponibles y activos</h2>
+        </div>
+
+        <% if (tickets.length === 0) { %>
+            <div class="card" style="text-align:center;padding:3rem;color:var(--text-2)">
+                <div style="font-size:2rem;margin-bottom:.75rem">🎉</div>
+                <p>No hay tickets pendientes. ¡Buen trabajo!</p>
+            </div>
+        <% } else { %>
+        <div class="cards-grid">
+            <% tickets.forEach(function(ticket) { %>
+            <div class="ticket-card" id="ticket-<%= ticket.id %>">
+                <div class="ticket-header">
+                    <span class="badge badge-<%= ticket.estado %>" id="badge-<%= ticket.id %>">
+                        <%= ticket.estado.replace('_',' ') %>
+                    </span>
+                    <span class="text-small text-muted">
+                        <%= new Date(ticket.created_at).toLocaleDateString('es') %>
+                    </span>
+                </div>
+
+                <div class="ticket-title"><%= ticket.motivo %></div>
+
+                <div class="ticket-meta">
+                    🏢 <%= ticket.companias ? ticket.companias.nombre_empresa || ticket.companias.nombre_contacto : 'Cliente' %>
+                </div>
+                <div class="ticket-meta">
+                    📍 <%= ticket.propiedades ? ticket.propiedades.direccion : 'N/A' %>
+                </div>
+                <div class="ticket-desc"><%= ticket.descripcion %></div>
+
+                <div id="actions-<%= ticket.id %>">
+                    <% if (ticket.estado === 'pendiente') { %>
+                        <button class="btn btn-primary btn-full btn-sm"
+                            onclick="cambiarEstado('<%= ticket.id %>', 'en_proceso')">
+                            ✋ Aceptar trabajo
+                        </button>
+                    <% } else if (ticket.estado === 'en_proceso') { %>
+                        <button class="btn btn-success btn-full btn-sm"
+                            onclick="cambiarEstado('<%= ticket.id %>', 'completado')">
+                            ✅ Marcar completado
+                        </button>
+                    <% } else { %>
+                        <button class="btn btn-full btn-sm" disabled
+                            style="background:var(--surface-2);color:var(--text-3);cursor:not-allowed">
+                            Trabajo finalizado
+                        </button>
+                    <% } %>
+                </div>
+            </div>
+            <% }); %>
+        </div>
+        <% } %>
+
+    </main>
+</div>
+
+<script>
+    async function cambiarEstado(ticketId, nuevoEstado) {
+        try {
+            const res  = await fetch(`/tecnico/tickets/${ticketId}/estado`, {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ estado: nuevoEstado })
+            });
+            const data = await res.json();
+            if (data.success) location.reload();
+            else alert('Error: ' + data.error);
+        } catch (err) {
+            alert('Error de conexión');
+        }
+    }
+</script>
+
+</body>
+</html>
