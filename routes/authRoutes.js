@@ -53,6 +53,16 @@ router.post('/login', async (req, res) => {
             maxAge:   8 * 60 * 60 * 1000 // 8 horas
         });
 
+        // Sincronizar tema guardado en Supabase al browser
+        if (user?.theme) {
+            res.cookie('pp_theme', user.theme, {
+                httpOnly: false,
+                secure:   process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                maxAge:   365 * 24 * 60 * 60 * 1000
+            });
+        }
+
         // Sincronizar idioma guardado en Supabase al browser
         if (user?.lang) {
             res.cookie('pp_lang', user.lang, {
@@ -73,6 +83,37 @@ router.post('/login', async (req, res) => {
     } catch (err) {
         console.error('[LOGIN]', err.message);
         return res.status(401).render(vista, { error: err.message });
+    }
+});
+
+// ── POST /auth/set-theme ──────────────────────────────────────
+router.post('/set-theme', async (req, res) => {
+    try {
+        const jwt = require('jsonwebtoken');
+        const token = req.cookies?.jwt;
+        if (!token) return res.json({ success: false });
+
+        const decoded = jwt.verify(token, process.env.SESSION_SECRET);
+        const { theme } = req.body;
+        if (!['light', 'dark'].includes(theme)) return res.status(400).json({ error: 'Invalid theme' });
+
+        const supabase = require('../services/supabaseClient');
+        const table = decoded.role === 'tecnico' ? 'tecnicos' : 'companias';
+
+        if (decoded.role !== 'admin') {
+            await supabase.from(table).update({ theme }).eq('id', decoded.id);
+        }
+
+        res.cookie('pp_theme', theme, {
+            httpOnly: false,
+            secure:   process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge:   365 * 24 * 60 * 60 * 1000
+        });
+
+        res.json({ success: true });
+    } catch (err) {
+        res.json({ success: false });
     }
 });
 

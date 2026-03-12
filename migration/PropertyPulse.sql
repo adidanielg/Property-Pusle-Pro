@@ -44,6 +44,8 @@ CREATE TABLE IF NOT EXISTS propiedades (
     direccion             TEXT        NOT NULL,
     compania_id           UUID        NOT NULL REFERENCES companias(id) ON DELETE CASCADE,
     servicios_contratados TEXT,
+    lat                   DECIMAL(10,8),
+    lng                   DECIMAL(11,8),
     created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_propiedades_compania ON propiedades(compania_id);
@@ -86,8 +88,19 @@ ALTER TABLE tecnicos       DISABLE ROW LEVEL SECURITY;
 ALTER TABLE propiedades    DISABLE ROW LEVEL SECURITY;
 ALTER TABLE tickets        DISABLE ROW LEVEL SECURITY;
 ALTER TABLE calificaciones DISABLE ROW LEVEL SECURITY;
+
 -- Agregar columna lang a companias y tecnicos
 -- Ejecutar en: Supabase → SQL Editor → Run
 
 ALTER TABLE companias ADD COLUMN IF NOT EXISTS lang TEXT DEFAULT 'es' CHECK (lang IN ('es','en'));
 ALTER TABLE tecnicos  ADD COLUMN IF NOT EXISTS lang TEXT DEFAULT 'es' CHECK (lang IN ('es','en'));
+
+-- Agregar columna lang a companias y tecnicos
+-- Ejecutar en: Supabase → SQL Editor → Run
+
+ALTER TABLE companias ADD COLUMN IF NOT EXISTS lang TEXT DEFAULT 'es' CHECK (lang IN ('es','en'));
+ALTER TABLE tecnicos  ADD COLUMN IF NOT EXISTS lang TEXT DEFAULT 'es' CHECK (lang IN ('es','en'));
+
+-- Agregar columna theme a companias y tecnicos
+ALTER TABLE companias ADD COLUMN IF NOT EXISTS theme TEXT DEFAULT 'light' CHECK (theme IN ('light','dark'));
+ALTER TABLE tecnicos  ADD COLUMN IF NOT EXISTS theme TEXT DEFAULT 'light' CHECK (theme IN ('light','dark'));
