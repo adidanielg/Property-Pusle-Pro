@@ -5,24 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro Cliente | PropertyPulse</title>
     <link rel="stylesheet" href="/css/style.css">
-    <style>
-        .tipo-grid { display:grid; grid-template-columns:1fr 1fr; gap:.5rem; margin-top:.25rem; }
-        .tipo-btn {
-            padding:.7rem; border-radius:var(--radius-sm);
-            font-size:.875rem; font-weight:500; cursor:pointer;
-            transition:all .18s; text-align:center;
-            border:2px solid var(--border);
-            background:var(--surface); color:var(--text-2);
-        }
-        .tipo-btn.active {
-            border-color:var(--accent);
-            background:var(--accent-soft);
-            color:var(--accent); font-weight:700;
-        }
-        .tipo-btn:hover:not(.active) { background:var(--surface-2); color:var(--text-1); }
-    </style>
 </head>
 <body>
+<script src="/js/i18n.js"></script>
 
 <div class="auth-page" style="align-items:flex-start;padding-top:3rem">
     <div class="auth-card" style="max-width:520px;margin:0 auto">
@@ -30,121 +15,92 @@
         <div class="auth-logo">
             <div class="mark">🏢</div>
             <h1>Property<span>Pulse</span></h1>
-            <p>Crear cuenta de cliente</p>
+            <p data-i18n="reg.createAccount">Crear cuenta de cliente</p>
         </div>
 
         <form id="registerForm" onsubmit="registrar(event)">
 
             <div class="form-group">
-                <label class="form-label">Tipo de cuenta</label>
-                <div class="tipo-grid">
-                    <div class="tipo-btn active" id="tab_individual" onclick="setTipo('Individual')">
-                        👤 Individual
-                    </div>
-                    <div class="tipo-btn" id="tab_compania" onclick="setTipo('Compania')">
-                        🏢 Compañía
-                    </div>
-                </div>
-                <input type="hidden" name="tipo_cliente" id="tipo_cliente" value="Individual">
+                <label class="form-label" data-i18n="reg.accountType">Tipo de cuenta</label>
+                <select name="tipo_cliente" id="tipo_cliente" class="form-select" onchange="toggleEmpresa()">
+                    <option value="Individual" data-i18n="reg.individual">Cliente Individual</option>
+                    <option value="Compania" data-i18n="reg.company">Compañía / Empresa</option>
+                </select>
             </div>
 
             <div id="campo_empresa" class="form-group" style="display:none">
-                <label class="form-label">Nombre de la Empresa</label>
-                <input type="text" name="nombre_empresa" id="nombre_empresa"
-                    class="form-input" placeholder="Ej. Inmobiliaria Sur S.A.">
+                <label class="form-label" data-i18n="reg.companyName">Nombre de la Empresa</label>
+                <input type="text" name="nombre_empresa" id="nombre_empresa" class="form-input"
+                    data-i18n-placeholder="reg.companyPlaceholder"
+                    placeholder="Ej. Inmobiliaria Sur S.A.">
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">Nombre</label>
+                    <label class="form-label" data-i18n="reg.firstName">Nombre</label>
                     <input type="text" name="nombre" class="form-input" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Apellido</label>
+                    <label class="form-label" data-i18n="reg.lastName">Apellido</label>
                     <input type="text" name="apellido" class="form-input" required>
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">Email</label>
+                    <label class="form-label" data-i18n="reg.email">Email</label>
                     <input type="email" name="email" class="form-input" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Teléfono</label>
+                    <label class="form-label" data-i18n="reg.phone">Teléfono</label>
                     <input type="text" name="telefono" class="form-input" required>
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">Contraseña</label>
+                    <label class="form-label" data-i18n="reg.password">Contraseña</label>
                     <input type="password" name="password" class="form-input" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Confirmar contraseña</label>
+                    <label class="form-label" data-i18n="reg.confirmPassword">Confirmar contraseña</label>
                     <input type="password" name="confirm_password" class="form-input" required>
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-full mt-2" id="btnSubmit">
+            <button type="submit" class="btn btn-primary btn-full mt-2" id="btnSubmit" data-i18n="reg.createAccount">
                 Crear mi cuenta
             </button>
 
             <p class="text-small text-muted mt-2" style="text-align:center">
-                ¿Ya tienes cuenta? <a href="/auth/login" style="color:var(--accent);font-weight:600">Inicia sesión</a>
+                <span data-i18n="reg.haveAccount">¿Ya tienes cuenta?</span>
+                <a href="/auth/login" style="color:var(--accent);font-weight:600" data-i18n="reg.loginLink">Inicia sesión</a>
             </p>
         </form>
+
     </div>
 </div>
 
 <!-- Modal éxito -->
 <div id="successModal" class="modal-overlay">
-    <div class="modal" style="max-width:400px;text-align:center">
-        <div style="font-size:3rem;margin-bottom:1rem">🎉</div>
-        <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:.5rem">¡Cuenta creada!</h2>
-        <p style="color:#5c6370;margin-bottom:1rem;font-size:.9rem">
-            Guarda tu nombre de usuario para iniciar sesión:
-        </p>
-        <div id="usernameDisplay" style="
-            background:#ede9ff;
-            border:2px solid #6c63ff;
-            padding:1rem 1.5rem;
-            border-radius:10px;
-            font-size:1.35rem;
-            font-weight:700;
-            color:#6c63ff;
-            margin-bottom:.75rem;
-            letter-spacing:.05em;
-        "></div>
-        <p style="color:#9aa0ab;font-size:.8rem;margin-bottom:1.5rem">
-            📋 Cópialo — lo necesitarás para iniciar sesión
-        </p>
-        <a href="/auth/login" class="btn btn-primary btn-full">Ir a iniciar sesión →</a>
+    <div class="modal" style="text-align:center">
+        <div style="font-size:2.5rem;margin-bottom:1rem">🎉</div>
+        <h2 style="margin-bottom:.5rem" data-i18n="reg.successTitle">¡Cuenta creada!</h2>
+        <p class="text-muted mb-3" data-i18n="reg.successMsg">Guarda tu nombre de usuario para iniciar sesión:</p>
+        <div style="background:#ede9ff;border:2px solid #6c63ff;padding:1rem 1.5rem;border-radius:10px;font-size:1.35rem;font-weight:700;color:#6c63ff;margin-bottom:.75rem" id="usernameDisplay"></div>
+        <p class="text-small text-muted mb-3" data-i18n="reg.successHint">📋 Cópialo — lo necesitarás para iniciar sesión</p>
+        <a href="/auth/login" class="btn btn-primary btn-full" data-i18n="reg.goLogin">Ir a iniciar sesión →</a>
     </div>
 </div>
 
 <script>
-    function setTipo(tipo) {
-        document.getElementById('tipo_cliente').value = tipo;
-        const tabInd = document.getElementById('tab_individual');
-        const tabCom = document.getElementById('tab_compania');
-        const campo  = document.getElementById('campo_empresa');
-        const input  = document.getElementById('nombre_empresa');
-
-        if (tipo === 'Compania') {
-            tabCom.classList.add('active');
-            tabInd.classList.remove('active');
-            campo.style.display = 'block';
-            input.required = true;
-            input.focus();
-        } else {
-            tabInd.classList.add('active');
-            tabCom.classList.remove('active');
-            campo.style.display = 'none';
-            input.required = false;
-            input.value = '';
-        }
+    function toggleEmpresa() {
+        const tipo  = document.getElementById('tipo_cliente').value;
+        const campo = document.getElementById('campo_empresa');
+        const input = document.getElementById('nombre_empresa');
+        campo.style.display = tipo === 'Compania' ? 'block' : 'none';
+        input.required = tipo === 'Compania';
+        if (tipo !== 'Compania') input.value = '';
     }
 
     async function registrar(e) {
@@ -153,14 +109,13 @@
         const data = Object.fromEntries(new FormData(e.target));
         data.role  = 'cliente';
 
-        if (data.tipo_cliente === 'Compania' && !data.nombre_empresa?.trim()) {
-            alert('Ingresa el nombre de la empresa'); return;
-        }
         if (data.password !== data.confirm_password) {
-            alert('Las contraseñas no coinciden'); return;
+            alert(i18n.t('reg.passwordMismatch') || 'Las contraseñas no coinciden');
+            return;
         }
 
-        btn.disabled = true; btn.innerText = 'Creando cuenta...';
+        btn.disabled = true;
+        btn.textContent = i18n.t('reg.creating');
 
         try {
             const res    = await fetch('/auth/register', {
@@ -169,16 +124,18 @@
                 body:    JSON.stringify(data)
             });
             const result = await res.json();
+
             if (result.success) {
-                document.getElementById('usernameDisplay').innerText = result.username;
+                document.getElementById('usernameDisplay').textContent = result.username;
                 document.getElementById('successModal').classList.add('open');
             } else {
-                alert('Error: ' + (result.error || 'Error desconocido'));
+                alert('Error: ' + result.error);
             }
         } catch (err) {
             alert('Error de conexión');
         } finally {
-            btn.disabled = false; btn.innerText = 'Crear mi cuenta';
+            btn.disabled = false;
+            btn.textContent = i18n.t('reg.createAccount');
         }
     }
 </script>

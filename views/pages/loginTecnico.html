@@ -6,7 +6,7 @@
         <div class="auth-logo">
             <div class="mark">🔧</div>
             <h1>Property<span>Pulse</span></h1>
-            <p>Portal de Técnicos</p>
+            <p data-i18n="login.techPortal">Portal de Técnicos</p>
         </div>
 
         <% if (error) { %>
@@ -17,23 +17,25 @@
             <input type="hidden" name="role" value="tecnico">
 
             <div class="form-group">
-                <label class="form-label">Usuario</label>
-                <input type="text" name="username" class="form-input" placeholder="Tu nombre de usuario" required autofocus>
+                <label class="form-label" data-i18n="login.username">Usuario</label>
+                <input type="text" name="username" class="form-input" data-i18n-placeholder="login.username" placeholder="Tu nombre de usuario" required autofocus>
             </div>
 
             <div class="form-group">
-                <label class="form-label">Contraseña</label>
+                <label class="form-label" data-i18n="login.password">Contraseña</label>
                 <input type="password" name="password" class="form-input" placeholder="••••••••" required>
             </div>
 
-            <button type="submit" class="btn btn-full mt-2" style="background:var(--text-1);color:#fff">Ingresar</button>
+            <button type="submit" class="btn btn-full mt-2" style="background:var(--text-1);color:#fff" data-i18n="login.enter">Ingresar</button>
         </form>
 
         <p class="text-small text-muted mt-3" style="text-align:center">
-            ¿No tienes cuenta? <a href="/auth/register-tecnico" style="color:var(--accent);font-weight:600">Aplicar como técnico</a>
+            <span data-i18n="login.noAccount">¿No tienes cuenta?</span>
+            <a href="/auth/register-tecnico" style="color:var(--accent);font-weight:600" data-i18n="reg.applyTech">Aplicar como técnico</a>
         </p>
         <p class="text-small text-muted mt-1" style="text-align:center">
-            ¿Eres cliente? <a href="/auth/login" style="color:var(--accent)">Ingresa aquí</a>
+            <span data-i18n="login.areClient">¿Eres cliente?</span>
+            <a href="/auth/login" style="color:var(--accent)" data-i18n="login.enterHere">Ingresa aquí</a>
         </p>
 
     </div>

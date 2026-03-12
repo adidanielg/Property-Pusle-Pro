@@ -86,3 +86,8 @@ ALTER TABLE tecnicos       DISABLE ROW LEVEL SECURITY;
 ALTER TABLE propiedades    DISABLE ROW LEVEL SECURITY;
 ALTER TABLE tickets        DISABLE ROW LEVEL SECURITY;
 ALTER TABLE calificaciones DISABLE ROW LEVEL SECURITY;
+-- Agregar columna lang a companias y tecnicos
+-- Ejecutar en: Supabase → SQL Editor → Run
+
+ALTER TABLE companias ADD COLUMN IF NOT EXISTS lang TEXT DEFAULT 'es' CHECK (lang IN ('es','en'));
+ALTER TABLE tecnicos  ADD COLUMN IF NOT EXISTS lang TEXT DEFAULT 'es' CHECK (lang IN ('es','en'));

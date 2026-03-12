@@ -6,4 +6,8 @@
     <title><%= typeof title !== 'undefined' ? title : 'PropertyPulse' %></title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
-<body>
+<body
+    data-user-id="<%= typeof cliente !== 'undefined' && cliente ? cliente.id : typeof tecnico !== 'undefined' && tecnico ? tecnico.id : '' %>"
+    data-user-role="<%= typeof cliente !== 'undefined' && cliente ? 'cliente' : typeof tecnico !== 'undefined' && tecnico ? 'tecnico' : '' %>"
+>
+<script src="/js/i18n.js"></script>

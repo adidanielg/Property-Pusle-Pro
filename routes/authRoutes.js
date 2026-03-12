@@ -44,7 +44,7 @@ router.post('/login', async (req, res) => {
     try {
         if (!role) throw new Error('Rol no especificado');
 
-        const { token } = await authService.login(username, password, role);
+        const { token, user } = await authService.login(username, password, role);
 
         res.cookie('jwt', token, {
             httpOnly: true,
@@ -52,6 +52,16 @@ router.post('/login', async (req, res) => {
             sameSite: 'lax',
             maxAge:   8 * 60 * 60 * 1000 // 8 horas
         });
+
+        // Sincronizar idioma guardado en Supabase al browser
+        if (user?.lang) {
+            res.cookie('pp_lang', user.lang, {
+                httpOnly: false,
+                secure:   process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                maxAge:   365 * 24 * 60 * 60 * 1000
+            });
+        }
 
         const dashboards = {
             cliente: '/cliente/dashboard',
@@ -63,6 +73,29 @@ router.post('/login', async (req, res) => {
     } catch (err) {
         console.error('[LOGIN]', err.message);
         return res.status(401).render(vista, { error: err.message });
+    }
+});
+
+// ── POST /auth/set-lang ───────────────────────────────────────
+router.post('/set-lang', async (req, res) => {
+    try {
+        const jwt = require('jsonwebtoken');
+        const token = req.cookies?.jwt;
+        if (!token) return res.json({ success: false });
+
+        const decoded = jwt.verify(token, process.env.SESSION_SECRET);
+        const { lang } = req.body;
+        if (!['es', 'en'].includes(lang)) return res.status(400).json({ error: 'Invalid lang' });
+
+        const supabase = require('../services/supabaseClient');
+        const table = decoded.role === 'tecnico' ? 'tecnicos' : 'companias';
+
+        if (decoded.role !== 'admin') {
+            await supabase.from(table).update({ lang }).eq('id', decoded.id);
+        }
+        res.json({ success: true });
+    } catch (err) {
+        res.json({ success: false });
     }
 });
 

@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
+<script src="/js/i18n.js"></script>
 
 <div class="auth-page" style="align-items:flex-start;padding-top:3rem">
     <div class="auth-card" style="max-width:500px;margin:0 auto">
@@ -14,37 +15,37 @@
         <div class="auth-logo">
             <div class="mark">🔧</div>
             <h1>Property<span>Pulse</span></h1>
-            <p>Únete como técnico</p>
+            <p data-i18n="reg.applyTech">Únete como técnico</p>
         </div>
 
         <form id="registerForm" onsubmit="registrar(event)">
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">Nombre</label>
+                    <label class="form-label" data-i18n="reg.firstName">Nombre</label>
                     <input type="text" name="nombre" class="form-input" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Apellido</label>
+                    <label class="form-label" data-i18n="reg.lastName">Apellido</label>
                     <input type="text" name="apellido" class="form-input" required>
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">Email</label>
+                    <label class="form-label" data-i18n="reg.email">Email</label>
                     <input type="email" name="email" class="form-input" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Teléfono</label>
+                    <label class="form-label" data-i18n="reg.phone">Teléfono</label>
                     <input type="text" name="telefono" class="form-input" required>
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="form-label">Especialidad principal</label>
+                <label class="form-label" data-i18n="reg.specialty">Especialidad principal</label>
                 <select name="especialidad" class="form-select" required>
-                    <option value="">Selecciona una especialidad...</option>
+                    <option value="" data-i18n="reg.selectSpecialty">Selecciona una especialidad...</option>
                     <option value="Climatización (HVAC)">❄️ Climatización (HVAC)</option>
                     <option value="Electricidad">⚡ Electricidad</option>
                     <option value="Plomería">🔧 Plomería</option>
@@ -62,49 +63,37 @@
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">Contraseña</label>
+                    <label class="form-label" data-i18n="reg.password">Contraseña</label>
                     <input type="password" name="password" class="form-input" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Confirmar contraseña</label>
+                    <label class="form-label" data-i18n="reg.confirmPassword">Confirmar contraseña</label>
                     <input type="password" name="confirm_password" class="form-input" required>
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-full mt-2" style="background:var(--text-1);color:#fff" id="btnSubmit">
+            <button type="submit" class="btn btn-full mt-2" style="background:var(--text-1);color:#fff" id="btnSubmit" data-i18n="reg.register">
                 Registrarme
             </button>
 
             <p class="text-small text-muted mt-2" style="text-align:center">
-                ¿Ya tienes cuenta? <a href="/auth/login-tecnico" style="color:var(--accent);font-weight:600">Inicia sesión</a>
+                <span data-i18n="reg.haveAccount">¿Ya tienes cuenta?</span>
+                <a href="/auth/login-tecnico" style="color:var(--accent);font-weight:600" data-i18n="reg.loginLink">Inicia sesión</a>
             </p>
         </form>
+
     </div>
 </div>
 
 <!-- Modal éxito -->
 <div id="successModal" class="modal-overlay">
-    <div class="modal" style="max-width:400px;text-align:center">
-        <div style="font-size:3rem;margin-bottom:1rem">✅</div>
-        <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:.5rem">¡Registro exitoso!</h2>
-        <p style="color:#5c6370;margin-bottom:1rem;font-size:.9rem">
-            Guarda tu nombre de usuario para iniciar sesión:
-        </p>
-        <div id="usernameDisplay" style="
-            background:#ede9ff;
-            border:2px solid #6c63ff;
-            padding:1rem 1.5rem;
-            border-radius:10px;
-            font-size:1.35rem;
-            font-weight:700;
-            color:#6c63ff;
-            margin-bottom:.75rem;
-            letter-spacing:.05em;
-        "></div>
-        <p style="color:#9aa0ab;font-size:.8rem;margin-bottom:1.5rem">
-            📋 Cópialo — lo necesitarás para iniciar sesión
-        </p>
-        <a href="/auth/login-tecnico" class="btn btn-full" style="background:var(--text-1);color:#fff">Ir a iniciar sesión →</a>
+    <div class="modal" style="text-align:center">
+        <div style="font-size:2.5rem;margin-bottom:1rem">✅</div>
+        <h2 style="margin-bottom:.5rem" data-i18n="reg.successTechTitle">¡Registro exitoso!</h2>
+        <p class="text-muted mb-3" data-i18n="reg.successMsg">Guarda tu nombre de usuario para iniciar sesión:</p>
+        <div style="background:#ede9ff;border:2px solid #6c63ff;padding:1rem 1.5rem;border-radius:10px;font-size:1.35rem;font-weight:700;color:#6c63ff;margin-bottom:.75rem" id="usernameDisplay"></div>
+        <p class="text-small text-muted mb-3" data-i18n="reg.successHint">📋 Cópialo — lo necesitarás para iniciar sesión</p>
+        <a href="/auth/login-tecnico" class="btn btn-full" style="background:var(--text-1);color:#fff" data-i18n="reg.goLogin">Ir a iniciar sesión →</a>
     </div>
 </div>
 
@@ -116,10 +105,12 @@
         data.role  = 'tecnico';
 
         if (data.password !== data.confirm_password) {
-            alert('Las contraseñas no coinciden'); return;
+            alert('Las contraseñas no coinciden');
+            return;
         }
 
-        btn.disabled = true; btn.innerText = 'Procesando...';
+        btn.disabled = true;
+        btn.textContent = i18n.t('reg.processing');
 
         try {
             const res    = await fetch('/auth/register', {
@@ -128,16 +119,18 @@
                 body:    JSON.stringify(data)
             });
             const result = await res.json();
+
             if (result.success) {
-                document.getElementById('usernameDisplay').innerText = result.username;
+                document.getElementById('usernameDisplay').textContent = result.username;
                 document.getElementById('successModal').classList.add('open');
             } else {
-                alert('Error: ' + (result.error || 'Error desconocido'));
+                alert('Error: ' + result.error);
             }
         } catch (err) {
             alert('Error de conexión');
         } finally {
-            btn.disabled = false; btn.innerText = 'Registrarme';
+            btn.disabled = false;
+            btn.textContent = i18n.t('reg.register');
         }
     }
 </script>
