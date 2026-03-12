@@ -218,4 +218,16 @@ router.put('/perfil', async (req, res) => {
     }
 });
 
+
+// ── Limits: uso del plan actual ───────────────────────────────
+router.get('/limits', async (req, res) => {
+    try {
+        const { getLimits } = require('../services/planLimits');
+        const data = await getLimits(req.user.id);
+        res.json(data);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;

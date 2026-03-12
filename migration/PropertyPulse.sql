@@ -104,3 +104,8 @@ ALTER TABLE tecnicos  ADD COLUMN IF NOT EXISTS lang TEXT DEFAULT 'es' CHECK (lan
 -- Agregar columna theme a companias y tecnicos
 ALTER TABLE companias ADD COLUMN IF NOT EXISTS theme TEXT DEFAULT 'light' CHECK (theme IN ('light','dark'));
 ALTER TABLE tecnicos  ADD COLUMN IF NOT EXISTS theme TEXT DEFAULT 'light' CHECK (theme IN ('light','dark'));
+
+-- Agregar columna plan a companias 
+ALTER TABLE companias
+    ADD COLUMN IF NOT EXISTS plan TEXT DEFAULT 'starter'
+    CHECK (plan IN ('starter', 'pro', 'business'));
