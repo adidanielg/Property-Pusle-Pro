@@ -8,9 +8,9 @@
             <div class="logo-text">Property<span>Pulse</span></div>
         </div>
         <nav class="sidebar-nav">
-            <div class="nav-section">Panel</div>
+            <div class="nav-section" data-i18n="nav.dashboard">Panel</div>
             <a class="nav-item active" href="/tecnico/dashboard">
-                <span class="icon">🔧</span> Mis trabajos
+                <span class="icon">🔧</span> <span data-i18n="nav.myJobs">Mis trabajos</span>
             </a>
         </nav>
         <div class="sidebar-footer">
@@ -24,7 +24,7 @@
                 </div>
             </div>
             <a href="/auth/logout" class="nav-item" style="color:var(--red)">
-                <span class="icon">🚪</span> Cerrar sesión
+                <span class="icon">🚪</span> <span data-i18n="nav.logout">Cerrar sesión</span>
             </a>
         </div>
     </aside>
@@ -32,35 +32,35 @@
     <main class="main-content">
 
         <div class="page-header">
-            <h1>Hola, <%= tecnico.username %> 👋</h1>
-            <p>Aquí están los trabajos disponibles y tus servicios en curso.</p>
+            <h1><span data-i18n="tech.hello">Hola</span>, <%= tecnico.username %> 👋</h1>
+            <p data-i18n="tech.sub">Aquí están los trabajos disponibles y tus servicios en curso.</p>
         </div>
 
-        <!-- Stats + Rating -->
+        <!-- Stats -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon">⏳</div>
-                <div class="stat-label">Pendientes</div>
+                <div class="stat-label" data-i18n="tech.pending">Pendientes</div>
                 <div class="stat-value"><%= tickets.filter(t => t.estado === 'pendiente').length %></div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">🔄</div>
-                <div class="stat-label">En proceso</div>
+                <div class="stat-label" data-i18n="tech.inProgress">En proceso</div>
                 <div class="stat-value"><%= tickets.filter(t => t.estado === 'en_proceso').length %></div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">✅</div>
-                <div class="stat-label">Completados</div>
+                <div class="stat-label" data-i18n="tech.completed">Completados</div>
                 <div class="stat-value"><%= tickets.filter(t => t.estado === 'completado').length %></div>
             </div>
             <div class="stat-card" style="border-left:3px solid #f59e0b">
                 <div class="stat-icon">⭐</div>
-                <div class="stat-label">Mi calificación</div>
+                <div class="stat-label" data-i18n="tech.myRating">Mi calificación</div>
                 <div class="stat-value">
                     <% if (promedio) { %>
                         <%= promedio %> <span class="text-small text-muted fw-400">/ 5</span>
                     <% } else { %>
-                        <span class="text-muted text-small" style="font-size:1rem">Sin calificaciones</span>
+                        <span class="text-muted text-small" style="font-size:1rem" data-i18n="tech.noRatings">Sin calificaciones</span>
                     <% } %>
                 </div>
                 <% if (totalCalif > 0) { %>
@@ -71,13 +71,13 @@
 
         <!-- Tickets -->
         <div class="section-header mb-3">
-            <h2>Tickets disponibles y activos</h2>
+            <h2 data-i18n="tech.availableJobs">Tickets disponibles y activos</h2>
         </div>
 
         <% if (tickets.length === 0) { %>
             <div class="card" style="text-align:center;padding:3rem;color:var(--text-2)">
                 <div style="font-size:2rem;margin-bottom:.75rem">🎉</div>
-                <p>No hay tickets pendientes. ¡Buen trabajo!</p>
+                <p data-i18n="tech.noTickets">No hay tickets pendientes. ¡Buen trabajo!</p>
             </div>
         <% } else { %>
         <div class="cards-grid">
@@ -85,10 +85,12 @@
             <div class="ticket-card" id="ticket-<%= ticket.id %>">
                 <div class="ticket-header">
                     <span class="badge badge-<%= ticket.estado %>">
-                        <%= ticket.estado.replace('_',' ') %>
+                        <% if (ticket.estado === 'pendiente') { %><span data-i18n="badge.pending">Pendiente</span>
+                        <% } else if (ticket.estado === 'en_proceso') { %><span data-i18n="badge.inProgress">En proceso</span>
+                        <% } else { %><span data-i18n="badge.completed">Completado</span><% } %>
                     </span>
                     <span class="text-small text-muted">
-                        <%= new Date(ticket.created_at).toLocaleDateString('es') %>
+                        <%= new Date(ticket.created_at).toLocaleDateString() %>
                     </span>
                 </div>
                 <% if (ticket.categoria) { %>
@@ -109,17 +111,17 @@
                 <div id="actions-<%= ticket.id %>">
                     <% if (ticket.estado === 'pendiente') { %>
                         <button class="btn btn-primary btn-full btn-sm"
-                            onclick="cambiarEstado('<%= ticket.id %>', 'en_proceso')">
+                            onclick="cambiarEstado('<%= ticket.id %>', 'en_proceso')" data-i18n="tech.accept">
                             ✋ Aceptar trabajo
                         </button>
                     <% } else if (ticket.estado === 'en_proceso') { %>
                         <button class="btn btn-success btn-full btn-sm"
-                            onclick="cambiarEstado('<%= ticket.id %>', 'completado')">
+                            onclick="cambiarEstado('<%= ticket.id %>', 'completado')" data-i18n="tech.markDone">
                             ✅ Marcar completado
                         </button>
                     <% } else { %>
                         <button class="btn btn-full btn-sm" disabled
-                            style="background:var(--surface-2);color:var(--text-3);cursor:not-allowed">
+                            style="background:var(--surface-2);color:var(--text-3);cursor:not-allowed" data-i18n="tech.finished">
                             Trabajo finalizado
                         </button>
                     <% } %>
@@ -132,8 +134,11 @@
         <!-- Calificaciones recibidas -->
         <% if (calificaciones.length > 0) { %>
         <div class="section-header mb-3 mt-4">
-            <h2>⭐ Mis calificaciones</h2>
-            <span class="text-muted text-small">Promedio: <strong style="color:#f59e0b"><%= promedio %>/5</strong></span>
+            <h2 data-i18n="tech.myRatings">⭐ Mis calificaciones</h2>
+            <span class="text-muted text-small">
+                <span data-i18n="tech.average">Promedio</span>:
+                <strong style="color:#f59e0b"><%= promedio %>/5</strong>
+            </span>
         </div>
         <div class="cards-grid">
             <% calificaciones.forEach(function(c) { %>
@@ -142,7 +147,7 @@
                     <div style="color:#f59e0b;font-size:1.2rem;letter-spacing:2px">
                         <% for(var i=1; i<=5; i++) { %><%= i <= c.estrellas ? '★' : '☆' %><% } %>
                     </div>
-                    <span class="text-small text-muted"><%= new Date(c.created_at).toLocaleDateString('es') %></span>
+                    <span class="text-small text-muted"><%= new Date(c.created_at).toLocaleDateString() %></span>
                 </div>
                 <div class="fw-600 text-small mb-1">
                     <%= c.companias ? c.companias.nombre_empresa !== 'Individual' ? c.companias.nombre_empresa : c.companias.nombre_contacto : 'Cliente' %>

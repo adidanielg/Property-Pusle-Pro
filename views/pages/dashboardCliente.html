@@ -8,9 +8,9 @@
             <div class="logo-text">Property<span>Pulse</span></div>
         </div>
         <nav class="sidebar-nav">
-            <div class="nav-section">Panel</div>
+            <div class="nav-section" data-i18n="nav.dashboard">Panel</div>
             <a class="nav-item active" href="/cliente/dashboard">
-                <span class="icon">📊</span> Dashboard
+                <span class="icon">📊</span> <span data-i18n="nav.dashboard">Dashboard</span>
             </a>
         </nav>
         <div class="sidebar-footer">
@@ -22,7 +22,7 @@
                 </div>
             </div>
             <a href="/auth/logout" class="nav-item" style="color:var(--red)">
-                <span class="icon">🚪</span> Cerrar sesión
+                <span class="icon">🚪</span> <span data-i18n="nav.logout">Cerrar sesión</span>
             </a>
         </div>
     </aside>
@@ -30,44 +30,44 @@
     <main class="main-content">
 
         <div class="page-header">
-            <h1>Bienvenido, <%= cliente.username %> 👋</h1>
-            <p>Gestiona tus propiedades y reporta problemas de mantenimiento.</p>
+            <h1><span data-i18n="dash.hello">Bienvenido</span>, <%= cliente.username %> 👋</h1>
+            <p data-i18n="dash.clientSub">Gestiona tus propiedades y reporta problemas de mantenimiento.</p>
         </div>
 
         <!-- Stats -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon">🏠</div>
-                <div class="stat-label">Propiedades</div>
+                <div class="stat-label" data-i18n="dash.properties">Propiedades</div>
                 <div class="stat-value"><%= propiedades.length %></div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">🎫</div>
-                <div class="stat-label">Tickets totales</div>
+                <div class="stat-label" data-i18n="dash.myTickets">Tickets totales</div>
                 <div class="stat-value"><%= tickets.length %></div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">⏳</div>
-                <div class="stat-label">Pendientes</div>
+                <div class="stat-label" data-i18n="tech.pending">Pendientes</div>
                 <div class="stat-value"><%= tickets.filter(t => t.estado === 'pendiente').length %></div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">✅</div>
-                <div class="stat-label">Completados</div>
+                <div class="stat-label" data-i18n="dash.completed">Completados</div>
                 <div class="stat-value"><%= tickets.filter(t => t.estado === 'completado').length %></div>
             </div>
         </div>
 
         <!-- Propiedades -->
         <div class="section-header mb-3">
-            <h2>Mis Propiedades</h2>
-            <button class="btn btn-secondary btn-sm" onclick="abrirModal('propiedadModal')">+ Añadir</button>
+            <h2 data-i18n="dash.myProperties">Mis Propiedades</h2>
+            <button class="btn btn-secondary btn-sm" onclick="abrirModal('propiedadModal')" data-i18n="dash.addProperty">+ Añadir</button>
         </div>
 
         <% if (propiedades.length === 0) { %>
             <div class="card mb-4" style="text-align:center;padding:2.5rem;color:var(--text-2)">
                 <div style="font-size:2rem;margin-bottom:.75rem">🏠</div>
-                <p>No tienes propiedades registradas. Añade una para comenzar.</p>
+                <p data-i18n="dash.noProperties">No tienes propiedades registradas. Añade una para comenzar.</p>
             </div>
         <% } else { %>
         <div class="cards-grid mb-4">
@@ -80,9 +80,9 @@
                             data-id="<%= prop.id %>"
                             data-dir="<%= prop.direccion %>"
                             data-srv="<%= prop.servicios_contratados || '' %>"
-                            onclick="editarPropiedad(this)">Editar</button>
+                            onclick="editarPropiedad(this)" data-i18n="dash.edit">Editar</button>
                         <button class="btn btn-danger btn-sm"
-                            onclick="eliminarPropiedad('<%= prop.id %>')">Eliminar</button>
+                            onclick="eliminarPropiedad('<%= prop.id %>')" data-i18n="dash.delete">Eliminar</button>
                     </div>
                 </div>
                 <div class="fw-600 mb-1"><%= prop.direccion %></div>
@@ -90,7 +90,7 @@
                     <% if (prop.servicios_contratados) { %>
                         📋 <%= prop.servicios_contratados %>
                     <% } else { %>
-                        Sin servicios especificados
+                        <span data-i18n="dash.noTickets">Sin servicios especificados</span>
                     <% } %>
                 </div>
             </div>
@@ -100,27 +100,29 @@
 
         <!-- Tickets -->
         <div class="section-header mb-3">
-            <h2>Historial de Reportes</h2>
-            <button class="btn btn-primary btn-sm" onclick="abrirModal('ticketModal')">+ Nuevo reporte</button>
+            <h2 data-i18n="dash.myTickets">Historial de Reportes</h2>
+            <button class="btn btn-primary btn-sm" onclick="abrirModal('ticketModal')" data-i18n="dash.newTicket">+ Nuevo reporte</button>
         </div>
 
         <% if (tickets.length === 0) { %>
             <div class="card" style="text-align:center;padding:2.5rem;color:var(--text-2)">
                 <div style="font-size:2rem;margin-bottom:.75rem">🎫</div>
-                <p>No has reportado ningún problema aún.</p>
+                <p data-i18n="dash.noTickets">No has reportado ningún problema aún.</p>
             </div>
         <% } else { %>
         <div class="cards-grid">
             <% tickets.forEach(function(ticket) { %>
             <div class="ticket-card">
                 <div class="ticket-header">
-                    <span class="badge badge-<%= ticket.estado %>"><%= ticket.estado.replace('_',' ') %></span>
-                    <span class="text-small text-muted"><%= new Date(ticket.created_at).toLocaleDateString('es') %></span>
+                    <span class="badge badge-<%= ticket.estado %>">
+                        <% if (ticket.estado === 'pendiente') { %><span data-i18n="badge.pending">Pendiente</span>
+                        <% } else if (ticket.estado === 'en_proceso') { %><span data-i18n="badge.inProgress">En proceso</span>
+                        <% } else { %><span data-i18n="badge.completed">Completado</span><% } %>
+                    </span>
+                    <span class="text-small text-muted"><%= new Date(ticket.created_at).toLocaleDateString() %></span>
                 </div>
                 <% if (ticket.categoria) { %>
-                    <div class="text-small mb-1" style="color:var(--accent);font-weight:600">
-                        🏷️ <%= ticket.categoria %>
-                    </div>
+                    <div class="text-small mb-1" style="color:var(--accent);font-weight:600">🏷️ <%= ticket.categoria %></div>
                 <% } %>
                 <div class="ticket-title"><%= ticket.motivo %></div>
                 <div class="ticket-meta">📍 <%= ticket.propiedades ? ticket.propiedades.direccion : 'Propiedad eliminada' %></div>
@@ -136,11 +138,11 @@
                     <button class="btn btn-primary btn-full btn-sm mt-2"
                         data-ticket="<%= ticket.id %>"
                         data-tecnico="<%= ticket.tecnicos ? ticket.tecnicos.nombre : 'el técnico' %>"
-                        onclick="abrirCalificar(this)">
+                        onclick="abrirCalificar(this)" data-i18n="dash.rate">
                         ⭐ Calificar servicio
                     </button>
                 <% } else if (ticket.estado === 'completado' && ticketsCalificados.has(ticket.id)) { %>
-                    <div class="text-small mt-2" style="color:var(--green);font-weight:600">✅ Servicio calificado</div>
+                    <div class="text-small mt-2" style="color:var(--green);font-weight:600" data-i18n="dash.rated">✅ Servicio calificado</div>
                 <% } %>
             </div>
             <% }); %>
@@ -154,13 +156,12 @@
 <div id="ticketModal" class="modal-overlay">
     <div class="modal">
         <div class="modal-header">
-            <h2>Nuevo Reporte</h2>
+            <h2 data-i18n="dash.newTicket">Nuevo Reporte</h2>
             <button class="modal-close" onclick="cerrarModal('ticketModal')">✕</button>
         </div>
         <form id="ticketForm" onsubmit="enviarTicket(event)">
-
             <div class="form-group">
-                <label class="form-label">Propiedad afectada</label>
+                <label class="form-label" data-i18n="dash.property">Propiedad afectada</label>
                 <select name="propiedad_id" class="form-select" required>
                     <option value="">Selecciona una propiedad...</option>
                     <% propiedades.forEach(function(p) { %>
@@ -168,32 +169,27 @@
                     <% }); %>
                 </select>
             </div>
-
             <div class="form-group">
-                <label class="form-label">Categoría</label>
+                <label class="form-label" data-i18n="dash.category">Categoría</label>
                 <select name="categoria" id="selectCategoria" class="form-select" required onchange="actualizarMotivos()">
                     <option value="">Selecciona una categoría...</option>
                 </select>
             </div>
-
             <div class="form-group">
-                <label class="form-label">Motivo</label>
+                <label class="form-label" data-i18n="dash.reason">Motivo</label>
                 <select name="motivo" id="selectMotivo" class="form-select" required disabled>
                     <option value="">Primero selecciona una categoría...</option>
                 </select>
             </div>
-
             <div class="form-group">
-                <label class="form-label">Descripción</label>
+                <label class="form-label" data-i18n="dash.description">Descripción</label>
                 <textarea name="descripcion" class="form-textarea" placeholder="Describe el problema con más detalle..." required></textarea>
             </div>
-
             <div class="form-group">
-                <label class="form-label">Foto (opcional)</label>
+                <label class="form-label" data-i18n="dash.photo">Foto (opcional)</label>
                 <input type="file" name="foto" accept="image/*" class="form-input">
             </div>
-
-            <button type="submit" class="btn btn-primary btn-full" id="btnTicket">Enviar reporte</button>
+            <button type="submit" class="btn btn-primary btn-full" id="btnTicket" data-i18n="dash.submit">Enviar reporte</button>
         </form>
     </div>
 </div>
@@ -202,20 +198,20 @@
 <div id="propiedadModal" class="modal-overlay">
     <div class="modal">
         <div class="modal-header">
-            <h2 id="propModalTitle">Añadir Propiedad</h2>
+            <h2 id="propModalTitle" data-i18n="dash.addProperty">Añadir Propiedad</h2>
             <button class="modal-close" onclick="cerrarModal('propiedadModal')">✕</button>
         </div>
         <form id="propiedadForm" onsubmit="guardarPropiedad(event)">
             <input type="hidden" id="prop_id">
             <div class="form-group">
-                <label class="form-label">Dirección completa</label>
+                <label class="form-label" data-i18n="dash.address">Dirección completa</label>
                 <input type="text" id="prop_dir" name="direccion" class="form-input" placeholder="Ej. Av. Siempre Viva 742" required>
             </div>
             <div class="form-group">
-                <label class="form-label">Servicios de interés (opcional)</label>
+                <label class="form-label" data-i18n="dash.services">Servicios de interés (opcional)</label>
                 <input type="text" id="prop_srv" name="servicios_contratados" class="form-input" placeholder="Ej. Plomería, Electricidad">
             </div>
-            <button type="submit" class="btn btn-primary btn-full" id="btnProp">Guardar</button>
+            <button type="submit" class="btn btn-primary btn-full" id="btnProp" data-i18n="dash.save">Guardar</button>
         </form>
     </div>
 </div>
@@ -250,17 +246,12 @@
 </div>
 
 <style>
-    .star-rating {
-        display:flex; justify-content:center;
-        gap:.5rem; font-size:2.5rem;
-        margin-bottom:.5rem; cursor:pointer;
-    }
+    .star-rating { display:flex; justify-content:center; gap:.5rem; font-size:2.5rem; margin-bottom:.5rem; cursor:pointer; }
     .star { color:var(--surface-2); transition:color .15s; }
     .star.active { color:#f59e0b; }
 </style>
 
 <script>
-    // ── Catálogo de motivos ───────────────────────────────────
     const MOTIVOS = {
         "Climatización (HVAC)": ["Aire acondicionado no enfría","Aire acondicionado no enciende","Fuga de agua del A/C","Cambio de filtro de aire","Termostato dañado","Calefacción no funciona","Ruido en el sistema HVAC","Mantenimiento preventivo HVAC"],
         "Electricidad": ["Corte de electricidad en área específica","Interruptor (breaker) disparado","Enchufe no funciona","Luz no enciende","Luces parpadeando","Instalación de lámpara","Problema con ventilador de techo","Problema con panel eléctrico"],
@@ -276,7 +267,6 @@
         "General": ["Inspección general","Mantenimiento preventivo","Reparación menor","Otro problema"]
     };
 
-    // Poblar categorías al cargar
     const selCat = document.getElementById('selectCategoria');
     Object.keys(MOTIVOS).forEach(cat => {
         const opt = document.createElement('option');
@@ -284,13 +274,11 @@
         selCat.appendChild(opt);
     });
 
-    // Actualizar motivos al cambiar categoría
     function actualizarMotivos() {
-        const cat     = selCat.value;
-        const selMot  = document.getElementById('selectMotivo');
+        const cat    = selCat.value;
+        const selMot = document.getElementById('selectMotivo');
         selMot.innerHTML = '<option value="">Selecciona un motivo...</option>';
         selMot.disabled  = !cat;
-
         if (cat && MOTIVOS[cat]) {
             MOTIVOS[cat].forEach(m => {
                 const opt = document.createElement('option');
@@ -300,7 +288,6 @@
         }
     }
 
-    // ── Modales ───────────────────────────────────────────────
     function abrirModal(id)  { document.getElementById(id).classList.add('open'); }
     function cerrarModal(id) { document.getElementById(id).classList.remove('open'); }
 
@@ -308,7 +295,6 @@
         el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
     });
 
-    // ── Estrellas ─────────────────────────────────────────────
     let estrellasSeleccionadas = 0;
     const etiquetas = ['','Muy malo','Malo','Regular','Bueno','Excelente'];
 
@@ -320,22 +306,22 @@
 
     function actualizarEstrellas(val) {
         document.querySelectorAll('.star').forEach(s => s.classList.toggle('active', parseInt(s.dataset.val) <= val));
-        document.getElementById('starLabel').innerText = val > 0 ? etiquetas[val] : '';
+        document.getElementById('starLabel').textContent = val > 0 ? etiquetas[val] : '';
     }
 
     function abrirCalificar(btn) {
         estrellasSeleccionadas = 0;
         actualizarEstrellas(0);
-        document.getElementById('cal_ticket_id').value        = btn.dataset.ticket;
-        document.getElementById('cal_comentario').value       = '';
-        document.getElementById('calificarSubtitulo').innerText = `Técnico: ${btn.dataset.tecnico}`;
+        document.getElementById('cal_ticket_id').value         = btn.dataset.ticket;
+        document.getElementById('cal_comentario').value        = '';
+        document.getElementById('calificarSubtitulo').textContent = `Técnico: ${btn.dataset.tecnico}`;
         abrirModal('calificarModal');
     }
 
     async function enviarCalificacion() {
         if (estrellasSeleccionadas === 0) { alert('Selecciona al menos una estrella'); return; }
         const btn = document.getElementById('btnCalificar');
-        btn.disabled = true; btn.innerText = 'Enviando...';
+        btn.disabled = true; btn.textContent = i18n.t('dash.sending');
         try {
             const res  = await fetch('/cliente/calificar', {
                 method:  'POST',
@@ -350,12 +336,11 @@
             if (data.success) location.reload();
             else alert('Error: ' + data.error);
         } catch (err) { alert('Error de conexión'); }
-        finally { btn.disabled = false; btn.innerText = 'Enviar calificación'; }
+        finally { btn.disabled = false; btn.textContent = 'Enviar calificación'; }
     }
 
-    // ── Propiedades ───────────────────────────────────────────
     function editarPropiedad(btn) {
-        document.getElementById('propModalTitle').innerText = 'Editar Propiedad';
+        document.getElementById('propModalTitle').textContent = i18n.t('dash.edit') + ' Propiedad';
         document.getElementById('prop_id').value  = btn.dataset.id;
         document.getElementById('prop_dir').value = btn.dataset.dir;
         document.getElementById('prop_srv').value = btn.dataset.srv !== 'null' ? btn.dataset.srv : '';
@@ -366,7 +351,7 @@
         e.preventDefault();
         const id  = document.getElementById('prop_id').value;
         const btn = document.getElementById('btnProp');
-        btn.disabled = true; btn.innerText = 'Guardando...';
+        btn.disabled = true; btn.textContent = i18n.t('dash.sending');
         try {
             const res = await fetch(id ? `/cliente/propiedades/${id}` : '/cliente/propiedades', {
                 method:  id ? 'PUT' : 'POST',
@@ -380,7 +365,7 @@
             if (data.success) location.reload();
             else alert('Error: ' + data.error);
         } catch (err) { alert('Error de conexión'); }
-        finally { btn.disabled = false; btn.innerText = 'Guardar'; }
+        finally { btn.disabled = false; btn.textContent = i18n.t('dash.save'); }
     }
 
     async function eliminarPropiedad(id) {
@@ -393,18 +378,17 @@
         } catch (err) { alert('Error de conexión'); }
     }
 
-    // ── Tickets ───────────────────────────────────────────────
     async function enviarTicket(e) {
         e.preventDefault();
         const btn = document.getElementById('btnTicket');
-        btn.disabled = true; btn.innerText = 'Enviando...';
+        btn.disabled = true; btn.textContent = i18n.t('dash.sending');
         try {
             const res  = await fetch('/cliente/tickets', { method: 'POST', body: new FormData(e.target) });
             const data = await res.json();
             if (data.success) location.reload();
             else alert('Error: ' + data.error);
         } catch (err) { alert('Error de conexión'); }
-        finally { btn.disabled = false; btn.innerText = 'Enviar reporte'; }
+        finally { btn.disabled = false; btn.textContent = i18n.t('dash.submit'); }
     }
 </script>
 
