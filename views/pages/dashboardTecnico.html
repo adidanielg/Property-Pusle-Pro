@@ -113,15 +113,33 @@
 
                 <div id="actions-<%= ticket.id %>">
                     <% if (ticket.estado === 'pendiente') { %>
-                        <button class="btn btn-primary btn-full btn-sm"
-                            onclick="cambiarEstado('<%= ticket.id %>', 'en_proceso')" data-i18n="tech.accept">
-                            ✋ Aceptar trabajo
-                        </button>
+                        <div class="flex gap-1">
+                            <button class="btn btn-primary btn-sm" style="flex:2"
+                                onclick="cambiarEstado('<%= ticket.id %>', 'en_proceso')" data-i18n="tech.accept">
+                                ✋ Aceptar trabajo
+                            </button>
+                            <button class="btn btn-danger btn-sm" style="flex:1"
+                                onclick="cancelarTrabajo('<%= ticket.id %>')">
+                                ❌
+                            </button>
+                        </div>
                     <% } else if (ticket.estado === 'en_proceso') { %>
-                        <button class="btn btn-success btn-full btn-sm"
-                            onclick="cambiarEstado('<%= ticket.id %>', 'completado')" data-i18n="tech.markDone">
-                            ✅ Marcar completado
-                        </button>
+                        <div class="flex gap-1 mb-2">
+                            <button class="btn btn-success btn-sm" style="flex:2"
+                                onclick="cambiarEstado('<%= ticket.id %>', 'completado')" data-i18n="tech.markDone">
+                                ✅ Completado
+                            </button>
+                            <button class="btn btn-sm" style="flex:1;background:var(--blue-soft);color:var(--blue);border:none"
+                                data-ticket-id="<%= ticket.id %>"
+                                data-ticket-titulo="<%= ticket.motivo %>"
+                                onclick="abrirChatTec(this.dataset.ticketId, this.dataset.ticketTitulo)">
+                                💬
+                            </button>
+                            <button class="btn btn-danger btn-sm" style="flex:1"
+                                onclick="cancelarTrabajo('<%= ticket.id %>')">
+                                ❌
+                            </button>
+                        </div>
                     <% } else { %>
                         <button class="btn btn-full btn-sm" disabled
                             style="background:var(--surface-2);color:var(--text-3);cursor:not-allowed" data-i18n="tech.finished">
@@ -202,7 +220,9 @@
                         <option value="Electrodomésticos">🏠 Electrodomésticos</option>
                         <option value="Estructura / Reparaciones">🏗️ Estructura / Reparaciones</option>
                         <option value="Seguridad">🔒 Seguridad</option>
-                        <option value="General">🛠️ Mantenimiento General</option>
+                        <option value="Bajo voltaje / Cámaras">📹 Bajo voltaje / Cámaras</option>
+                        <option value="Handyman">🛠️ Handyman</option>
+                        <option value="General">🔨 Mantenimiento General</option>
                     </select>
                 </div>
 
@@ -233,6 +253,44 @@
         </div>
 
     </main>
+</div>
+
+<!-- ── Modal: Cancelar trabajo (técnico) ─────────────────── -->
+<div id="cancelTecModal" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>❌ Cancelar trabajo</h2>
+            <button class="modal-close" onclick="cerrarModal('cancelTecModal')">✕</button>
+        </div>
+        <p class="text-muted text-small mb-3">El cliente será notificado y el ticket volverá a estar disponible para otros técnicos.</p>
+        <div class="form-group">
+            <label class="form-label">Motivo (opcional)</label>
+            <textarea id="cancelTecMotivo" class="form-textarea" placeholder="¿Por qué cancelas este trabajo?" rows="3"></textarea>
+        </div>
+        <div style="display:flex;gap:.75rem">
+            <button class="btn btn-secondary" style="flex:1" onclick="cerrarModal('cancelTecModal')">Volver</button>
+            <button class="btn btn-danger" style="flex:1" onclick="confirmarCancelacionTec()">Sí, cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Modal: Chat (técnico) ──────────────────────────────── -->
+<div id="chatTecModal" class="modal-overlay">
+    <div class="modal" style="max-width:480px">
+        <div class="modal-header">
+            <h2>💬 Chat — <span id="chatTecTitulo" style="color:var(--accent);font-size:.9rem"></span></h2>
+            <button class="modal-close" onclick="cerrarChatTec()">✕</button>
+        </div>
+        <div id="chatTecMensajes" style="height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:.6rem;padding:.5rem 0;margin-bottom:1rem">
+            <div style="text-align:center;color:var(--text-3);font-size:.82rem;padding:2rem 0">Cargando mensajes...</div>
+        </div>
+        <div style="display:flex;gap:.5rem">
+            <input type="text" id="chatTecInput" class="form-input" placeholder="Escribe un mensaje..."
+                onkeydown="if(event.key==='Enter')enviarMensajeTec()" style="flex:1">
+            <button class="btn btn-primary" onclick="enviarMensajeTec()" style="padding:.65rem 1rem">→</button>
+        </div>
+        <p class="text-small text-muted mt-2" style="font-size:.75rem">Mensajes visibles para ti y el cliente. Se borran al cerrar.</p>
+    </div>
 </div>
 
 <script>
@@ -306,6 +364,91 @@
     }
 
     cargarPerfil();
+
+    // ── Cancelar trabajo (técnico) ────────────────────────────
+    let tecTicketACancelar = null;
+
+    function cancelarTrabajo(id) {
+        tecTicketACancelar = id;
+        document.getElementById('cancelTecMotivo').value = '';
+        document.getElementById('cancelTecModal').classList.add('open');
+    }
+
+    async function confirmarCancelacionTec() {
+        if (!tecTicketACancelar) return;
+        const motivo = document.getElementById('cancelTecMotivo').value;
+        try {
+            const res  = await fetch(`/tecnico/tickets/${tecTicketACancelar}/cancelar`, {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ motivo })
+            });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('cancelTecModal').classList.remove('open');
+                showToast('❌ Trabajo cancelado');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showToast('Error: ' + data.error);
+            }
+        } catch (e) { showToast('Error de conexión'); }
+    }
+
+    // ── Chat (técnico) ────────────────────────────────────────
+    let chatTecTicketId  = null;
+    let chatTecPollTimer = null;
+
+    function abrirChatTec(ticketId, titulo) {
+        chatTecTicketId = ticketId;
+        document.getElementById('chatTecTitulo').textContent = titulo;
+        document.getElementById('chatTecMensajes').innerHTML =
+            '<div style="text-align:center;color:var(--text-3);font-size:.82rem;padding:2rem 0">Cargando...</div>';
+        document.getElementById('chatTecModal').classList.add('open');
+        cargarMensajesTec();
+        chatTecPollTimer = setInterval(cargarMensajesTec, 5000);
+    }
+
+    function cerrarChatTec() {
+        document.getElementById('chatTecModal').classList.remove('open');
+        clearInterval(chatTecPollTimer);
+        chatTecTicketId = null;
+    }
+
+    async function cargarMensajesTec() {
+        if (!chatTecTicketId) return;
+        try {
+            const res  = await fetch(`/tecnico/tickets/${chatTecTicketId}/mensajes`);
+            const data = await res.json();
+            const box  = document.getElementById('chatTecMensajes');
+            if (!data.mensajes?.length) {
+                box.innerHTML = '<div style="text-align:center;color:var(--text-3);font-size:.82rem;padding:2rem 0">No hay mensajes aún.</div>';
+                return;
+            }
+            box.innerHTML = data.mensajes.map(m => {
+                const esTec = m.autor_rol === 'tecnico';
+                return `<div style="display:flex;flex-direction:column;align-items:${esTec ? 'flex-end' : 'flex-start'}">
+                    <div style="max-width:75%;background:${esTec ? 'var(--accent)' : 'var(--surface-2)'};color:${esTec ? '#fff' : 'var(--text-1)'};padding:.55rem .9rem;border-radius:${esTec ? '14px 14px 4px 14px' : '14px 14px 14px 4px'};font-size:.875rem;line-height:1.5">${m.mensaje}</div>
+                    <div style="font-size:.68rem;color:var(--text-3);margin-top:.2rem">${m.autor_nombre} · ${new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>
+                </div>`;
+            }).join('');
+            box.scrollTop = box.scrollHeight;
+        } catch (e) {}
+    }
+
+    async function enviarMensajeTec() {
+        const input   = document.getElementById('chatTecInput');
+        const mensaje = input.value.trim();
+        if (!mensaje || !chatTecTicketId) return;
+        input.value = '';
+        try {
+            await fetch(`/tecnico/tickets/${chatTecTicketId}/mensajes`, {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ mensaje })
+            });
+            cargarMensajesTec();
+        } catch (e) {}
+    }
 
     async function cambiarEstado(ticketId, nuevoEstado) {
         try {

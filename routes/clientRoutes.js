@@ -230,4 +230,94 @@ router.get('/limits', async (req, res) => {
     }
 });
 
+
+// ── Cancelar ticket (cliente) ─────────────────────────────────
+router.post('/tickets/:id/cancelar', async (req, res) => {
+    try {
+        const { motivo } = req.body;
+        const { data: ticket } = await supabase
+            .from('tickets').select('id, titulo, categoria, tecnico_id, compania_id')
+            .eq('id', req.params.id).eq('compania_id', req.user.id).single();
+
+        if (!ticket) return res.status(404).json({ error: 'Ticket no encontrado' });
+
+        // Actualizar estado
+        await supabase.from('tickets').update({ estado: 'cancelado' }).eq('id', ticket.id);
+
+        // Log de cancelación
+        const { data: cliente } = await supabase
+            .from('companias').select('nombre_contacto').eq('id', req.user.id).single();
+
+        await supabase.from('cancelaciones').insert({
+            ticket_id:      ticket.id,
+            cancelado_por:  'cliente',
+            usuario_id:     req.user.id,
+            usuario_nombre: cliente?.nombre_contacto || 'Cliente',
+            motivo:         motivo || 'Sin motivo',
+            categoria:      ticket.categoria,
+            titulo:         ticket.titulo
+        });
+
+        // Notificar al técnico si estaba asignado
+        if (ticket.tecnico_id) {
+            const { data: tecSub } = await supabase
+                .from('push_subscriptions').select('subscription').eq('user_id', ticket.tecnico_id).single();
+            if (tecSub) {
+                const webpush = require('web-push');
+                webpush.setVapidDetails(
+                    'mailto:admin@propertypulse.com',
+                    process.env.VAPID_PUBLIC_KEY,
+                    process.env.VAPID_PRIVATE_KEY
+                );
+                webpush.sendNotification(tecSub.subscription, JSON.stringify({
+                    title: '❌ Ticket cancelado',
+                    body:  `El cliente canceló: ${ticket.titulo}`,
+                    url:   '/tecnico/dashboard'
+                })).catch(() => {});
+            }
+        }
+
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── Chat: obtener mensajes ────────────────────────────────────
+router.get('/tickets/:id/mensajes', async (req, res) => {
+    try {
+        const { data } = await supabase
+            .from('ticket_mensajes')
+            .select('*')
+            .eq('ticket_id', req.params.id)
+            .order('created_at', { ascending: true });
+        res.json({ success: true, mensajes: data || [] });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── Chat: enviar mensaje ──────────────────────────────────────
+router.post('/tickets/:id/mensajes', async (req, res) => {
+    try {
+        const { mensaje } = req.body;
+        if (!mensaje?.trim()) return res.status(400).json({ error: 'Mensaje vacío' });
+
+        const { data: cliente } = await supabase
+            .from('companias').select('nombre_contacto').eq('id', req.user.id).single();
+
+        const { data } = await supabase.from('ticket_mensajes').insert({
+            ticket_id:    req.params.id,
+            autor_id:     req.user.id,
+            autor_nombre: cliente?.nombre_contacto || 'Cliente',
+            autor_rol:    'cliente',
+            mensaje:      mensaje.trim()
+        }).select().single();
+
+        res.json({ success: true, mensaje: data });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;

@@ -109,3 +109,35 @@ ALTER TABLE tecnicos  ADD COLUMN IF NOT EXISTS theme TEXT DEFAULT 'light' CHECK 
 ALTER TABLE companias
     ADD COLUMN IF NOT EXISTS plan TEXT DEFAULT 'starter'
     CHECK (plan IN ('starter', 'pro', 'business'));
+
+-- Estado cancelado en tickets
+ALTER TABLE tickets DROP CONSTRAINT IF EXISTS tickets_estado_check;
+ALTER TABLE tickets ADD CONSTRAINT tickets_estado_check
+    CHECK (estado IN ('pendiente','en_proceso','completado','cancelado'));
+
+-- Log de cancelaciones
+CREATE TABLE IF NOT EXISTS cancelaciones (
+    id            UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    ticket_id     UUID REFERENCES tickets(id) ON DELETE CASCADE,
+    cancelado_por TEXT NOT NULL CHECK (cancelado_por IN ('cliente','tecnico')),
+    usuario_id    UUID NOT NULL,
+    usuario_nombre TEXT,
+    motivo        TEXT,
+    categoria     TEXT,
+    titulo        TEXT,
+    created_at    TIMESTAMPTZ DEFAULT now()
+);
+
+-- Mensajes de chat por ticket (temporal — se pueden limpiar)
+CREATE TABLE IF NOT EXISTS ticket_mensajes (
+    id         UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    ticket_id  UUID REFERENCES tickets(id) ON DELETE CASCADE,
+    autor_id   UUID NOT NULL,
+    autor_nombre TEXT,
+    autor_rol  TEXT CHECK (autor_rol IN ('cliente','tecnico')),
+    mensaje    TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_ticket_mensajes_ticket ON ticket_mensajes(ticket_id);
+CREATE INDEX IF NOT EXISTS idx_cancelaciones_ticket   ON cancelaciones(ticket_id);

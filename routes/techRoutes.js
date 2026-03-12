@@ -127,4 +127,98 @@ router.put('/perfil', async (req, res) => {
     }
 });
 
+
+// ── Cancelar ticket (técnico) ─────────────────────────────────
+router.post('/tickets/:id/cancelar', async (req, res) => {
+    try {
+        const { motivo } = req.body;
+        const { data: ticket } = await supabase
+            .from('tickets').select('id, titulo, categoria, compania_id, tecnico_id')
+            .eq('id', req.params.id).eq('tecnico_id', req.user.id).single();
+
+        if (!ticket) return res.status(404).json({ error: 'Ticket no encontrado' });
+
+        await supabase.from('tickets')
+            .update({ estado: 'cancelado', tecnico_id: null })
+            .eq('id', ticket.id);
+
+        // Log
+        const { data: tec } = await supabase
+            .from('tecnicos').select('nombre, especialidad').eq('id', req.user.id).single();
+
+        await supabase.from('cancelaciones').insert({
+            ticket_id:      ticket.id,
+            cancelado_por:  'tecnico',
+            usuario_id:     req.user.id,
+            usuario_nombre: tec?.nombre || 'Técnico',
+            motivo:         motivo || 'Sin motivo',
+            categoria:      ticket.categoria,
+            titulo:         ticket.titulo
+        });
+
+        // Notificar al cliente
+        const { data: cliSub } = await supabase
+            .from('push_subscriptions').select('subscription').eq('user_id', ticket.compania_id).single();
+        if (cliSub) {
+            const webpush = require('web-push');
+            webpush.setVapidDetails(
+                'mailto:admin@propertypulse.com',
+                process.env.VAPID_PUBLIC_KEY,
+                process.env.VAPID_PRIVATE_KEY
+            );
+            webpush.sendNotification(cliSub.subscription, JSON.stringify({
+                title: '❌ Técnico canceló el trabajo',
+                body:  `${tec?.nombre || 'El técnico'} canceló: ${ticket.titulo}`,
+                url:   '/cliente/dashboard'
+            })).catch(() => {});
+        }
+
+        // Volver a poner el ticket como pendiente sin técnico
+        await supabase.from('tickets')
+            .update({ estado: 'pendiente' })
+            .eq('id', ticket.id);
+
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── Chat: obtener mensajes ─────────────────────────────────────
+router.get('/tickets/:id/mensajes', async (req, res) => {
+    try {
+        const { data } = await supabase
+            .from('ticket_mensajes')
+            .select('*')
+            .eq('ticket_id', req.params.id)
+            .order('created_at', { ascending: true });
+        res.json({ success: true, mensajes: data || [] });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── Chat: enviar mensaje ───────────────────────────────────────
+router.post('/tickets/:id/mensajes', async (req, res) => {
+    try {
+        const { mensaje } = req.body;
+        if (!mensaje?.trim()) return res.status(400).json({ error: 'Mensaje vacío' });
+
+        const { data: tec } = await supabase
+            .from('tecnicos').select('nombre').eq('id', req.user.id).single();
+
+        const { data } = await supabase.from('ticket_mensajes').insert({
+            ticket_id:    req.params.id,
+            autor_id:     req.user.id,
+            autor_nombre: tec?.nombre || 'Técnico',
+            autor_rol:    'tecnico',
+            mensaje:      mensaje.trim()
+        }).select().single();
+
+        res.json({ success: true, mensaje: data });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;

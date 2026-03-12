@@ -147,12 +147,40 @@
                 <% } else if (ticket.estado === 'completado' && ticketsCalificados.has(ticket.id)) { %>
                     <div class="text-small mt-2" style="color:var(--green);font-weight:600" data-i18n="dash.rated">✅ Servicio calificado</div>
                 <% } %>
+
+                <% if (ticket.estado === 'en_proceso') { %>
+                    <div class="flex gap-1 mt-2">
+                        <button class="btn btn-sm" style="flex:1;background:var(--blue-soft);color:var(--blue);border:none"
+                            data-ticket-id="<%= ticket.id %>"
+                            data-ticket-titulo="<%= ticket.motivo %>"
+                            onclick="abrirChat(this.dataset.ticketId, this.dataset.ticketTitulo)">
+                            💬 Chat
+                        </button>
+                        <button class="btn btn-danger btn-sm" style="flex:1"
+                            onclick="cancelarTicket('<%= ticket.id %>')">
+                            ❌ Cancelar
+                        </button>
+                    </div>
+                <% } else if (ticket.estado === 'pendiente') { %>
+                    <button class="btn btn-danger btn-sm btn-full mt-2"
+                        onclick="cancelarTicket('<%= ticket.id %>')">
+                        ❌ Cancelar ticket
+                    </button>
+                <% } else if (ticket.estado === 'cancelado') { %>
+                    <div class="text-small mt-2" style="color:var(--red);font-weight:600">❌ Cancelado</div>
+                <% } %>
             </div>
             <% }); %>
         </div>
         <% } %>
 
 
+
+        <!-- ── Upgrade banner (aparece solo cuando está al 80%+ del límite) ── -->
+        <div id="upgrade-banner" style="display:none;background:linear-gradient(90deg,rgba(245,200,66,.12),rgba(245,200,66,.06));border:1px solid rgba(245,200,66,.3);border-radius:10px;padding:.85rem 1.25rem;margin-bottom:1.5rem;display:none;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+            <span style="font-size:.875rem;color:#f5c842;font-weight:500">⚠️ You're approaching your plan limits.</span>
+            <a href="/landing#pricing" style="background:#f5c842;color:#0a0a0f;padding:.4rem 1rem;border-radius:6px;font-size:.8rem;font-weight:700;white-space:nowrap">Upgrade plan →</a>
+        </div>
         <!-- ── Perfil ── -->
         <div class="section-header mb-3 mt-4" id="perfil">
             <h2>👤 <span data-i18n="profile.title">Mi Perfil</span></h2>
@@ -212,6 +240,47 @@
         </div>
 
     </main>
+</div>
+
+
+<!-- ── Modal: Cancelar ticket ────────────────────────────── -->
+<div id="cancelModal" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>❌ Cancelar ticket</h2>
+            <button class="modal-close" onclick="cerrarModal('cancelModal')">✕</button>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Motivo de cancelación (opcional)</label>
+            <textarea id="cancelMotivo" class="form-textarea" placeholder="¿Por qué cancelas este ticket?" rows="3"></textarea>
+        </div>
+        <div style="display:flex;gap:.75rem">
+            <button class="btn btn-secondary" style="flex:1" onclick="cerrarModal('cancelModal')">Volver</button>
+            <button class="btn btn-danger" style="flex:1" onclick="confirmarCancelacion()">Sí, cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Modal: Chat ─────────────────────────────────────────── -->
+<div id="chatModal" class="modal-overlay">
+    <div class="modal" style="max-width:480px">
+        <div class="modal-header">
+            <h2>💬 Chat — <span id="chatTicketTitulo" style="color:var(--accent);font-size:.9rem"></span></h2>
+            <button class="modal-close" onclick="cerrarChat()">✕</button>
+        </div>
+
+        <div id="chatMensajes" style="height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:.6rem;padding:.5rem 0;margin-bottom:1rem">
+            <div style="text-align:center;color:var(--text-3);font-size:.82rem;padding:2rem 0">Cargando mensajes...</div>
+        </div>
+
+        <div style="display:flex;gap:.5rem">
+            <input type="text" id="chatInput" class="form-input" placeholder="Escribe un mensaje..."
+                onkeydown="if(event.key==='Enter')enviarMensaje()"
+                style="flex:1">
+            <button class="btn btn-primary" onclick="enviarMensaje()" style="padding:.65rem 1rem">→</button>
+        </div>
+        <p class="text-small text-muted mt-2" style="font-size:.75rem">Los mensajes son visibles para ti y el técnico. Se borran cuando cierras este chat.</p>
+    </div>
 </div>
 
 <!-- Modal: Nuevo Ticket -->
@@ -326,6 +395,8 @@
         "Electrodomésticos": ["Refrigerador no enfría","Estufa no funciona","Lavadora dañada","Secadora dañada","Lavavajillas no funciona","Microondas dañado"],
         "Estructura / Reparaciones": ["Puerta dañada","Cerradura rota","Ventana rota","Pared dañada","Techo con gotera","Piso dañado","Escalera dañada"],
         "Seguridad": ["Alarma no funciona","Cámara de seguridad dañada","Sensor de humo dañado","Sensor de movimiento dañado"],
+        "Bajo voltaje / Cámaras": ["Instalación de cámara","Cámara no graba","Cámara sin imagen","DVR/NVR no funciona","Instalación de timbre inteligente","Control de acceso dañado","Cableado de bajo voltaje","Sistema de intercomunicación","Instalación de alarma","Revisión de sistema de seguridad"],
+        "Handyman": ["Instalación de muebles","Montaje en pared","Reparación de gabinetes","Cambio de bisagras","Reparación de persianas","Instalación de cortinas","Sellado de grietas","Pintura menor","Reparación de drywall","Reparación general menor","Instalación de estantes","Otro trabajo de handyman"],
         "General": ["Inspección general","Mantenimiento preventivo","Reparación menor","Otro problema"]
     };
 
@@ -514,6 +585,87 @@
     // Cargar perfil al abrir la página
     cargarPerfil();
 
+    // ── Onboarding ────────────────────────────────────────────
+    const OB_KEY = 'pp_onboarding_done_' + (document.body.getAttribute('data-user-id') || 'x');
+    let obCurrentStep = 1;
+    const OB_TOTAL = 5;
+
+    function obInit() {
+        if (localStorage.getItem(OB_KEY)) return; // ya completó onboarding
+        const overlay = document.getElementById('onboarding-overlay');
+        overlay.style.display = 'flex';
+        // Poner el link del técnico
+        const base = window.location.origin;
+        const el = document.getElementById('ob-tech-link');
+        if (el) el.textContent = base + '/auth/register-tecnico';
+        obUpdateProgress();
+    }
+
+    function obShowStep(n) {
+        document.querySelectorAll('.ob-step').forEach(s => s.style.display = 'none');
+        const step = document.querySelector(`.ob-step[data-step="${n}"]`);
+        if (step) step.style.display = 'block';
+        obCurrentStep = n;
+        obUpdateProgress();
+    }
+
+    function obUpdateProgress() {
+        const pct = obCurrentStep === 1 ? 0 : Math.round(((obCurrentStep - 1) / OB_TOTAL) * 100);
+        const bar = document.getElementById('ob-progress');
+        if (bar) bar.style.width = pct + '%';
+    }
+
+    function obNext() {
+        if (obCurrentStep < 6) obShowStep(obCurrentStep + 1);
+    }
+
+    function obBack() {
+        if (obCurrentStep > 1) obShowStep(obCurrentStep - 1);
+    }
+
+    function obOpenPropModal() {
+        const modal = document.getElementById('propModal');
+        if (modal) modal.classList.add('open');
+    }
+
+    function obSkip() {
+        obDone();
+    }
+
+    function obDone() {
+        localStorage.setItem(OB_KEY, '1');
+        const overlay = document.getElementById('onboarding-overlay');
+        overlay.style.opacity = '0';
+        overlay.style.transition = 'opacity .3s';
+        setTimeout(() => overlay.style.display = 'none', 300);
+    }
+
+    function copyTechLink() {
+        const link = document.getElementById('ob-tech-link')?.textContent;
+        if (!link) return;
+        navigator.clipboard.writeText(link).then(() => {
+            showToast('✅ Link copied!');
+        });
+    }
+
+    // Iniciar después de cargar perfil
+    setTimeout(obInit, 800);
+
+
+    // ── Upgrade banner ────────────────────────────────────────
+    async function checkUpgradeBanner() {
+        try {
+            const res  = await fetch('/cliente/limits');
+            const data = await res.json();
+            if (data.show_upgrade) {
+                const banner = document.getElementById('upgrade-banner');
+                if (banner) banner.style.display = 'flex';
+            }
+        } catch (e) {}
+    }
+    checkUpgradeBanner();
+
+
     async function enviarTicket(e) {
         e.preventDefault();
         const btn = document.getElementById('btnTicket');
@@ -527,6 +679,226 @@
         finally { btn.disabled = false; btn.textContent = i18n.t('dash.submit'); }
     }
 </script>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     ONBOARDING MODAL — aparece solo en el primer login
+═══════════════════════════════════════════════════════════ -->
+<div id="onboarding-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);z-index:2000;align-items:center;justify-content:center;padding:1rem">
+    <div id="onboarding-modal" style="background:var(--surface);border:1px solid var(--border);border-radius:24px;width:100%;max-width:520px;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.5);animation:modalIn .3s cubic-bezier(.34,1.56,.64,1)">
+
+        <!-- Progress bar -->
+        <div style="height:3px;background:var(--border)">
+            <div id="ob-progress" style="height:100%;background:var(--accent);transition:width .4s ease;width:0%"></div>
+        </div>
+
+        <!-- Steps container -->
+        <div id="ob-steps">
+
+            <!-- Step 1: Bienvenida -->
+            <div class="ob-step" data-step="1">
+                <div style="padding:2.5rem 2.5rem 0;text-align:center">
+                    <div style="width:64px;height:64px;background:var(--accent-soft);border-radius:20px;display:inline-grid;place-items:center;font-size:2rem;margin-bottom:1.25rem">🏠</div>
+                    <h2 style="font-size:1.4rem;font-weight:700;letter-spacing:-.4px;margin-bottom:.6rem">Welcome to PropertyPulse!</h2>
+                    <p style="color:var(--text-2);font-size:.925rem;line-height:1.7;max-width:380px;margin:0 auto">
+                        You're set up and ready to go. This quick guide will help you get the most out of your account in just a few minutes.
+                    </p>
+                </div>
+                <div style="padding:2rem 2.5rem">
+                    <div style="display:flex;flex-direction:column;gap:.75rem;margin-bottom:2rem">
+                        <div style="display:flex;align-items:center;gap:.85rem;padding:.85rem 1rem;background:var(--surface-2);border:1px solid var(--border);border-radius:10px">
+                            <span style="font-size:1.3rem">🏠</span>
+                            <div>
+                                <div style="font-size:.875rem;font-weight:600">Add your first property</div>
+                                <div style="font-size:.78rem;color:var(--text-3)">Register the properties you manage</div>
+                            </div>
+                            <span style="margin-left:auto;color:var(--text-3);font-size:.8rem">01</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:.85rem;padding:.85rem 1rem;background:var(--surface-2);border:1px solid var(--border);border-radius:10px">
+                            <span style="font-size:1.3rem">🎫</span>
+                            <div>
+                                <div style="font-size:.875rem;font-weight:600">Create your first ticket</div>
+                                <div style="font-size:.78rem;color:var(--text-3)">Log a maintenance request</div>
+                            </div>
+                            <span style="margin-left:auto;color:var(--text-3);font-size:.8rem">02</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:.85rem;padding:.85rem 1rem;background:var(--surface-2);border:1px solid var(--border);border-radius:10px">
+                            <span style="font-size:1.3rem">🔧</span>
+                            <div>
+                                <div style="font-size:.875rem;font-weight:600">Invite a technician</div>
+                                <div style="font-size:.78rem;color:var(--text-3)">Share the technician portal link</div>
+                            </div>
+                            <span style="margin-left:auto;color:var(--text-3);font-size:.8rem">03</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:.85rem;padding:.85rem 1rem;background:var(--surface-2);border:1px solid var(--border);border-radius:10px">
+                            <span style="font-size:1.3rem">👤</span>
+                            <div>
+                                <div style="font-size:.875rem;font-weight:600">Complete your profile</div>
+                                <div style="font-size:.78rem;color:var(--text-3)">Add your phone and company name</div>
+                            </div>
+                            <span style="margin-left:auto;color:var(--text-3);font-size:.8rem">04</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:.85rem;padding:.85rem 1rem;background:var(--surface-2);border:1px solid var(--border);border-radius:10px">
+                            <span style="font-size:1.3rem">📱</span>
+                            <div>
+                                <div style="font-size:.875rem;font-weight:600">Install the app</div>
+                                <div style="font-size:.78rem;color:var(--text-3)">Add to your home screen for quick access</div>
+                            </div>
+                            <span style="margin-left:auto;color:var(--text-3);font-size:.8rem">05</span>
+                        </div>
+                    </div>
+                    <button onclick="obNext()" class="btn btn-primary btn-full" style="font-size:.95rem;padding:.8rem">
+                        Let's get started →
+                    </button>
+                    <button onclick="obSkip()" style="display:block;width:100%;text-align:center;margin-top:.75rem;background:none;border:none;color:var(--text-3);font-size:.8rem;cursor:pointer;padding:.4rem">
+                        Skip for now
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: Primera propiedad -->
+            <div class="ob-step" data-step="2" style="display:none">
+                <div style="padding:2.5rem 2.5rem 0">
+                    <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem">
+                        <div style="width:48px;height:48px;background:var(--accent-soft);border-radius:14px;display:grid;place-items:center;font-size:1.5rem;flex-shrink:0">🏠</div>
+                        <div>
+                            <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);font-weight:600;margin-bottom:.2rem">Step 1 of 5</div>
+                            <h2 style="font-size:1.2rem;font-weight:700;letter-spacing:-.3px">Add your first property</h2>
+                        </div>
+                    </div>
+                    <p style="color:var(--text-2);font-size:.9rem;line-height:1.7;margin-bottom:1.5rem">
+                        Properties are the foundation of PropertyPulse. Add the addresses you manage so you can attach maintenance tickets to each one.
+                    </p>
+                    <div style="background:var(--accent-soft);border:1px solid rgba(108,99,255,.2);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem">
+                        <p style="font-size:.83rem;color:var(--accent);line-height:1.6">
+                            💡 <strong>Tip:</strong> Your Starter plan includes 3 properties. You can always upgrade later for more.
+                        </p>
+                    </div>
+                </div>
+                <div style="padding:0 2.5rem 2.5rem;display:flex;gap:.75rem">
+                    <button onclick="obBack()" class="btn btn-secondary" style="flex:1">← Back</button>
+                    <button onclick="obNext(); obOpenPropModal()" class="btn btn-primary" style="flex:2">
+                        Add property →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Primer ticket -->
+            <div class="ob-step" data-step="3" style="display:none">
+                <div style="padding:2.5rem 2.5rem 0">
+                    <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem">
+                        <div style="width:48px;height:48px;background:#fef3c7;border-radius:14px;display:grid;place-items:center;font-size:1.5rem;flex-shrink:0">🎫</div>
+                        <div>
+                            <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);font-weight:600;margin-bottom:.2rem">Step 2 of 5</div>
+                            <h2 style="font-size:1.2rem;font-weight:700;letter-spacing:-.3px">Create your first ticket</h2>
+                        </div>
+                    </div>
+                    <p style="color:var(--text-2);font-size:.9rem;line-height:1.7;margin-bottom:1.5rem">
+                        Tickets are maintenance requests. Each one is tied to a property and can be assigned to a technician. Add photos, descriptions, and priority levels.
+                    </p>
+                    <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem">
+                        <p style="font-size:.83rem;color:#92400e;line-height:1.6">
+                            💡 <strong>Tip:</strong> Be specific with the description — it helps your technician diagnose the issue faster.
+                        </p>
+                    </div>
+                </div>
+                <div style="padding:0 2.5rem 2.5rem;display:flex;gap:.75rem">
+                    <button onclick="obBack()" class="btn btn-secondary" style="flex:1">← Back</button>
+                    <button onclick="obNext()" class="btn btn-primary" style="flex:2">Got it →</button>
+                </div>
+            </div>
+
+            <!-- Step 4: Invitar técnico -->
+            <div class="ob-step" data-step="4" style="display:none">
+                <div style="padding:2.5rem 2.5rem 0">
+                    <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem">
+                        <div style="width:48px;height:48px;background:#d1fae5;border-radius:14px;display:grid;place-items:center;font-size:1.5rem;flex-shrink:0">🔧</div>
+                        <div>
+                            <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);font-weight:600;margin-bottom:.2rem">Step 3 of 5</div>
+                            <h2 style="font-size:1.2rem;font-weight:700;letter-spacing:-.3px">Invite a technician</h2>
+                        </div>
+                    </div>
+                    <p style="color:var(--text-2);font-size:.9rem;line-height:1.7;margin-bottom:1.25rem">
+                        Share the technician registration link with your maintenance team. They'll create their own account and start receiving job assignments.
+                    </p>
+
+                    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;margin-bottom:.75rem">
+                        <div style="font-size:.72rem;color:var(--text-3);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.06em">Technician registration link</div>
+                        <div style="display:flex;align-items:center;gap:.5rem">
+                            <code id="ob-tech-link" style="font-size:.8rem;color:var(--text-1);flex:1;word-break:break-all"></code>
+                            <button onclick="copyTechLink()" style="background:var(--accent);color:#fff;border:none;border-radius:6px;padding:.3rem .75rem;font-size:.75rem;cursor:pointer;white-space:nowrap;flex-shrink:0">Copy</button>
+                        </div>
+                    </div>
+                    <div style="background:#d1fae5;border:1px solid #6ee7b7;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem">
+                        <p style="font-size:.83rem;color:#065f46;line-height:1.6">
+                            💡 <strong>Tip:</strong> Your Starter plan includes 1 technician. Upgrade to Pro to add up to 5.
+                        </p>
+                    </div>
+                </div>
+                <div style="padding:0 2.5rem 2.5rem;display:flex;gap:.75rem">
+                    <button onclick="obBack()" class="btn btn-secondary" style="flex:1">← Back</button>
+                    <button onclick="obNext()" class="btn btn-primary" style="flex:2">Next →</button>
+                </div>
+            </div>
+
+            <!-- Step 5: Completar perfil -->
+            <div class="ob-step" data-step="5" style="display:none">
+                <div style="padding:2.5rem 2.5rem 0">
+                    <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem">
+                        <div style="width:48px;height:48px;background:#dbeafe;border-radius:14px;display:grid;place-items:center;font-size:1.5rem;flex-shrink:0">👤</div>
+                        <div>
+                            <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);font-weight:600;margin-bottom:.2rem">Step 4 of 5</div>
+                            <h2 style="font-size:1.2rem;font-weight:700;letter-spacing:-.3px">Complete your profile</h2>
+                        </div>
+                    </div>
+                    <p style="color:var(--text-2);font-size:.9rem;line-height:1.7;margin-bottom:1.5rem">
+                        Add your phone number and company name so your technicians know who they're working with. You can update this anytime from the Profile section.
+                    </p>
+                    <div style="background:#dbeafe;border:1px solid #93c5fd;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem">
+                        <p style="font-size:.83rem;color:#1e40af;line-height:1.6">
+                            💡 <strong>Tip:</strong> Scroll down to the Profile section at the bottom of your dashboard to edit your details.
+                        </p>
+                    </div>
+                </div>
+                <div style="padding:0 2.5rem 2.5rem;display:flex;gap:.75rem">
+                    <button onclick="obBack()" class="btn btn-secondary" style="flex:1">← Back</button>
+                    <button onclick="obNext()" class="btn btn-primary" style="flex:2">Next →</button>
+                </div>
+            </div>
+
+            <!-- Step 6: Instalar PWA -->
+            <div class="ob-step" data-step="6" style="display:none">
+                <div style="padding:2.5rem 2.5rem 0">
+                    <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem">
+                        <div style="width:48px;height:48px;background:#ede9ff;border-radius:14px;display:grid;place-items:center;font-size:1.5rem;flex-shrink:0">📱</div>
+                        <div>
+                            <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);font-weight:600;margin-bottom:.2rem">Step 5 of 5</div>
+                            <h2 style="font-size:1.2rem;font-weight:700;letter-spacing:-.3px">Install the app</h2>
+                        </div>
+                    </div>
+                    <p style="color:var(--text-2);font-size:.9rem;line-height:1.7;margin-bottom:1.25rem">
+                        Add PropertyPulse to your home screen for instant access — no App Store required.
+                    </p>
+                    <div style="display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.5rem">
+                        <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:.85rem 1rem;font-size:.85rem;color:var(--text-2)">
+                            <strong style="color:var(--text-1)">📱 iPhone (Safari):</strong> Tap the Share button → "Add to Home Screen"
+                        </div>
+                        <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:.85rem 1rem;font-size:.85rem;color:var(--text-2)">
+                            <strong style="color:var(--text-1)">🤖 Android (Chrome):</strong> Tap the menu (⋮) → "Add to Home Screen"
+                        </div>
+                    </div>
+                </div>
+                <div style="padding:0 2.5rem 2.5rem;display:flex;gap:.75rem">
+                    <button onclick="obBack()" class="btn btn-secondary" style="flex:1">← Back</button>
+                    <button onclick="obDone()" class="btn btn-primary" style="flex:2;background:var(--green)">
+                        🎉 Done — Let's go!
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
 
 <script src="/js/notifications.js"></script>
 </body>

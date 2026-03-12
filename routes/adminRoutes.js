@@ -137,4 +137,19 @@ router.delete('/tecnicos/:id', async (req, res) => {
     }
 });
 
+
+// ── Log de cancelaciones ──────────────────────────────────────
+router.get('/cancelaciones', async (req, res) => {
+    try {
+        const { data } = await supabase
+            .from('cancelaciones')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(100);
+        res.json({ success: true, cancelaciones: data || [] });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;
