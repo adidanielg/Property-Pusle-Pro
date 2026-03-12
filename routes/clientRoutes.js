@@ -166,4 +166,56 @@ router.delete('/propiedades/:id', async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+
+// ── Perfil: obtener datos actuales ───────────────────────────
+router.get('/perfil', async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('companias')
+            .select('id, nombre_contacto, nombre_empresa, email, telefono, tipo_cliente')
+            .eq('id', req.user.id)
+            .single();
+        if (error) throw error;
+        res.json({ success: true, perfil: data });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── Perfil: actualizar datos ──────────────────────────────────
+router.put('/perfil', async (req, res) => {
+    try {
+        const bcrypt = require('bcryptjs');
+        const { nombre_contacto, nombre_empresa, email, telefono, password, nueva_password } = req.body;
+
+        // Verificar contraseña actual si quiere cambiarla
+        if (nueva_password) {
+            const { data: user } = await supabase
+                .from('companias').select('password').eq('id', req.user.id).single();
+            const valid = await bcrypt.compare(password, user.password);
+            if (!valid) return res.status(400).json({ error: 'Contraseña actual incorrecta' });
+        }
+
+        const updates = { nombre_contacto, nombre_empresa, email, telefono };
+        if (nueva_password) {
+            updates.password = await bcrypt.hash(nueva_password, 10);
+        }
+
+        const { data, error } = await supabase
+            .from('companias')
+            .update(updates)
+            .eq('id', req.user.id)
+            .select('id, nombre_contacto, nombre_empresa, email, telefono, tipo_cliente')
+            .single();
+
+        if (error) {
+            if (error.code === '23505') return res.status(400).json({ error: 'Ese email ya está en uso' });
+            throw error;
+        }
+        res.json({ success: true, perfil: data });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;

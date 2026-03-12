@@ -12,6 +12,9 @@
             <a class="nav-item active" href="/tecnico/dashboard">
                 <span class="icon">🔧</span> <span data-i18n="nav.myJobs">Mis trabajos</span>
             </a>
+            <a class="nav-item" href="#perfil" onclick="scrollToPerfil()">
+                <span class="icon">👤</span> <span data-i18n="nav.profile">Mi Perfil</span>
+            </a>
         </nav>
         <div class="sidebar-footer">
             <div class="user-pill">
@@ -160,10 +163,150 @@
         </div>
         <% } %>
 
+
+        <!-- ── Perfil ── -->
+        <div class="section-header mb-3 mt-4" id="perfil">
+            <h2>👤 <span data-i18n="profile.title">Mi Perfil</span></h2>
+        </div>
+
+        <div class="card" style="max-width:600px">
+            <form id="perfilForm" onsubmit="guardarPerfil(event)">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="reg.firstName">Nombre completo</label>
+                        <input type="text" id="p_nombre" name="nombre" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="reg.phone">Teléfono</label>
+                        <input type="text" id="p_telefono" name="telefono" class="form-input" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="p_email" name="email" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" data-i18n="reg.specialty">Especialidad</label>
+                    <select id="p_especialidad" name="especialidad" class="form-select" required>
+                        <option value="Climatización (HVAC)">❄️ Climatización (HVAC)</option>
+                        <option value="Electricidad">⚡ Electricidad</option>
+                        <option value="Plomería">🔧 Plomería</option>
+                        <option value="Piscina">🏊 Piscina</option>
+                        <option value="Jardinería / Landscaping">🌿 Jardinería / Landscaping</option>
+                        <option value="Irrigation / Sistema de riego">💧 Irrigation / Sistema de riego</option>
+                        <option value="Pest Control">🐛 Pest Control</option>
+                        <option value="Limpieza / Pressure Washing">🧹 Limpieza / Pressure Washing</option>
+                        <option value="Electrodomésticos">🏠 Electrodomésticos</option>
+                        <option value="Estructura / Reparaciones">🏗️ Estructura / Reparaciones</option>
+                        <option value="Seguridad">🔒 Seguridad</option>
+                        <option value="General">🛠️ Mantenimiento General</option>
+                    </select>
+                </div>
+
+                <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0">
+
+                <p class="text-small text-muted mb-2" data-i18n="profile.passwordHint">
+                    Deja en blanco si no quieres cambiar tu contraseña
+                </p>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="profile.currentPassword">Contraseña actual</label>
+                        <input type="password" id="p_pass_actual" name="password" class="form-input" placeholder="••••••••">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="profile.newPassword">Nueva contraseña</label>
+                        <input type="password" id="p_pass_nueva" name="nueva_password" class="form-input" placeholder="••••••••">
+                    </div>
+                </div>
+
+                <div id="perfilMsg" style="display:none;margin-bottom:1rem"></div>
+
+                <button type="submit" class="btn btn-primary" id="btnPerfil" data-i18n="profile.save">
+                    Guardar cambios
+                </button>
+
+            </form>
+        </div>
+
     </main>
 </div>
 
 <script>
+    // ── Perfil ────────────────────────────────────────────────
+    async function cargarPerfil() {
+        try {
+            const res  = await fetch('/tecnico/perfil');
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('p_nombre').value       = data.perfil.nombre      || '';
+                document.getElementById('p_telefono').value     = data.perfil.telefono    || '';
+                document.getElementById('p_email').value        = data.perfil.email       || '';
+                document.getElementById('p_especialidad').value = data.perfil.especialidad|| '';
+            }
+        } catch (err) { console.error('Error cargando perfil:', err); }
+    }
+
+    async function guardarPerfil(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnPerfil');
+        const passActual = document.getElementById('p_pass_actual').value;
+        const passNueva  = document.getElementById('p_pass_nueva').value;
+
+        if (passNueva && !passActual) {
+            mostrarMsg('error', 'Debes ingresar tu contraseña actual para cambiarla');
+            return;
+        }
+
+        btn.disabled = true; btn.textContent = i18n.t('dash.sending');
+
+        try {
+            const body = {
+                nombre:       document.getElementById('p_nombre').value,
+                email:        document.getElementById('p_email').value,
+                telefono:     document.getElementById('p_telefono').value,
+                especialidad: document.getElementById('p_especialidad').value,
+            };
+            if (passNueva) { body.password = passActual; body.nueva_password = passNueva; }
+
+            const res  = await fetch('/tecnico/perfil', {
+                method:  'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify(body)
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                mostrarMsg('success', i18n.t('profile.saved') || '✅ Perfil actualizado');
+                document.getElementById('p_pass_actual').value = '';
+                document.getElementById('p_pass_nueva').value  = '';
+            } else {
+                mostrarMsg('error', data.error);
+            }
+        } catch (err) { mostrarMsg('error', 'Error de conexión'); }
+        finally { btn.disabled = false; btn.textContent = i18n.t('profile.save'); }
+    }
+
+    function mostrarMsg(tipo, texto) {
+        const msg = document.getElementById('perfilMsg');
+        msg.style.cssText = `display:block;padding:.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem;font-size:.875rem;font-weight:500;${
+            tipo === 'success'
+            ? 'background:var(--green-soft);color:var(--green);border-left:3px solid var(--green)'
+            : 'background:var(--red-soft);color:var(--red);border-left:3px solid var(--red)'
+        }`;
+        msg.textContent = texto;
+        setTimeout(() => { msg.style.display = 'none'; }, 4000);
+    }
+
+    function scrollToPerfil() {
+        document.getElementById('perfil').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    cargarPerfil();
+
     async function cambiarEstado(ticketId, nuevoEstado) {
         try {
             const res  = await fetch(`/tecnico/tickets/${ticketId}/estado`, {
