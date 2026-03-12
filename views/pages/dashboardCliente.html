@@ -283,6 +283,26 @@
     </div>
 </div>
 
+
+<!-- ── Modal: Límite de plan alcanzado ───────────────────── -->
+<div id="limitModal" class="modal-overlay">
+    <div class="modal" style="max-width:420px;text-align:center">
+        <div style="font-size:3rem;margin-bottom:1rem">🚀</div>
+        <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:.75rem">Plan limit reached</h2>
+        <p id="limitMsg" style="color:var(--text-2);font-size:.9rem;line-height:1.7;margin-bottom:1.75rem"></p>
+        <div style="display:flex;flex-direction:column;gap:.75rem">
+            <a id="limitUpgradeBtn" href="/landing#pricing"
+                style="display:block;background:var(--accent);color:#fff;padding:.8rem;border-radius:8px;font-weight:600;font-size:.95rem">
+                Upgrade plan →
+            </a>
+            <button onclick="cerrarModal('limitModal')"
+                style="background:none;border:none;color:var(--text-3);font-size:.85rem;cursor:pointer;padding:.4rem">
+                Maybe later
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Modal: Nuevo Ticket -->
 <div id="ticketModal" class="modal-overlay">
     <div class="modal">
@@ -495,9 +515,15 @@
                 })
             });
             const data = await res.json();
-            if (data.success) location.reload();
-            else alert('Error: ' + data.error);
-        } catch (err) { alert('Error de conexión'); }
+            if (data.success) {
+                location.reload();
+            } else if (data.error === 'limit_reached') {
+                cerrarModal('propModal');
+                mostrarLimitModal(data.message, data.upgrade_to);
+            } else {
+                showToast('Error: ' + data.message || data.error);
+            }
+        } catch (err) { showToast('Error de conexión'); }
         finally { btn.disabled = false; btn.textContent = i18n.t('dash.save'); }
     }
 
@@ -564,6 +590,19 @@
             }
         } catch (err) { mostrarMsg('error', 'Error de conexión'); }
         finally { btn.disabled = false; btn.textContent = i18n.t('profile.save'); }
+    }
+
+
+    function mostrarLimitModal(mensaje, upgradeTo) {
+        document.getElementById('limitMsg').textContent = mensaje;
+        const btn = document.getElementById('limitUpgradeBtn');
+        btn.textContent = upgradeTo
+            ? `Upgrade to ${upgradeTo.charAt(0).toUpperCase() + upgradeTo.slice(1)} →`
+            : 'View plans →';
+        document.getElementById('limitModal').classList.add('open');
+        // Mostrar el banner también
+        const banner = document.getElementById('upgrade-banner');
+        if (banner) banner.style.display = 'flex';
     }
 
     function mostrarMsg(tipo, texto) {
@@ -673,9 +712,15 @@
         try {
             const res  = await fetch('/cliente/tickets', { method: 'POST', body: new FormData(e.target) });
             const data = await res.json();
-            if (data.success) location.reload();
-            else alert('Error: ' + data.error);
-        } catch (err) { alert('Error de conexión'); }
+            if (data.success) {
+                location.reload();
+            } else if (data.error === 'limit_reached') {
+                cerrarModal('ticketModal');
+                mostrarLimitModal(data.message, data.upgrade_to);
+            } else {
+                showToast('Error: ' + data.message || data.error);
+            }
+        } catch (err) { showToast('Error de conexión'); }
         finally { btn.disabled = false; btn.textContent = i18n.t('dash.submit'); }
     }
 </script>

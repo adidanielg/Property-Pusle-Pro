@@ -47,6 +47,17 @@ router.get('/dashboard', async (req, res) => {
 router.post('/tickets', upload.single('foto'), async (req, res) => {
     try {
         const { propiedad_id, categoria, motivo, descripcion } = req.body;
+
+        // ── Verificar límite de tickets del plan ──────────────
+        const limitCheck = await checkTicketLimit(req.user.id);
+        if (!limitCheck.allowed) {
+            return res.status(403).json({
+                error:       'limit_reached',
+                message:     `Tu plan permite ${limitCheck.limite} tickets activos. Ya tienes ${limitCheck.actual}.`,
+                upgrade_to:  getSiguientePlan(limitCheck.plan),
+                limit_type:  'tickets'
+            });
+        }
         let foto_url = null;
 
         if (req.file) {
@@ -131,6 +142,18 @@ router.post('/calificar', async (req, res) => {
 router.post('/propiedades', async (req, res) => {
     try {
         const { direccion, servicios_contratados } = req.body;
+
+        // ── Verificar límite de propiedades del plan ──────────
+        const limitCheck = await checkPropiedadLimit(req.user.id);
+        if (!limitCheck.allowed) {
+            return res.status(403).json({
+                error:       'limit_reached',
+                message:     `Tu plan permite ${limitCheck.limite} propiedades. Ya tienes ${limitCheck.actual}.`,
+                upgrade_to:  getSiguientePlan(limitCheck.plan),
+                limit_type:  'propiedades'
+            });
+        }
+
         const { data, error } = await supabase
             .from('propiedades')
             .insert([{ direccion, servicios_contratados, compania_id: req.user.id }])
