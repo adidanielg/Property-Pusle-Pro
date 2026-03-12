@@ -31,7 +31,14 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ── Rutas ─────────────────────────────────────────────────────
-app.get('/', (req, res) => res.render('index.html'));
+// Página pública de ventas — punto de entrada principal
+app.get('/',        (req, res) => res.render('landing',   { title: 'PropertyPulse — Property Maintenance, Simplified' }));
+app.get('/landing', (req, res) => res.render('landing',   { title: 'PropertyPulse — Property Maintenance, Simplified' }));
+app.get('/pricing', (req, res) => res.redirect('/#pricing'));
+
+// Portales de acceso (login / registro)
+app.get('/app',     (req, res) => res.render('index',     { title: 'Acceder — PropertyPulse' }));
+app.get('/inicio',  (req, res) => res.redirect('/app'));
 app.use('/auth',           authRoutes);
 app.use('/cliente',        clientRoutes);
 app.use('/tecnico',        techRoutes);
