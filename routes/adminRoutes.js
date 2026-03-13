@@ -78,7 +78,7 @@ router.get('/dashboard', async (req, res) => {
 });
 
 // ── Editar cliente ────────────────────────────────────────────
-router.put('/clientes/:id', async (req, res) => {
+router.put('/clientes/:id', validate(schemas.editarCliente), async (req, res) => {
     try {
         const { nombre_contacto, nombre_empresa, email, telefono, tipo_cliente } = req.body;
         const { data, error } = await supabase
@@ -108,7 +108,7 @@ router.delete('/clientes/:id', async (req, res) => {
 });
 
 // ── Editar técnico ────────────────────────────────────────────
-router.put('/tecnicos/:id', async (req, res) => {
+router.put('/tecnicos/:id', validate(schemas.editarTecnico), async (req, res) => {
     try {
         const { nombre, email, telefono, especialidad, activo } = req.body;
         const { data, error } = await supabase

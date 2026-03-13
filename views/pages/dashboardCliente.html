@@ -236,6 +236,13 @@
                     Guardar cambios
                 </button>
 
+
+                <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border)">
+                    <p class="text-small text-muted mb-2">Danger zone</p>
+                    <button onclick="eliminarCuenta()" class="btn btn-danger btn-sm">
+                        🗑️ Delete my account
+                    </button>
+                </div>
             </form>
         </div>
 
@@ -538,6 +545,18 @@
     }
 
     // ── Perfil ────────────────────────────────────────────────
+
+    async function eliminarCuenta() {
+        const ok = await confirmAction('This will permanently delete your account, all properties, and all tickets. This cannot be undone.', 'Delete everything', 'Cancel');
+        if (!ok) return;
+        try {
+            const res = await fetch('/cliente/cuenta', { method: 'DELETE' });
+            const data = await res.json();
+            if (data.success) window.location.href = '/landing';
+            else alert('Error: ' + data.error);
+        } catch (e) { alert('Connection error'); }
+    }
+
     async function cargarPerfil() {
         try {
             const res  = await fetch('/cliente/perfil');
@@ -582,7 +601,7 @@
             const data = await res.json();
 
             if (data.success) {
-                mostrarMsg('success', i18n.t('profile.saved') || '✅ Perfil actualizado');
+                showToast(i18n.t('profile.saved') || '✅ Perfil actualizado');
                 document.getElementById('p_pass_actual').value = '';
                 document.getElementById('p_pass_nueva').value  = '';
             } else {

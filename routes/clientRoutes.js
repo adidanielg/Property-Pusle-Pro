@@ -44,7 +44,7 @@ router.get('/dashboard', async (req, res) => {
 });
 
 // ── Crear ticket → notificar técnicos ─────────────────────────
-router.post('/tickets', upload.single('foto'), async (req, res) => {
+router.post('/tickets', upload.single('foto'), validate(schemas.crearTicket), async (req, res) => {
     try {
         const { propiedad_id, categoria, motivo, descripcion } = req.body;
 
@@ -94,7 +94,7 @@ router.post('/tickets', upload.single('foto'), async (req, res) => {
 });
 
 // ── Calificar técnico ─────────────────────────────────────────
-router.post('/calificar', async (req, res) => {
+router.post('/calificar', validate(schemas.calificar), async (req, res) => {
     try {
         const { ticket_id, estrellas, comentario } = req.body;
 
@@ -139,7 +139,7 @@ router.post('/calificar', async (req, res) => {
 });
 
 // ── Propiedades CRUD ──────────────────────────────────────────
-router.post('/propiedades', async (req, res) => {
+router.post('/propiedades', validate(schemas.crearPropiedad), async (req, res) => {
     try {
         const { direccion, servicios_contratados } = req.body;
 
@@ -206,7 +206,7 @@ router.get('/perfil', async (req, res) => {
 });
 
 // ── Perfil: actualizar datos ──────────────────────────────────
-router.put('/perfil', async (req, res) => {
+router.put('/perfil', validate(schemas.perfilCliente), async (req, res) => {
     try {
         const bcrypt = require('bcryptjs');
         const { nombre_contacto, nombre_empresa, email, telefono, password, nueva_password } = req.body;
@@ -255,7 +255,7 @@ router.get('/limits', async (req, res) => {
 
 
 // ── Cancelar ticket (cliente) ─────────────────────────────────
-router.post('/tickets/:id/cancelar', async (req, res) => {
+router.post('/tickets/:id/cancelar', validate(schemas.cancelarTicket), async (req, res) => {
     try {
         const { motivo } = req.body;
         const { data: ticket } = await supabase
@@ -321,7 +321,7 @@ router.get('/tickets/:id/mensajes', async (req, res) => {
 });
 
 // ── Chat: enviar mensaje ──────────────────────────────────────
-router.post('/tickets/:id/mensajes', async (req, res) => {
+router.post('/tickets/:id/mensajes', validate(schemas.mensajeChat), async (req, res) => {
     try {
         const { mensaje } = req.body;
         if (!mensaje?.trim()) return res.status(400).json({ error: 'Mensaje vacío' });

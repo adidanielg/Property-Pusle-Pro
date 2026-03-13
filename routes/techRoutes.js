@@ -37,7 +37,7 @@ router.get('/dashboard', async (req, res) => {
 });
 
 // ── Cambiar estado ────────────────────────────────────────────
-router.post('/tickets/:id/estado', async (req, res) => {
+router.post('/tickets/:id/estado', validate(schemas.estadoTicket), async (req, res) => {
     try {
         const { estado } = req.body;
         const validos = ['en_proceso', 'completado'];
@@ -93,7 +93,7 @@ router.get('/perfil', async (req, res) => {
 });
 
 // ── Perfil: actualizar datos ──────────────────────────────────
-router.put('/perfil', async (req, res) => {
+router.put('/perfil', validate(schemas.perfilTecnico), async (req, res) => {
     try {
         const bcrypt = require('bcryptjs');
         const { nombre, email, telefono, especialidad, password, nueva_password } = req.body;
@@ -129,7 +129,7 @@ router.put('/perfil', async (req, res) => {
 
 
 // ── Cancelar ticket (técnico) ─────────────────────────────────
-router.post('/tickets/:id/cancelar', async (req, res) => {
+router.post('/tickets/:id/cancelar', validate(schemas.cancelarTicket), async (req, res) => {
     try {
         const { motivo } = req.body;
         const { data: ticket } = await supabase
@@ -199,7 +199,7 @@ router.get('/tickets/:id/mensajes', async (req, res) => {
 });
 
 // ── Chat: enviar mensaje ───────────────────────────────────────
-router.post('/tickets/:id/mensajes', async (req, res) => {
+router.post('/tickets/:id/mensajes', validate(schemas.mensajeChat), async (req, res) => {
     try {
         const { mensaje } = req.body;
         if (!mensaje?.trim()) return res.status(400).json({ error: 'Mensaje vacío' });
