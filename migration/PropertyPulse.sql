@@ -141,3 +141,25 @@ CREATE TABLE IF NOT EXISTS ticket_mensajes (
 
 CREATE INDEX IF NOT EXISTS idx_ticket_mensajes_ticket ON ticket_mensajes(ticket_id);
 CREATE INDEX IF NOT EXISTS idx_cancelaciones_ticket   ON cancelaciones(ticket_id);
+
+-- ── Soft delete en propiedades y tickets ─────────────────────
+ALTER TABLE propiedades ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ DEFAULT NULL;
+ALTER TABLE tickets     ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ DEFAULT NULL;
+
+-- ── Índices adicionales para performance ─────────────────────
+-- Tickets (columnas reales: cliente_id, tecnico_asignado)
+CREATE INDEX IF NOT EXISTS idx_tickets_created      ON tickets (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_tickets_deleted      ON tickets (deleted_at) WHERE deleted_at IS NULL;
+
+-- Propiedades
+CREATE INDEX IF NOT EXISTS idx_propiedades_deleted  ON propiedades (deleted_at) WHERE deleted_at IS NULL;
+
+-- Ticket mensajes (chat)
+CREATE INDEX IF NOT EXISTS idx_mensajes_created     ON ticket_mensajes (created_at ASC);
+
+-- ── Vistas de registros activos (sin deleted) ─────────────────
+CREATE OR REPLACE VIEW propiedades_activas AS
+    SELECT * FROM propiedades WHERE deleted_at IS NULL;
+
+CREATE OR REPLACE VIEW tickets_activos AS
+    SELECT * FROM tickets WHERE deleted_at IS NULL;

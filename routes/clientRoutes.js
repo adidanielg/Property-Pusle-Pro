@@ -343,4 +343,24 @@ router.post('/tickets/:id/mensajes', async (req, res) => {
     }
 });
 
+
+// ── Eliminar cuenta (CCPA / derecho al olvido) ────────────────
+router.delete('/cuenta', async (req, res) => {
+    try {
+        const id = req.user.id;
+        // Soft delete de propiedades y tickets
+        await supabase.from('propiedades').update({ deleted_at: new Date().toISOString() }).eq('compania_id', id);
+        await supabase.from('tickets').update({ deleted_at: new Date().toISOString() }).eq('cliente_id', id);
+        // Eliminar push subscriptions
+        await supabase.from('push_subscriptions').delete().eq('compania_id', id);
+        // Eliminar la compañía (cuenta)
+        await supabase.from('companias').delete().eq('id', id);
+        // Limpiar cookie
+        res.clearCookie('jwt');
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;

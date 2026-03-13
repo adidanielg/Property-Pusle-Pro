@@ -221,4 +221,18 @@ router.post('/tickets/:id/mensajes', async (req, res) => {
     }
 });
 
+
+// ── Eliminar cuenta (CCPA / derecho al olvido) ────────────────
+router.delete('/cuenta', async (req, res) => {
+    try {
+        const id = req.user.id;
+        await supabase.from('push_subscriptions').delete().eq('tecnico_id', id);
+        await supabase.from('tecnicos').delete().eq('id', id);
+        res.clearCookie('jwt');
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;

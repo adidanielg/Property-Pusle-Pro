@@ -17,7 +17,7 @@ async function checkPropiedadLimit(companiaId) {
 async function checkTicketLimit(companiaId) {
     const { data: c } = await supabase.from('companias').select('plan').eq('id', companiaId).single();
     const { count }   = await supabase.from('tickets').select('*', { count: 'exact', head: true })
-        .eq('compania_id', companiaId).in('estado', ['pendiente', 'en_proceso']);
+        .eq('cliente_id', companiaId).in('estado', ['pendiente', 'en_proceso']);
     const limite = PLANES[c?.plan || 'starter'].tickets;
     if (count >= limite) return { allowed: false, plan: c.plan, limite, actual: count };
     return { allowed: true, actual: count, limite };
@@ -31,7 +31,7 @@ async function getLimits(companiaId) {
     const [{ count: props }, { count: tickets }] = await Promise.all([
         supabase.from('propiedades').select('*', { count: 'exact', head: true }).eq('compania_id', companiaId),
         supabase.from('tickets').select('*', { count: 'exact', head: true })
-            .eq('compania_id', companiaId).in('estado', ['pendiente', 'en_proceso'])
+            .eq('cliente_id', companiaId).in('estado', ['pendiente', 'en_proceso'])
     ]);
 
     const propPct    = limites.propiedades === Infinity ? 0 : Math.round((props    / limites.propiedades) * 100);
