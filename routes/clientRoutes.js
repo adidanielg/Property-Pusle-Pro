@@ -4,6 +4,8 @@ const multer     = require('multer');
 const { requireAuth }     = require('../middleware/authMiddleware');
 const supabase            = require('../services/supabaseClient');
 const notificationService = require('../services/notificationService');
+const { validate, schemas }   = require('../middleware/validate');
+const { checkPropiedadLimit, checkTicketLimit, getSiguientePlan } = require('../services/planLimits');
 
 const upload = multer({ storage: multer.memoryStorage() });
 
