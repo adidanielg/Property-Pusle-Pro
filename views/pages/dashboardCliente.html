@@ -724,23 +724,58 @@
     checkUpgradeBanner();
 
 
+    function previewFoto(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const wrap = document.getElementById('fotoPreviewWrap');
+        const img  = document.getElementById('fotoPreview');
+        const info = document.getElementById('fotoInfo');
+        wrap.style.display = 'block';
+        ImageOptimizer.preview(file, img);
+        info.textContent = `Original: ${ImageOptimizer.formatSize(file.size)} — se comprimirá antes de subir`;
+    }
+
     async function enviarTicket(e) {
         e.preventDefault();
-        const btn = document.getElementById('btnTicket');
-        btn.disabled = true; btn.textContent = i18n.t('dash.sending');
+        const btn  = document.getElementById('btnEnviarTicket');
+        const done = btnLoading(btn, i18n.t('dash.sending'));
+
         try {
-            const res  = await fetch('/cliente/tickets', { method: 'POST', body: new FormData(e.target) });
-            const data = await res.json();
-            if (data.success) {
-                location.reload();
-            } else if (data.error === 'limit_reached') {
-                cerrarModal('ticketModal');
-                mostrarLimitModal(data.message, data.upgrade_to);
-            } else {
-                showToast('Error: ' + data.message || data.error);
+            const form     = e.target;
+            const fileInput = document.getElementById('fotoTicket');
+            const formData  = new FormData();
+
+            // Campos del form
+            formData.append('propiedad_id', form.propiedad_id.value);
+            formData.append('categoria',    form.categoria.value);
+            formData.append('motivo',       form.motivo.value);
+            formData.append('descripcion',  form.descripcion.value);
+
+            // Comprimir imagen si existe
+            if (fileInput.files[0]) {
+                const original   = fileInput.files[0];
+                const compressed = await ImageOptimizer.compress(original);
+                formData.append('foto', compressed, 'foto.jpg');
+                console.log(`Imagen: ${ImageOptimizer.formatSize(original.size)} → ${ImageOptimizer.formatSize(compressed.size)}`);
             }
-        } catch (err) { showToast('Error de conexión'); }
-        finally { btn.disabled = false; btn.textContent = i18n.t('dash.submit'); }
+
+            const res  = await fetch('/cliente/tickets', { method: 'POST', body: formData });
+            const data = await res.json();
+
+            if (data.success) {
+                showToast(i18n.t('dash.ticketCreated') || '✅ Ticket creado');
+                document.getElementById('modalNuevoTicket').classList.remove('open');
+                form.reset();
+                document.getElementById('fotoPreviewWrap').style.display = 'none';
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showToast(data.message || data.error || 'Error', 'error');
+            }
+        } catch (err) {
+            showToast('Error de conexión', 'error');
+        } finally {
+            done();
+        }
     }
 </script>
 
@@ -964,6 +999,7 @@
     </div>
 </div>
 
+<script src="/js/imageOptimizer.js"></script>
 <script src="/js/notifications.js"></script>
 </body>
 </html>

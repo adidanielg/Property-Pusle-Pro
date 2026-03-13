@@ -460,4 +460,15 @@ const i18n = {
     }
 };
 
-document.addEventListener('DOMContentLoaded', () => i18n.init());
+// Inicializar cuando el DOM esté listo
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => i18n.init());
+} else {
+    // DOM ya cargado (script al final del body)
+    i18n.init();
+}
+
+// Re-aplicar traducciones en caso de navegación SPA o cambios dinámicos
+window.addEventListener('load', () => {
+    if (window.i18n) i18n.apply();
+});

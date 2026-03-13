@@ -3,7 +3,10 @@ const router     = express.Router();
 const { requireAuth } = require('../middleware/authMiddleware');
 const supabase   = require('../services/supabaseClient');
 const { validate, schemas } = require('../middleware/validate');
+
 router.use(requireAuth(['admin']));
+
+const PAGE_SIZE = 20;
 
 // ── Dashboard ─────────────────────────────────────────────────
 router.get('/dashboard', async (req, res) => {
@@ -23,10 +26,11 @@ router.get('/dashboard', async (req, res) => {
             supabase.from('tecnicos').select('*',  { count: 'exact', head: true }),
             supabase.from('tickets').select('*',   { count: 'exact', head: true }).neq('estado', 'completado'),
             supabase.from('tickets').select('*',   { count: 'exact', head: true }).eq('estado', 'completado'),
+            // Solo primera página al cargar
             supabase.from('tickets')
                 .select('*, companias(nombre_empresa, nombre_contacto), tecnicos:tecnico_asignado(nombre), propiedades(direccion)')
                 .order('created_at', { ascending: false })
-                .limit(200),
+                .range(0, PAGE_SIZE - 1),
             supabase.from('companias')
                 .select('*')
                 .eq('tipo_cliente', 'Individual')
@@ -56,6 +60,10 @@ router.get('/dashboard', async (req, res) => {
             totalCalif: statsCalif[t.id]?.total || 0
         }));
 
+        // Total de tickets para paginación
+        const { count: totalTickets } = await supabase
+            .from('tickets').select('*', { count: 'exact', head: true });
+
         res.render('adminDashboard.html', {
             title:    'Admin | PropertyPulse',
             admin:    req.user,
@@ -66,6 +74,8 @@ router.get('/dashboard', async (req, res) => {
                 ticketsResueltos: ticketsResueltos || 0
             },
             tickets:      ultimosTickets    || [],
+            totalTickets: totalTickets      || 0,
+            pageSize:     PAGE_SIZE,
             individuales: individuales      || [],
             companias:    companias         || [],
             tecnicos:     tecnicosConRating || []
@@ -74,6 +84,42 @@ router.get('/dashboard', async (req, res) => {
     } catch (err) {
         console.error('[ADMIN DASHBOARD]', err);
         res.status(500).send('Error cargando el panel');
+    }
+});
+
+// ── Tickets paginados (API) ───────────────────────────────────
+router.get('/tickets', async (req, res) => {
+    try {
+        const page     = Math.max(1, parseInt(req.query.page)   || 1);
+        const estado   = req.query.estado   || null;
+        const categoria= req.query.categoria|| null;
+        const search   = req.query.search   || null;
+        const from     = (page - 1) * PAGE_SIZE;
+        const to       = from + PAGE_SIZE - 1;
+
+        let query = supabase
+            .from('tickets')
+            .select('*, companias(nombre_empresa, nombre_contacto), tecnicos:tecnico_asignado(nombre), propiedades(direccion)', { count: 'exact' })
+            .order('created_at', { ascending: false })
+            .range(from, to);
+
+        if (estado)    query = query.eq('estado', estado);
+        if (categoria) query = query.eq('categoria', categoria);
+        if (search)    query = query.ilike('motivo', `%${search}%`);
+
+        const { data, count, error } = await query;
+        if (error) throw error;
+
+        res.json({
+            success:    true,
+            tickets:    data || [],
+            total:      count || 0,
+            page,
+            pageSize:   PAGE_SIZE,
+            totalPages: Math.ceil((count || 0) / PAGE_SIZE)
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 
@@ -136,7 +182,6 @@ router.delete('/tecnicos/:id', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
-
 
 // ── Log de cancelaciones ──────────────────────────────────────
 router.get('/cancelaciones', async (req, res) => {
