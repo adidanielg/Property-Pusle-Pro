@@ -27,7 +27,7 @@
         </div>
     </aside>
 
-    <main class="main-content">
+    <main class="main-content" id="adminMain" data-total-tickets="<%= totalTickets %>" data-page-size="<%= pageSize %>">
 
         <div class="page-header">
             <h1 data-i18n="admin.title">Centro de Control</h1>
@@ -433,29 +433,93 @@
     const TICKETS_POR_PAGINA = 15;
     let paginaActual = 1;
 
-    function filtrarTickets() { paginaActual = 1; renderTickets(); }
 
-    function renderTickets() {
-        const cat    = document.getElementById('filtroCategoria').value.toLowerCase();
-        const estado = document.getElementById('filtroEstado').value.toLowerCase();
-        const filas  = [...document.querySelectorAll('.ticket-row')];
+    // ── Paginación de tickets ─────────────────────────────────
+    let currentPage    = 1;
+    let totalPages     = 1;
+    const adminMain  = document.getElementById('adminMain');
+    let totalTickets = parseInt(adminMain.dataset.totalTickets) || 0;
+    const PAGE_SIZE  = parseInt(adminMain.dataset.pageSize) || 20;
 
-        const visibles = filas.filter(tr => {
-            const matchCat    = !cat    || tr.dataset.categoria.toLowerCase() === cat;
-            const matchEstado = !estado || tr.dataset.estado.toLowerCase()    === estado;
-            return matchCat && matchEstado;
-        });
+    // Inicializar con los tickets del servidor (primera página)
+    updatePaginacionUI(1, Math.ceil(totalTickets / PAGE_SIZE), totalTickets);
 
-        const total  = visibles.length;
-        const inicio = (paginaActual - 1) * TICKETS_POR_PAGINA;
-        const fin    = inicio + TICKETS_POR_PAGINA;
-
-        filas.forEach(tr => tr.style.display = 'none');
-        visibles.forEach((tr, i) => tr.style.display = (i >= inicio && i < fin) ? '' : 'none');
-
-        document.getElementById('ticketCount').textContent = `(${total} resultado${total !== 1 ? 's' : ''})`;
-        renderPaginacion(total);
+    async function filtrarTickets() {
+        currentPage = 1;
+        await cargarTickets();
     }
+
+    async function cambiarPagina(dir) {
+        const nueva = currentPage + dir;
+        if (nueva < 1 || nueva > totalPages) return;
+        currentPage = nueva;
+        await cargarTickets();
+    }
+
+    async function cargarTickets() {
+        const cat    = document.getElementById('filtroCategoria').value;
+        const estado = document.getElementById('filtroEstado').value;
+        const search = document.getElementById('buscarTicket')?.value || '';
+
+        const params = new URLSearchParams({ page: currentPage });
+        if (cat)    params.append('categoria', cat);
+        if (estado) params.append('estado', estado);
+        if (search) params.append('search', search);
+
+        const tbody = document.getElementById('ticketsBody');
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-3)">Cargando...</td></tr>`;
+
+        try {
+            const res  = await fetch(`/admin/tickets?${params}`);
+            const data = await res.json();
+
+            totalPages   = data.totalPages;
+            totalTickets = data.total;
+            updatePaginacionUI(data.page, data.totalPages, data.total);
+            renderTickets(data.tickets);
+        } catch (e) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--red)">Error cargando tickets</td></tr>`;
+        }
+    }
+
+    function updatePaginacionUI(page, pages, total) {
+        document.getElementById('paginacionInfo').textContent  = `${total} tickets en total`;
+        document.getElementById('paginacionPages').textContent = `Página ${page} de ${pages || 1}`;
+        document.getElementById('btnPrev').disabled = page <= 1;
+        document.getElementById('btnNext').disabled = page >= pages;
+        document.getElementById('ticketCount').textContent = `(${total})`;
+    }
+
+    function renderTickets(tickets) {
+        const tbody = document.getElementById('ticketsBody');
+        if (!tickets.length) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-2);padding:1.5rem">No hay tickets.</td></tr>`;
+            return;
+        }
+
+        const estadoBadge = {
+            pendiente:  '<span class="badge badge-pendiente">Pendiente</span>',
+            en_proceso: '<span class="badge badge-en_proceso">En proceso</span>',
+            completado: '<span class="badge badge-completado">Completado</span>',
+            cancelado:  '<span class="badge" style="background:var(--red-soft);color:var(--red)">Cancelado</span>',
+        };
+
+        tbody.innerHTML = tickets.map(t => `
+            <tr>
+                <td><span class="text-mono text-small">${t.id.slice(0,8)}…</span></td>
+                <td>
+                    <div style="font-weight:500;font-size:.875rem">${t.motivo || ''}</div>
+                    <div class="text-small text-muted">${t.categoria || ''}</div>
+                </td>
+                <td class="text-small">${t.propiedades?.direccion || '—'}</td>
+                <td class="text-small">${t.companias?.nombre_contacto || t.companias?.nombre_empresa || '—'}</td>
+                <td class="text-small">${t.tecnicos?.nombre || '<span style="color:var(--text-3)">Sin asignar</span>'}</td>
+                <td>${estadoBadge[t.estado] || t.estado}</td>
+                <td class="text-small text-muted">${new Date(t.created_at).toLocaleDateString()}</td>
+            </tr>
+        `).join('');
+    }
+
 
     function renderPaginacion(total) {
         const totalPags = Math.ceil(total / TICKETS_POR_PAGINA);
