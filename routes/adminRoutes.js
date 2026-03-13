@@ -2,7 +2,7 @@ const express    = require('express');
 const router     = express.Router();
 const { requireAuth } = require('../middleware/authMiddleware');
 const supabase   = require('../services/supabaseClient');
-
+const { validate, schemas } = require('../middleware/validate');
 router.use(requireAuth(['admin']));
 
 // ── Dashboard ─────────────────────────────────────────────────
