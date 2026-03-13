@@ -3,7 +3,7 @@ const router      = express.Router();
 const { requireAuth } = require('../middleware/authMiddleware');
 const ticketService   = require('../services/ticketService');
 const supabase        = require('../services/supabaseClient');
-
+const { validate, schemas } = require('../middleware/validate');
 router.use(requireAuth(['tecnico']));
 
 // ── Dashboard ─────────────────────────────────────────────────
