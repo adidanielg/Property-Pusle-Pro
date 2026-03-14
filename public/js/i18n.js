@@ -440,28 +440,47 @@ const i18n = {
     },
 
     renderToggle() {
-        // Si ya existe un #lang-toggle en el HTML (ej. en el topbar del dashboard), solo actualizar UI
+        // Si ya existe un #lang-toggle en el HTML, solo adjuntar eventos y actualizar UI
         const existing = document.getElementById('lang-toggle');
-        if (existing) { this.updateToggleUI(); return; }
+        if (existing) {
+            this._attachEvents();
+            this.updateToggleUI();
+            return;
+        }
 
-        // En páginas sin dashboard (login, registro, landing) crear toggle flotante
+        // En páginas sin toggle en HTML, crear uno flotante
         const toggle = document.createElement('div');
         toggle.id = 'lang-toggle';
         toggle.style.cssText = `
             position: fixed; top: 1rem; right: 4.5rem; z-index: 9999;
             display: flex; gap: .2rem;
-            background: var(--surface, #fff); border: 1px solid var(--border, #e8eaed);
+            background: var(--surface, #1a1a2e); border: 1px solid var(--border, rgba(255,255,255,.1));
             border-radius: 8px; padding: .2rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,.3);
         `;
         toggle.innerHTML = `
-            <button id="lang-es" onclick="i18n.setLang('es')" title="Español"
-                style="padding:.3rem .6rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;background:transparent;color:#5c6370;transition:all .15s">ES</button>
-            <button id="lang-en" onclick="i18n.setLang('en')" title="English"
-                style="padding:.3rem .6rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;background:transparent;color:#5c6370;transition:all .15s">EN</button>
+            <button id="lang-es" title="Español"
+                style="padding:.3rem .6rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;background:transparent;color:rgba(255,255,255,.4);transition:all .15s">ES</button>
+            <button id="lang-en" title="English"
+                style="padding:.3rem .6rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;background:transparent;color:rgba(255,255,255,.4);transition:all .15s">EN</button>
         `;
         document.body.appendChild(toggle);
+        this._attachEvents();
         this.updateToggleUI();
+    },
+
+    _attachEvents() {
+        // Adjuntar via addEventListener — sin onclick inline (respeta CSP strict)
+        const esBtn = document.getElementById('lang-es');
+        const enBtn = document.getElementById('lang-en');
+        if (esBtn && !esBtn._i18nBound) {
+            esBtn.addEventListener('click', () => i18n.setLang('es'));
+            esBtn._i18nBound = true;
+        }
+        if (enBtn && !enBtn._i18nBound) {
+            enBtn.addEventListener('click', () => i18n.setLang('en'));
+            enBtn._i18nBound = true;
+        }
     },
 
     updateToggleUI() {

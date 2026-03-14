@@ -12,7 +12,7 @@ const helmet       = require('helmet');
 const compression  = require('compression');
 
 const sanitizeInputs            = require('./middleware/sanitize');
-const { apiLimiter, loginLimiter, registerLimiter, ticketLimiter, chatLimiter } = require('./middleware/rateLimiter');
+const { apiLimiter }            = require('./middleware/rateLimiter');
 const { notFound, errorHandler} = require('./middleware/errorHandler');
 
 const authRoutes         = require('./routes/authRoutes');
@@ -28,14 +28,15 @@ app.set('trust proxy', 1);
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
-            defaultSrc:  ["'self'"],
-            scriptSrc:   ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://maps.googleapis.com"],
-            styleSrc:    ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
-            fontSrc:     ["'self'", "https://fonts.gstatic.com"],
-            imgSrc:      ["'self'", "data:", "blob:", "https://*.supabase.co", "https://maps.googleapis.com", "https://maps.gstatic.com"],
-            connectSrc:  ["'self'", "https://*.supabase.co", "https://maps.googleapis.com"],
-            workerSrc:   ["'self'"],
-            manifestSrc: ["'self'"],
+            defaultSrc:     ["'self'"],
+            scriptSrc:      ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://maps.googleapis.com"],
+            scriptSrcAttr:  ["'unsafe-inline'"],  // permite onclick= en elementos HTML
+            styleSrc:       ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
+            fontSrc:        ["'self'", "https://fonts.gstatic.com"],
+            imgSrc:         ["'self'", "data:", "blob:", "https://*.supabase.co", "https://maps.googleapis.com", "https://maps.gstatic.com"],
+            connectSrc:     ["'self'", "https://*.supabase.co", "https://maps.googleapis.com"],
+            workerSrc:      ["'self'"],
+            manifestSrc:    ["'self'"],
         },
     },
     crossOriginEmbedderPolicy: false,
@@ -81,7 +82,7 @@ app.use('/notificaciones', apiLimiter);
 // ── Rutas públicas ────────────────────────────────────────────
 app.get('/',        (req, res) => res.render('landing', { title: 'PropertyPulse — Property Maintenance, Simplified' }));
 app.get('/landing', (req, res) => res.render('landing', { title: 'PropertyPulse — Property Maintenance, Simplified' }));
-app.get('/pricing', (req, res) => res.render('pricing', { title: 'Planes y Precios — PropertyPulse' }));
+app.get('/pricing', (req, res) => res.redirect('/#pricing'));
 app.get('/app',     (req, res) => res.render('index',   { title: 'Acceder — PropertyPulse' }));
 app.get('/inicio',  (req, res) => res.redirect('/app'));
 app.get('/terms',   (req, res) => res.render('terms',   { title: 'Terms of Service — PropertyPulse' }));
