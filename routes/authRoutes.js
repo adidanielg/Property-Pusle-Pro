@@ -47,7 +47,9 @@ router.post('/login', validate(schemas.login), async (req, res) => {
 
         const { token, user } = await authService.login(username, password, role);
 
-        res.cookie('jwt', token, {
+        // Cookie separada por rol — evita que múltiples sesiones se sobreescriban
+        const cookieName = role === 'admin' ? 'jwt_admin' : role === 'tecnico' ? 'jwt_tecnico' : 'jwt_cliente';
+        res.cookie(cookieName, token, {
             httpOnly: true,
             secure:   process.env.NODE_ENV === 'production',
             sameSite: 'lax',
@@ -144,6 +146,9 @@ router.post('/set-lang', async (req, res) => {
 // ── GET /auth/logout ──────────────────────────────────────────
 router.get('/logout', (req, res) => {
     res.clearCookie('jwt');
+    res.clearCookie('jwt_cliente');
+    res.clearCookie('jwt_tecnico');
+    res.clearCookie('jwt_admin');
     res.redirect('/');
 });
 

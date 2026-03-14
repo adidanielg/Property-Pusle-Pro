@@ -2,7 +2,11 @@ const jwt = require('jsonwebtoken');
 
 const requireAuth = (rolesPermitidos = []) => {
     return (req, res, next) => {
-        const token = req.cookies.jwt;
+        // Leer cookie según el rol de la ruta
+        const cookieName = req.baseUrl.includes('/tecnico') ? 'jwt_tecnico'
+                         : req.baseUrl.includes('/admin')   ? 'jwt_admin'
+                         : 'jwt_cliente';
+        const token = req.cookies[cookieName] || req.cookies.jwt; // fallback a jwt para compatibilidad
 
         const loginUrl = () => {
             if (req.baseUrl.includes('/tecnico')) return '/auth/login-tecnico';
@@ -34,6 +38,7 @@ const requireAuth = (rolesPermitidos = []) => {
 
         } catch (err) {
             res.clearCookie('jwt');
+            res.clearCookie(cookieName);
             const expired = err.name === 'TokenExpiredError';
 
             // Petición AJAX/API — devolver JSON con código claro

@@ -158,7 +158,11 @@
         <a href="#cancelaciones">❌ Cancelaciones</a>
         <a href="#fees">💰 Fees</a>
     </nav>
-    <a href="/auth/logout" class="adm-logout">Salir →</a>
+    <div id="lang-toggle" style="display:flex;gap:.2rem;background:#1a1d2e;border:1px solid #252836;border-radius:8px;padding:.2rem">
+        <button id="lang-es" onclick="i18n.setLang('es')" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:#4a5568" title="Español">ES</button>
+        <button id="lang-en" onclick="i18n.setLang('en')" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:#4a5568" title="English">EN</button>
+    </div>
+    <button id="topbar-theme-btn" onclick="toggleTheme()" style="padding:.3rem .55rem;border:1px solid #252836;border-radius:7px;background:#1a1d2e;color:#8892a4;font-size:.95rem;cursor:pointer;transition:all .15s" title="Cambiar tema">🌙</button>
 </header>
 
 <div class="adm-body">
@@ -419,6 +423,11 @@
         <div id="feesBody">
             <div class="adm-empty">Cargando...</div>
         </div>
+    </div>
+
+    <!-- Cerrar sesión -->
+    <div style="display:flex;justify-content:flex-end;margin-top:.5rem">
+        <a href="/auth/logout" style="display:inline-flex;align-items:center;gap:.4rem;padding:.45rem 1rem;border-radius:8px;background:rgba(239,68,68,.12);color:#f87171;font-size:.82rem;font-weight:600;text-decoration:none;transition:all .15s" onmouseover="this.style.background='rgba(239,68,68,.22)'" onmouseout="this.style.background='rgba(239,68,68,.12)'" data-i18n="nav.logout">🚪 Cerrar sesión</a>
     </div>
 
 </div>
