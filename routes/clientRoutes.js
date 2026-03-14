@@ -19,10 +19,12 @@ router.get('/dashboard', async (req, res) => {
             supabase.from('propiedades')
                 .select('*')
                 .eq('compania_id', id)
+                .is('deleted_at', null)
                 .order('created_at', { ascending: false }),
             supabase.from('tickets')
                 .select('*, propiedades(direccion), tecnicos:tecnico_asignado(nombre)')
                 .eq('cliente_id', id)
+                .is('deleted_at', null)
                 .order('created_at', { ascending: false }),
             supabase.from('calificaciones')
                 .select('ticket_id')
@@ -173,6 +175,7 @@ router.put('/propiedades/:id', async (req, res) => {
             .update({ direccion, servicios_contratados })
             .eq('id', req.params.id)
             .eq('compania_id', req.user.id)
+            .is('deleted_at', null)
             .select().single();
         if (error) throw error;
         res.json({ success: true, propiedad: data });
@@ -181,9 +184,10 @@ router.put('/propiedades/:id', async (req, res) => {
 
 router.delete('/propiedades/:id', async (req, res) => {
     try {
+        // Soft delete
         const { error } = await supabase
             .from('propiedades')
-            .delete()
+            .update({ deleted_at: new Date().toISOString() })
             .eq('id', req.params.id)
             .eq('compania_id', req.user.id);
         if (error) throw error;
@@ -257,17 +261,27 @@ router.get('/limits', async (req, res) => {
 
 
 // ── Cancelar ticket (cliente) ─────────────────────────────────
+// BUG FIXES: campo correcto es 'cliente_id' (no 'compania_id'),
+//            'tecnico_asignado' (no 'tecnico_id'), 'motivo' (no 'titulo')
+//            y push_subscription está en tabla tecnicos directamente
 router.post('/tickets/:id/cancelar', validate(schemas.cancelarTicket), async (req, res) => {
     try {
         const { motivo } = req.body;
+
+        // CORRECTO: la columna es cliente_id, no compania_id
         const { data: ticket } = await supabase
-            .from('tickets').select('id, titulo, categoria, tecnico_id, compania_id')
-            .eq('id', req.params.id).eq('compania_id', req.user.id).single();
+            .from('tickets')
+            .select('id, motivo, categoria, tecnico_asignado, cliente_id')
+            .eq('id', req.params.id)
+            .eq('cliente_id', req.user.id)   // ← fix: cliente_id
+            .single();
 
         if (!ticket) return res.status(404).json({ error: 'Ticket no encontrado' });
 
-        // Actualizar estado
-        await supabase.from('tickets').update({ estado: 'cancelado' }).eq('id', ticket.id);
+        // Solo cancelar si está pendiente o en proceso
+        await supabase.from('tickets')
+            .update({ estado: 'cancelado' })
+            .eq('id', ticket.id);
 
         // Log de cancelación
         const { data: cliente } = await supabase
@@ -280,25 +294,38 @@ router.post('/tickets/:id/cancelar', validate(schemas.cancelarTicket), async (re
             usuario_nombre: cliente?.nombre_contacto || 'Cliente',
             motivo:         motivo || 'Sin motivo',
             categoria:      ticket.categoria,
-            titulo:         ticket.titulo
+            titulo:         ticket.motivo  // ← fix: motivo (no titulo)
         });
 
         // Notificar al técnico si estaba asignado
-        if (ticket.tecnico_id) {
-            const { data: tecSub } = await supabase
-                .from('push_subscriptions').select('subscription').eq('user_id', ticket.tecnico_id).single();
-            if (tecSub) {
+        // CORRECTO: push_subscription está directamente en la tabla tecnicos
+        if (ticket.tecnico_asignado) {  // ← fix: tecnico_asignado (no tecnico_id)
+            notificationService.notificarCliente(ticket.tecnico_asignado, 'cancelado', {
+                motivo: ticket.motivo
+            }).catch(() => {});
+
+            // Envío directo de push al técnico usando su push_subscription
+            const { data: tec } = await supabase
+                .from('tecnicos')
+                .select('push_subscription')
+                .eq('id', ticket.tecnico_asignado)
+                .single();
+
+            if (tec?.push_subscription) {
                 const webpush = require('web-push');
                 webpush.setVapidDetails(
                     'mailto:admin@propertypulse.com',
                     process.env.VAPID_PUBLIC_KEY,
                     process.env.VAPID_PRIVATE_KEY
                 );
-                webpush.sendNotification(tecSub.subscription, JSON.stringify({
-                    title: '❌ Ticket cancelado',
-                    body:  `El cliente canceló: ${ticket.titulo}`,
-                    url:   '/tecnico/dashboard'
-                })).catch(() => {});
+                webpush.sendNotification(
+                    JSON.parse(tec.push_subscription),
+                    JSON.stringify({
+                        title: '❌ Ticket cancelado',
+                        body:  `El cliente canceló: ${ticket.motivo}`,
+                        url:   '/tecnico/dashboard'
+                    })
+                ).catch(() => {});
             }
         }
 
@@ -311,6 +338,11 @@ router.post('/tickets/:id/cancelar', validate(schemas.cancelarTicket), async (re
 // ── Chat: obtener mensajes ────────────────────────────────────
 router.get('/tickets/:id/mensajes', async (req, res) => {
     try {
+        // Verificar que el ticket pertenece a este cliente
+        const { data: ticket } = await supabase
+            .from('tickets').select('id').eq('id', req.params.id).eq('cliente_id', req.user.id).single();
+        if (!ticket) return res.status(403).json({ error: 'No autorizado' });
+
         const { data } = await supabase
             .from('ticket_mensajes')
             .select('*')
@@ -327,6 +359,11 @@ router.post('/tickets/:id/mensajes', validate(schemas.mensajeChat), async (req, 
     try {
         const { mensaje } = req.body;
         if (!mensaje?.trim()) return res.status(400).json({ error: 'Mensaje vacío' });
+
+        // Verificar que el ticket pertenece a este cliente
+        const { data: ticket } = await supabase
+            .from('tickets').select('id').eq('id', req.params.id).eq('cliente_id', req.user.id).single();
+        if (!ticket) return res.status(403).json({ error: 'No autorizado' });
 
         const { data: cliente } = await supabase
             .from('companias').select('nombre_contacto').eq('id', req.user.id).single();
@@ -353,8 +390,8 @@ router.delete('/cuenta', async (req, res) => {
         // Soft delete de propiedades y tickets
         await supabase.from('propiedades').update({ deleted_at: new Date().toISOString() }).eq('compania_id', id);
         await supabase.from('tickets').update({ deleted_at: new Date().toISOString() }).eq('cliente_id', id);
-        // Eliminar push subscriptions
-        await supabase.from('push_subscriptions').delete().eq('compania_id', id);
+        // Limpiar push subscription
+        await supabase.from('companias').update({ push_subscription: null }).eq('id', id);
         // Eliminar la compañía (cuenta)
         await supabase.from('companias').delete().eq('id', id);
         // Limpiar cookie

@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro Técnico | PropertyPulse</title>
-    <!-- PWA -->
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#6c63ff">
     <meta name="mobile-web-app-capable" content="yes">
-    <!-- iOS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="PropertyPulse">
@@ -18,11 +16,11 @@
 </head>
 <body>
 
-<div class="auth-page" style="align-items:flex-start;padding-top:3rem">
+<div class="auth-page" style="align-items:flex-start;padding-top:3rem;padding-bottom:3rem">
     <div class="auth-card" style="max-width:500px;margin:0 auto">
 
         <div class="auth-logo">
-            <div class="mark">🔧</div>
+            <div class="mark" style="background:var(--text-1)">🔧</div>
             <h1>Property<span>Pulse</span></h1>
             <p data-i18n="reg.applyTech">Únete como técnico</p>
         </div>
@@ -32,22 +30,22 @@
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label" data-i18n="reg.firstName">Nombre</label>
-                    <input type="text" name="nombre" class="form-input" required>
+                    <input type="text" name="nombre" class="form-input" required autocomplete="given-name">
                 </div>
                 <div class="form-group">
                     <label class="form-label" data-i18n="reg.lastName">Apellido</label>
-                    <input type="text" name="apellido" class="form-input" required>
+                    <input type="text" name="apellido" class="form-input" required autocomplete="family-name">
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label" data-i18n="reg.email">Email</label>
-                    <input type="email" name="email" class="form-input" required>
+                    <input type="email" name="email" class="form-input" required autocomplete="email">
                 </div>
                 <div class="form-group">
                     <label class="form-label" data-i18n="reg.phone">Teléfono</label>
-                    <input type="text" name="telefono" class="form-input" required>
+                    <input type="tel" name="telefono" class="form-input" required autocomplete="tel">
                 </div>
             </div>
 
@@ -73,13 +71,15 @@
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label" data-i18n="reg.password">Contraseña</label>
-                    <input type="password" name="password" class="form-input" required>
+                    <input type="password" name="password" class="form-input" required autocomplete="new-password" minlength="6">
                 </div>
                 <div class="form-group">
                     <label class="form-label" data-i18n="reg.confirmPassword">Confirmar contraseña</label>
-                    <input type="password" name="confirm_password" class="form-input" required>
+                    <input type="password" name="confirm_password" class="form-input" required autocomplete="new-password">
                 </div>
             </div>
+
+            <div id="registerError" class="form-error" style="display:none"></div>
 
             <button type="submit" class="btn btn-full mt-2" style="background:var(--text-1);color:#fff" id="btnSubmit" data-i18n="reg.register">
                 Registrarme
@@ -94,28 +94,41 @@
     </div>
 </div>
 
-<!-- Modal éxito -->
-<div id="successModal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
-    <div class="modal" style="max-width:400px;text-align:center">
-        <div style="font-size:3rem;margin-bottom:1rem">🎉</div>
-        <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:.5rem" data-i18n="reg.successTechTitle">¡Registro exitoso!</h2>
-        <p class="text-muted mb-3" style="font-size:.9rem" data-i18n="reg.successMsg">Este es tu nombre de usuario para iniciar sesión:</p>
+<!-- ── Modal de usuario creado exitosamente ─────────────────── -->
+<div id="successModal" class="modal-overlay">
+    <div class="modal" style="max-width:420px;text-align:center">
 
-        <div style="background:var(--accent-soft);border:2px solid var(--accent);padding:1.25rem 1.5rem;border-radius:12px;margin-bottom:.75rem">
-            <div id="usernameDisplay" style="font-size:1.6rem;font-weight:700;color:var(--accent);letter-spacing:.5px;font-family:var(--font-mono)"></div>
+        <div style="font-size:3.5rem;margin-bottom:1rem;animation:modalIn .3s ease">🎉</div>
+
+        <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:.4rem;letter-spacing:-.3px" data-i18n="reg.successTechTitle">
+            ¡Registro exitoso!
+        </h2>
+        <p style="font-size:.875rem;color:var(--text-2);margin-bottom:1.5rem" data-i18n="reg.successMsg">
+            Este es tu nombre de usuario para iniciar sesión:
+        </p>
+
+        <!-- Username display -->
+        <div style="background:var(--accent-soft);border:2px solid var(--accent);padding:1.25rem 1.5rem;border-radius:14px;margin-bottom:1rem">
+            <div style="font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:.4rem;opacity:.7">
+                Tu usuario
+            </div>
+            <div id="usernameDisplay" style="font-size:1.5rem;font-weight:700;color:var(--accent);letter-spacing:.5px;font-family:var(--font-mono)"></div>
         </div>
 
-        <button onclick="copiarUsername()" class="btn btn-secondary btn-sm mb-3" style="width:100%">
+        <button onclick="copiarUsername()" id="copyBtn" class="btn btn-secondary btn-full mb-2">
             📋 Copiar nombre de usuario
         </button>
 
-        <p class="text-small text-muted mb-3" style="background:var(--yellow-soft);padding:.6rem .75rem;border-radius:8px;color:#92400e">
-            ⚠️ Guárdalo — lo necesitas para iniciar sesión
-        </p>
+        <div style="background:var(--yellow-soft);border-left:3px solid var(--yellow);padding:.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1.5rem;text-align:left">
+            <p style="font-size:.82rem;color:#92400e;font-weight:500">
+                ⚠️ <strong>Guárdalo ahora</strong> — lo necesitas para iniciar sesión. No usamos email como usuario.
+            </p>
+        </div>
 
-        <a href="/auth/login-tecnico" class="btn btn-primary btn-full">
+        <a href="/auth/login-tecnico" class="btn btn-primary btn-full" data-i18n="reg.goLogin">
             Ir a iniciar sesión →
         </a>
+
     </div>
 </div>
 
@@ -124,14 +137,25 @@
 <script src="/js/i18n.js"></script>
 
 <script>
-
     function copiarUsername() {
         const username = document.getElementById('usernameDisplay').textContent;
+        const btn = document.getElementById('copyBtn');
+
         navigator.clipboard.writeText(username).then(() => {
+            btn.textContent = '✅ ¡Copiado!';
+            btn.style.background = 'var(--green-soft)';
+            btn.style.color = 'var(--green)';
+            setTimeout(() => {
+                btn.textContent = '📋 Copiar nombre de usuario';
+                btn.style.background = '';
+                btn.style.color = '';
+            }, 2000);
             showToast('✅ Nombre de usuario copiado');
         }).catch(() => {
             const el = document.createElement('textarea');
             el.value = username;
+            el.style.position = 'fixed';
+            el.style.opacity = '0';
             document.body.appendChild(el);
             el.select();
             document.execCommand('copy');
@@ -142,17 +166,28 @@
 
     async function registrar(e) {
         e.preventDefault();
+
+        const errDiv = document.getElementById('registerError');
+        errDiv.style.display = 'none';
+
         const btn  = document.getElementById('btnSubmit');
+        const done = btnLoading(btn, 'Procesando...');
         const data = Object.fromEntries(new FormData(e.target));
         data.role  = 'tecnico';
 
         if (data.password !== data.confirm_password) {
-            alert('Las contraseñas no coinciden');
+            errDiv.textContent = '❌ Las contraseñas no coinciden';
+            errDiv.style.display = 'block';
+            done();
             return;
         }
 
-        btn.disabled = true;
-        btn.textContent = i18n.t('reg.processing');
+        if (data.password.length < 6) {
+            errDiv.textContent = '❌ La contraseña debe tener al menos 6 caracteres';
+            errDiv.style.display = 'block';
+            done();
+            return;
+        }
 
         try {
             const res    = await fetch('/auth/register', {
@@ -166,13 +201,15 @@
                 document.getElementById('usernameDisplay').textContent = result.username;
                 document.getElementById('successModal').classList.add('open');
             } else {
-                alert('Error: ' + result.error);
+                errDiv.textContent = '❌ ' + result.error;
+                errDiv.style.display = 'block';
+                errDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         } catch (err) {
-            alert('Error de conexión');
+            errDiv.textContent = '❌ Error de conexión. Intenta nuevamente.';
+            errDiv.style.display = 'block';
         } finally {
-            btn.disabled = false;
-            btn.textContent = i18n.t('reg.register');
+            done();
         }
     }
 </script>
