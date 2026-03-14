@@ -22,6 +22,13 @@ const translations = {
         'landing.techRegister': 'Aplicar como Técnico',
         'landing.adminAccess':  '¿Eres administrador?',
         'landing.restricted':   'Acceso restringido →',
+        'landing.howItWorks':   'Cómo funciona',
+        'landing.pricing':      'Precios',
+        'landing.faq':          'Preguntas',
+        'landing.getStarted':   'Comenzar gratis →',
+        'landing.getStarted2':  'Comenzar →',
+        'landing.seeHow':       'Ver cómo funciona',
+        'landing.startPro':     'Comenzar con Pro →',
 
         // Login
         'login.username':       'Usuario',
@@ -234,6 +241,13 @@ const translations = {
         'landing.techRegister': 'Apply as Technician',
         'landing.adminAccess':  'Are you an admin?',
         'landing.restricted':   'Restricted access →',
+        'landing.howItWorks':   'How it works',
+        'landing.pricing':      'Pricing',
+        'landing.faq':          'FAQ',
+        'landing.getStarted':   'Get started free →',
+        'landing.getStarted2':  'Get started →',
+        'landing.seeHow':       'See how it works',
+        'landing.startPro':     'Start with Pro →',
 
         // Login
         'login.username':       'Username',

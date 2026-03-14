@@ -817,9 +817,9 @@
         Property<span style="color:var(--accent)">Pulse</span>
     </div>
     <div class="nav-links">
-        <a href="#how-it-works">How it works</a>
-        <a href="#pricing">Pricing</a>
-        <a href="#faq">FAQ</a>
+        <a href="#how-it-works" data-i18n="landing.howItWorks">How it works</a>
+        <a href="#pricing" data-i18n="landing.pricing">Pricing</a>
+        <a href="#faq" data-i18n="landing.faq">FAQ</a>
         <div id="lang-toggle" style="display:flex;gap:.2rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.2rem">
         <button id="lang-es" onclick="i18n.setLang('es')" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)">ES</button>
         <button id="lang-en" onclick="i18n.setLang('en')" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)">EN</button>
@@ -840,8 +840,8 @@
     </p>
 
     <div class="hero-actions">
-        <a href="/app" class="btn-hero-primary">Start free 14-day trial →</a>
-        <a href="#how-it-works" class="btn-hero-secondary">See how it works</a>
+        <a href="/auth/register-cliente" class="btn-hero-primary" data-i18n="landing.getStarted">Get started free →</a>
+        <a href="#how-it-works" class="btn-hero-secondary" data-i18n="landing.seeHow">See how it works</a>
     </div>
     <p class="hero-note">No credit card required &nbsp;·&nbsp; Setup in 5 minutes &nbsp;·&nbsp; Cancel anytime</p>
 
@@ -913,7 +913,7 @@
 
 <!-- ── How it works ──────────────────────────────────────── -->
 <div id="how-it-works" class="section">
-    <p class="section-label reveal">How it works</p>
+    <p class="section-label reveal" data-i18n="landing.howItWorks">How it works</p>
     <h2 class="section-title reveal">From request to resolution — in one place</h2>
     <p class="section-sub reveal">No more lost messages, no more status chasing. Every maintenance request is tracked, assigned, and closed with full visibility.</p>
 
@@ -987,7 +987,7 @@
 
 <!-- ── Pricing ───────────────────────────────────────────── -->
 <div id="pricing" class="section">
-    <p class="section-label reveal">Pricing</p>
+    <p class="section-label reveal" data-i18n="landing.pricing">Pricing</p>
     <h2 class="section-title reveal">Simple, transparent pricing</h2>
     <p class="section-sub reveal">Start free for 14 days. No credit card required. Upgrade or downgrade anytime.</p>
 
@@ -1011,7 +1011,7 @@
                 <li><span class="x">✗</span><span style="color:var(--text-3)">Performance reports</span></li>
                 <li><span class="x">✗</span><span style="color:var(--text-3)">Priority support</span></li>
             </ul>
-            <a href="/app" class="btn-plan btn-plan-outline">Get started free</a>
+            <a href="/auth/register-cliente" class="btn-plan btn-plan-outline" data-i18n="landing.getStarted2">Get started →</a>
         </div>
 
         <!-- Pro (featured) -->
@@ -1034,7 +1034,7 @@
                 <li><span class="check">✓</span><span>Performance reports</span></li>
                 <li><span class="x">✗</span><span style="color:var(--text-3)">Priority support</span></li>
             </ul>
-            <a href="/app" class="btn-plan btn-plan-primary">Start free trial →</a>
+            <a href="/auth/register-cliente" class="btn-plan btn-plan-primary" data-i18n="landing.startPro">Start with Pro →</a>
         </div>
 
         <!-- Business -->
@@ -1056,7 +1056,7 @@
                 <li><span class="check">✓</span><span>Performance reports</span></li>
                 <li><span class="check">✓</span><span>Priority support</span></li>
             </ul>
-            <a href="/app" class="btn-plan btn-plan-outline">Get started free</a>
+            <a href="/auth/register-cliente" class="btn-plan btn-plan-outline" data-i18n="landing.getStarted2">Get started →</a>
         </div>
     </div>
 </div>
@@ -1106,7 +1106,7 @@
 
 <!-- ── FAQ ───────────────────────────────────────────────── -->
 <div id="faq" class="section" style="padding-top:0">
-    <p class="section-label reveal">FAQ</p>
+    <p class="section-label reveal" data-i18n="landing.faq">FAQ</p>
     <h2 class="section-title reveal">Questions? We have answers.</h2>
     <br>
     <div class="faq reveal">
@@ -1160,7 +1160,7 @@
     <h2>Ready to take control of your<br><em>property maintenance?</em></h2>
     <p>Join property managers across the US who use PropertyPulse to save time, reduce chaos, and close tickets faster.</p>
     <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
-        <a href="/app" class="btn-hero-primary">Start free 14-day trial →</a>
+        <a href="/auth/register-cliente" class="btn-hero-primary">Get started free →</a>
         <a href="#pricing" class="btn-hero-secondary">View pricing</a>
     </div>
     <p style="margin-top:1rem;font-size:.8rem;color:var(--text-3)">No credit card required &nbsp;·&nbsp; Cancel anytime</p>
@@ -1174,9 +1174,9 @@
     </div>
     <p>© 2026 PropertyPulse. All rights reserved.</p>
     <div class="footer-links">
-        <a href="/app">Client Login</a>
-        <a href="/app">Technician Login</a>
-        <a href="#pricing">Pricing</a>
+        <a href="/auth/login">Client Login</a>
+        <a href="/auth/login-tecnico">Technician Login</a>
+        <a href="#pricing" data-i18n="landing.pricing">Pricing</a>
     </div>
 </footer>
 
@@ -1207,6 +1207,33 @@
         nav.style.borderBottomColor = window.scrollY > 50
             ? 'rgba(255,255,255,.12)' : 'rgba(255,255,255,.08)';
     });
+
+    // ── Billing toggle ────────────────────────────────────────
+    let isAnnual = false;
+    const prices = { monthly:{starter:9,pro:29,business:79}, annual:{starter:7,pro:23,business:63} };
+    function toggleBilling() {
+        isAnnual = !isAnnual;
+        const knob = document.getElementById('toggleKnob');
+        const btn  = document.getElementById('billingToggle');
+        const lm   = document.getElementById('lbl-monthly');
+        const la   = document.getElementById('lbl-annual');
+        if (knob) knob.style.transform = isAnnual ? 'translateX(20px)' : 'none';
+        if (btn)  btn.style.background = isAnnual ? 'var(--accent)' : 'rgba(255,255,255,.1)';
+        if (lm) { lm.style.color = isAnnual ? 'var(--text-2)':'var(--text-1)'; lm.style.fontWeight = isAnnual?'400':'600'; }
+        if (la) { la.style.color = isAnnual ? 'var(--text-1)':'var(--text-2)'; la.style.fontWeight = isAnnual?'600':'400'; }
+        const p = isAnnual ? prices.annual : prices.monthly;
+        ['starter','pro','business'].forEach(k => {
+            const el = document.getElementById('price-'+k);
+            if (el) el.textContent = p[k];
+        });
+        const note = (m,a) => isAnnual ? `$${a*12}/yr · Save $${(m-a)*12}` : '';
+        const ns = document.getElementById('annual-starter');
+        const np = document.getElementById('annual-pro');
+        const nb = document.getElementById('annual-business');
+        if (ns) ns.textContent = note(9,7);
+        if (np) np.textContent = note(29,23);
+        if (nb) nb.textContent = note(79,63);
+    }
 </script>
 
 <script src="/js/i18n.js"></script>
