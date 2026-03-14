@@ -24,15 +24,15 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const app = express();
 app.set('trust proxy', 1);
 
-// ── Seguridad — Helmet (headers HTTP) ────────────────────────
+// ── Seguridad — Helmet ────────────────────────────────────────
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc:  ["'self'"],
-            scriptSrc:   ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            scriptSrc:   ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://maps.googleapis.com"],
             styleSrc:    ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
             fontSrc:     ["'self'", "https://fonts.gstatic.com"],
-            imgSrc:      ["'self'", "data:", "https://*.supabase.co", "https://maps.googleapis.com", "https://maps.gstatic.com"],
+            imgSrc:      ["'self'", "data:", "blob:", "https://*.supabase.co", "https://maps.googleapis.com", "https://maps.gstatic.com"],
             connectSrc:  ["'self'", "https://*.supabase.co", "https://maps.googleapis.com"],
             workerSrc:   ["'self'"],
             manifestSrc: ["'self'"],
@@ -56,12 +56,22 @@ app.set('views', path.join(viewsRoot, 'pages'));
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+
+// ── Archivos estáticos ANTES del rate limiter y auth ─────────
+// Crítico: manifest.json, sw.js, íconos y JS/CSS deben ser públicos
+app.use(express.static(path.join(__dirname, 'public'), {
+    maxAge: process.env.NODE_ENV === 'production' ? '7d' : 0,
+    etag: true,
+}));
+
+// ── Rutas públicas que no necesitan auth ni rate limit ────────
+app.get('/sw.js',        (req, res) => res.sendFile(path.join(__dirname, 'public', 'sw.js')));
+app.get('/manifest.json',(req, res) => res.sendFile(path.join(__dirname, 'public', 'manifest.json')));
 
 // ── Sanitización global de inputs ────────────────────────────
 app.use(sanitizeInputs);
 
-// ── Rate limiting global en APIs ──────────────────────────────
+// ── Rate limiting — solo en rutas de API/auth ─────────────────
 app.use('/auth',           apiLimiter);
 app.use('/cliente',        apiLimiter);
 app.use('/tecnico',        apiLimiter);
