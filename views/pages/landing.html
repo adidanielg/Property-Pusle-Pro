@@ -819,8 +819,9 @@
     <div class="nav-links">
         <a href="#how-it-works">How it works</a>
         <a href="#pricing">Pricing</a>
+        <a href="#portals">Access</a>
         <a href="#faq">FAQ</a>
-        <a href="/app" class="nav-cta">Get started free</a>
+        <a href="/auth/register-cliente" class="nav-cta">Get started free</a>
     </div>
 </nav>
 
@@ -985,7 +986,17 @@
 <div id="pricing" class="section">
     <p class="section-label reveal">Pricing</p>
     <h2 class="section-title reveal">Simple, transparent pricing</h2>
-    <p class="section-sub reveal">Start free for 14 days. No credit card required. Upgrade or downgrade anytime.</p>
+    <p class="section-sub reveal">No contracts. No surprises. Cancel anytime.</p>
+
+    <!-- Billing toggle -->
+    <div class="reveal" style="display:flex;align-items:center;justify-content:center;gap:.85rem;margin-bottom:2.5rem">
+        <span id="lbl-monthly" style="font-size:.875rem;color:var(--text-1);font-weight:600">Monthly</span>
+        <button id="billingToggle" onclick="toggleBilling()" style="width:44px;height:24px;background:rgba(255,255,255,.1);border:1px solid var(--border-2);border-radius:99px;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0">
+            <span id="toggleKnob" style="position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform .2s;display:block;box-shadow:0 1px 4px rgba(0,0,0,.3)"></span>
+        </button>
+        <span id="lbl-annual" style="font-size:.875rem;color:var(--text-2)">Annual</span>
+        <span style="background:rgba(34,211,160,.15);color:var(--green);border:1px solid rgba(34,211,160,.3);font-size:.7rem;font-weight:700;padding:.2rem .55rem;border-radius:99px">Save 20%</span>
+    </div>
 
     <div class="pricing-grid reveal">
         <!-- Starter -->
@@ -993,9 +1004,10 @@
             <div class="plan-name">Starter</div>
             <div class="plan-price">
                 <span class="currency">$</span>
-                <span class="amount">9</span>
+                <span class="amount" id="price-starter">9</span>
                 <span class="period">/mo</span>
             </div>
+            <div id="annual-starter" style="font-size:.75rem;color:var(--green);font-weight:600;min-height:1.2em;margin-bottom:.75rem"></div>
             <p class="plan-desc">Perfect for independent landlords managing a few properties.</p>
             <hr class="plan-divider">
             <ul class="plan-features">
@@ -1003,34 +1015,37 @@
                 <li><span class="check">✓</span><span><strong>10 active tickets</strong></span></li>
                 <li><span class="check">✓</span><span><strong>1 technician</strong></span></li>
                 <li><span class="check">✓</span><span>Push notifications</span></li>
-                <li><span class="check">✓</span><span>Ticket history</span></li>
-                <li><span class="x">✗</span><span style="color:var(--text-3)">Performance reports</span></li>
+                <li><span class="check">✓</span><span>In-app chat</span></li>
+                <li><span class="check">✓</span><span>PWA mobile app</span></li>
+                <li><span class="x">✗</span><span style="color:var(--text-3)">Multiple technicians</span></li>
                 <li><span class="x">✗</span><span style="color:var(--text-3)">Priority support</span></li>
             </ul>
-            <a href="/app" class="btn-plan btn-plan-outline">Get started free</a>
+            <a href="/auth/register-cliente" class="btn-plan btn-plan-outline">Get started →</a>
         </div>
 
         <!-- Pro (featured) -->
         <div class="pricing-card featured">
-            <div class="pricing-featured-badge">Most Popular</div>
+            <div class="pricing-featured-badge">⭐ Most Popular</div>
             <div class="plan-name">Pro</div>
             <div class="plan-price">
                 <span class="currency">$</span>
-                <span class="amount">29</span>
+                <span class="amount" id="price-pro">29</span>
                 <span class="period">/mo</span>
             </div>
-            <p class="plan-desc">For growing property managers who need more power and visibility.</p>
+            <div id="annual-pro" style="font-size:.75rem;color:var(--green);font-weight:600;min-height:1.2em;margin-bottom:.75rem"></div>
+            <p class="plan-desc">For growing property managers who need scale and visibility.</p>
             <hr class="plan-divider">
             <ul class="plan-features">
                 <li><span class="check">✓</span><span><strong>15 properties</strong></span></li>
                 <li><span class="check">✓</span><span><strong>50 active tickets</strong></span></li>
-                <li><span class="check">✓</span><span><strong>5 technicians</strong></span></li>
-                <li><span class="check">✓</span><span>Push notifications</span></li>
+                <li><span class="check">✓</span><span><strong>Up to 5 technicians</strong></span></li>
+                <li><span class="check">✓</span><span>Everything in Starter</span></li>
+                <li><span class="check">✓</span><span>Auto-assign by rating</span></li>
+                <li><span class="check">✓</span><span>Cancellation logs</span></li>
                 <li><span class="check">✓</span><span>Full ticket history</span></li>
-                <li><span class="check">✓</span><span>Performance reports</span></li>
-                <li><span class="x">✗</span><span style="color:var(--text-3)">Priority support</span></li>
+                <li><span class="check">✓</span><span>Priority support</span></li>
             </ul>
-            <a href="/app" class="btn-plan btn-plan-primary">Start free trial →</a>
+            <a href="/auth/register-cliente" class="btn-plan btn-plan-primary">Start with Pro →</a>
         </div>
 
         <!-- Business -->
@@ -1038,21 +1053,23 @@
             <div class="plan-name">Business</div>
             <div class="plan-price">
                 <span class="currency">$</span>
-                <span class="amount">79</span>
+                <span class="amount" id="price-business">79</span>
                 <span class="period">/mo</span>
             </div>
-            <p class="plan-desc">For property management companies running large portfolios.</p>
+            <div id="annual-business" style="font-size:.75rem;color:var(--green);font-weight:600;min-height:1.2em;margin-bottom:.75rem"></div>
+            <p class="plan-desc">For property management companies with large portfolios.</p>
             <hr class="plan-divider">
             <ul class="plan-features">
                 <li><span class="check">✓</span><span><strong>Unlimited properties</strong></span></li>
                 <li><span class="check">✓</span><span><strong>Unlimited tickets</strong></span></li>
                 <li><span class="check">✓</span><span><strong>Unlimited technicians</strong></span></li>
-                <li><span class="check">✓</span><span>Push notifications</span></li>
-                <li><span class="check">✓</span><span>Full ticket history</span></li>
-                <li><span class="check">✓</span><span>Performance reports</span></li>
-                <li><span class="check">✓</span><span>Priority support</span></li>
+                <li><span class="check">✓</span><span>Everything in Pro</span></li>
+                <li><span class="check">✓</span><span>Admin control panel</span></li>
+                <li><span class="check">✓</span><span>Technician fee tracking</span></li>
+                <li><span class="check">✓</span><span>Google Maps integration</span></li>
+                <li><span class="check">✓</span><span>Dedicated support</span></li>
             </ul>
-            <a href="/app" class="btn-plan btn-plan-outline">Get started free</a>
+            <a href="/auth/register-cliente" class="btn-plan btn-plan-outline" style="opacity:.6;cursor:default;pointer-events:none">🔒 Coming soon</a>
         </div>
     </div>
 </div>
@@ -1151,6 +1168,55 @@
     </div>
 </div>
 
+<!-- ── Portales de acceso ────────────────────────────────── -->
+<div id="portals" class="section" style="padding-top:0">
+    <p class="section-label reveal">Get started</p>
+    <h2 class="section-title reveal">Choose your portal</h2>
+    <p class="section-sub reveal">Whether you own properties or fix them — PropertyPulse has a portal built for you.</p>
+
+    <div class="reveal" style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;max-width:780px;margin:0 auto">
+        <!-- Cliente -->
+        <div style="background:var(--surface);border:1px solid var(--border-2);border-radius:20px;padding:2rem;display:flex;flex-direction:column;gap:1rem;transition:border-color .2s,transform .2s" onmouseover="this.style.borderColor='var(--accent)';this.style.transform='translateY(-4px)'" onmouseout="this.style.borderColor='var(--border-2)';this.style.transform='none'">
+            <div style="width:52px;height:52px;background:rgba(124,109,250,.15);border-radius:14px;display:grid;place-items:center;font-size:1.5rem">🏢</div>
+            <div>
+                <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:.35rem">Property Owner / Manager</div>
+                <h3 style="font-size:1.15rem;font-weight:700;color:var(--text-1);margin-bottom:.5rem">Client Portal</h3>
+                <p style="font-size:.85rem;color:var(--text-2);line-height:1.6">Submit maintenance tickets, track progress, rate technicians, and manage all your properties from one dashboard.</p>
+            </div>
+            <ul style="list-style:none;display:flex;flex-direction:column;gap:.4rem;font-size:.82rem;color:var(--text-2)">
+                <li style="display:flex;gap:.5rem"><span style="color:var(--green)">✓</span> Manage properties & tickets</li>
+                <li style="display:flex;gap:.5rem"><span style="color:var(--green)">✓</span> Real-time status updates</li>
+                <li style="display:flex;gap:.5rem"><span style="color:var(--green)">✓</span> Chat with your technician</li>
+                <li style="display:flex;gap:.5rem"><span style="color:var(--green)">✓</span> Rate completed services</li>
+            </ul>
+            <div style="display:flex;flex-direction:column;gap:.5rem;margin-top:auto">
+                <a href="/auth/register-cliente" class="btn-plan btn-plan-primary" style="text-align:center">Create account →</a>
+                <a href="/auth/login" style="text-align:center;font-size:.8rem;color:var(--text-3);padding:.4rem">Already have an account? Log in</a>
+            </div>
+        </div>
+
+        <!-- Técnico -->
+        <div style="background:var(--surface);border:1px solid var(--border-2);border-radius:20px;padding:2rem;display:flex;flex-direction:column;gap:1rem;transition:border-color .2s,transform .2s" onmouseover="this.style.borderColor='var(--green)';this.style.transform='translateY(-4px)'" onmouseout="this.style.borderColor='var(--border-2)';this.style.transform='none'">
+            <div style="width:52px;height:52px;background:rgba(34,211,160,.12);border-radius:14px;display:grid;place-items:center;font-size:1.5rem">🔧</div>
+            <div>
+                <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--green);margin-bottom:.35rem">Maintenance Technician</div>
+                <h3 style="font-size:1.15rem;font-weight:700;color:var(--text-1);margin-bottom:.5rem">Technician Portal</h3>
+                <p style="font-size:.85rem;color:var(--text-2);line-height:1.6">Receive job assignments, update ticket status, chat with clients, and build your reputation through ratings.</p>
+            </div>
+            <ul style="list-style:none;display:flex;flex-direction:column;gap:.4rem;font-size:.82rem;color:var(--text-2)">
+                <li style="display:flex;gap:.5rem"><span style="color:var(--green)">✓</span> Receive jobs instantly</li>
+                <li style="display:flex;gap:.5rem"><span style="color:var(--green)">✓</span> Push notification alerts</li>
+                <li style="display:flex;gap:.5rem"><span style="color:var(--green)">✓</span> Track your earnings & fees</li>
+                <li style="display:flex;gap:.5rem"><span style="color:var(--green)">✓</span> Build your rating score</li>
+            </ul>
+            <div style="display:flex;flex-direction:column;gap:.5rem;margin-top:auto">
+                <a href="/auth/register-tecnico" class="btn-plan btn-plan-outline" style="text-align:center;border-color:var(--green);color:var(--green)">Apply as technician →</a>
+                <a href="/auth/login-tecnico" style="text-align:center;font-size:.8rem;color:var(--text-3);padding:.4rem">Already registered? Log in</a>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- ── CTA Final ─────────────────────────────────────────── -->
 <div class="cta-section reveal">
     <h2>Ready to take control of your<br><em>property maintenance?</em></h2>
@@ -1163,16 +1229,71 @@
 </div>
 
 <!-- ── Footer ────────────────────────────────────────────── -->
-<footer>
-    <div class="footer-logo">
-        <div class="footer-dot"></div>
-        Property<span style="color:var(--accent)">Pulse</span>
-    </div>
-    <p>© 2026 PropertyPulse. All rights reserved.</p>
-    <div class="footer-links">
-        <a href="/app">Client Login</a>
-        <a href="/app">Technician Login</a>
-        <a href="#pricing">Pricing</a>
+<footer style="background:var(--surface);border-top:1px solid var(--border);padding:3.5rem 2rem 2rem">
+    <div style="max-width:1000px;margin:0 auto">
+
+        <!-- Top row -->
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:2.5rem;margin-bottom:3rem">
+
+            <!-- Brand -->
+            <div>
+                <div style="display:flex;align-items:center;gap:.6rem;font-weight:700;font-size:1.05rem;margin-bottom:.85rem">
+                    <div style="width:10px;height:10px;background:var(--accent);border-radius:50%;box-shadow:0 0 12px var(--accent-glow)"></div>
+                    Property<span style="color:var(--accent)">Pulse</span>
+                </div>
+                <p style="font-size:.83rem;color:var(--text-2);line-height:1.7;max-width:260px;margin-bottom:1.25rem">
+                    Professional property maintenance management. Connect clients, technicians, and admins in one place.
+                </p>
+                <div style="display:flex;gap:.65rem">
+                    <a href="mailto:support@propertypulse.app" style="display:inline-flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--text-3);background:var(--surface-2);border:1px solid var(--border);padding:.35rem .75rem;border-radius:8px;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-3)'">
+                        📧 Contact us
+                    </a>
+                </div>
+            </div>
+
+            <!-- Product -->
+            <div>
+                <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-3);margin-bottom:1rem">Product</div>
+                <div style="display:flex;flex-direction:column;gap:.6rem">
+                    <a href="#how-it-works" style="font-size:.83rem;color:var(--text-2);transition:color .15s" onmouseover="this.style.color='var(--text-1)'" onmouseout="this.style.color='var(--text-2)'">How it works</a>
+                    <a href="#pricing" style="font-size:.83rem;color:var(--text-2);transition:color .15s" onmouseover="this.style.color='var(--text-1)'" onmouseout="this.style.color='var(--text-2)'">Pricing</a>
+                    <a href="#faq" style="font-size:.83rem;color:var(--text-2);transition:color .15s" onmouseover="this.style.color='var(--text-1)'" onmouseout="this.style.color='var(--text-2)'">FAQ</a>
+                    <a href="#portals" style="font-size:.83rem;color:var(--text-2);transition:color .15s" onmouseover="this.style.color='var(--text-1)'" onmouseout="this.style.color='var(--text-2)'">Access portals</a>
+                </div>
+            </div>
+
+            <!-- Portals -->
+            <div>
+                <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-3);margin-bottom:1rem">Portals</div>
+                <div style="display:flex;flex-direction:column;gap:.6rem">
+                    <a href="/auth/login" style="font-size:.83rem;color:var(--text-2);transition:color .15s" onmouseover="this.style.color='var(--text-1)'" onmouseout="this.style.color='var(--text-2)'">🏢 Client login</a>
+                    <a href="/auth/register-cliente" style="font-size:.83rem;color:var(--text-2);transition:color .15s" onmouseover="this.style.color='var(--text-1)'" onmouseout="this.style.color='var(--text-2)'">🏢 Client register</a>
+                    <a href="/auth/login-tecnico" style="font-size:.83rem;color:var(--text-2);transition:color .15s" onmouseover="this.style.color='var(--text-1)'" onmouseout="this.style.color='var(--text-2)'">🔧 Technician login</a>
+                    <a href="/auth/register-tecnico" style="font-size:.83rem;color:var(--text-2);transition:color .15s" onmouseover="this.style.color='var(--text-1)'" onmouseout="this.style.color='var(--text-2)'">🔧 Apply as tech</a>
+                </div>
+            </div>
+
+            <!-- Legal -->
+            <div>
+                <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-3);margin-bottom:1rem">Legal & Support</div>
+                <div style="display:flex;flex-direction:column;gap:.6rem">
+                    <a href="/terms" style="font-size:.83rem;color:var(--text-2);transition:color .15s" onmouseover="this.style.color='var(--text-1)'" onmouseout="this.style.color='var(--text-2)'">📄 Terms of Service</a>
+                    <a href="/privacy" style="font-size:.83rem;color:var(--text-2);transition:color .15s" onmouseover="this.style.color='var(--text-1)'" onmouseout="this.style.color='var(--text-2)'">🔒 Privacy Policy</a>
+                    <a href="mailto:support@propertypulse.app" style="font-size:.83rem;color:var(--text-2);transition:color .15s" onmouseover="this.style.color='var(--text-1)'" onmouseout="this.style.color='var(--text-2)'">💬 Support</a>
+                    <a href="mailto:support@propertypulse.app" style="font-size:.83rem;color:var(--text-2);transition:color .15s" onmouseover="this.style.color='var(--text-1)'" onmouseout="this.style.color='var(--text-2)'">📧 Contact</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom row -->
+        <div style="border-top:1px solid var(--border);padding-top:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+            <p style="font-size:.78rem;color:var(--text-3)">© 2026 PropertyPulse · All rights reserved</p>
+            <div style="display:flex;gap:1.5rem">
+                <a href="/terms"   style="font-size:.78rem;color:var(--text-3);transition:color .15s" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-3)'">Terms</a>
+                <a href="/privacy" style="font-size:.78rem;color:var(--text-3);transition:color .15s" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-3)'">Privacy</a>
+                <a href="mailto:support@propertypulse.app" style="font-size:.78rem;color:var(--text-3);transition:color .15s" onmouseover="this.style.color='var(--text-2)'" onmouseout="this.style.color='var(--text-3)'">Support</a>
+            </div>
+        </div>
     </div>
 </footer>
 
@@ -1203,6 +1324,50 @@
         nav.style.borderBottomColor = window.scrollY > 50
             ? 'rgba(255,255,255,.12)' : 'rgba(255,255,255,.08)';
     });
+
+    // ── Billing toggle ────────────────────────────────────────
+    let isAnnual = false;
+    const prices = { monthly:{starter:9,pro:29,business:79}, annual:{starter:7,pro:23,business:63} };
+
+    function toggleBilling() {
+        isAnnual = !isAnnual;
+        const knob = document.getElementById('toggleKnob');
+        const btn  = document.getElementById('billingToggle');
+        const lm   = document.getElementById('lbl-monthly');
+        const la   = document.getElementById('lbl-annual');
+
+        knob.style.transform  = isAnnual ? 'translateX(20px)' : 'none';
+        btn.style.background  = isAnnual ? 'var(--accent)' : 'rgba(255,255,255,.1)';
+        lm.style.color = isAnnual ? 'var(--text-2)' : 'var(--text-1)';
+        la.style.color = isAnnual ? 'var(--text-1)' : 'var(--text-2)';
+        lm.style.fontWeight = isAnnual ? '400' : '600';
+        la.style.fontWeight = isAnnual ? '600' : '400';
+
+        const p = isAnnual ? prices.annual : prices.monthly;
+        document.getElementById('price-starter').textContent  = p.starter;
+        document.getElementById('price-pro').textContent      = p.pro;
+        document.getElementById('price-business').textContent = p.business;
+
+        const note = (m, a) => isAnnual ? `$${a*12}/yr · Save $${(m-a)*12}` : '';
+        document.getElementById('annual-starter').textContent  = note(9,7);
+        document.getElementById('annual-pro').textContent      = note(29,23);
+        document.getElementById('annual-business').textContent = note(79,63);
+    }
+
+    // ── Mobile nav ────────────────────────────────────────────
+    // Responsive: ocultar nav-links en móvil con hamburger
+    const mediaQ = window.matchMedia('(max-width:640px)');
+    function handleMobile(e) {
+        const links = document.querySelector('.nav-links');
+        if (!links) return;
+        if (e.matches) {
+            links.style.display = 'none';
+        } else {
+            links.style.display = 'flex';
+        }
+    }
+    mediaQ.addEventListener('change', handleMobile);
+    handleMobile(mediaQ);
 </script>
 
 </body>
