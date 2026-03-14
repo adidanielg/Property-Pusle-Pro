@@ -196,9 +196,9 @@
 <header class="tec-topbar">
     <a href="/tecnico/dashboard" class="tec-logo">🔧 Property<span>Pulse</span> <span class="tec-logo-role">Técnico</span></a>
     <nav class="tec-nav">
-        <a href="#trabajos" class="active">🎫 Trabajos</a>
+        <a href="#trabajos" class="active" data-i18n="nav.myJobs">🎫 Trabajos</a>
         <a href="#calificaciones">⭐ Calificaciones</a>
-        <a href="#perfil">👤 Perfil</a>
+        <a href="#perfil" data-i18n="nav.profile">👤 Perfil</a>
     </nav>
     <div class="tec-nav-right">
         <div id="lang-toggle" style="display:flex;gap:.2rem;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:.2rem">
@@ -234,25 +234,25 @@
             <div class="tec-stat-stripe" style="background:var(--yellow)"></div>
             <div class="tec-stat-icon">⏳</div>
             <div class="tec-stat-num"><%= tickets.filter(t=>t.estado==='pendiente').length %></div>
-            <div class="tec-stat-lbl">Disponibles</div>
+            <div class="tec-stat-lbl" data-i18n="tech.pending">Disponibles</div>
         </div>
         <div class="tec-stat">
             <div class="tec-stat-stripe" style="background:var(--blue)"></div>
             <div class="tec-stat-icon">🔄</div>
             <div class="tec-stat-num"><%= tickets.filter(t=>t.estado==='en_proceso'&&t.tecnico_asignado===tecnico.id).length %></div>
-            <div class="tec-stat-lbl">En proceso</div>
+            <div class="tec-stat-lbl" data-i18n="tech.inProgress">En proceso</div>
         </div>
         <div class="tec-stat">
             <div class="tec-stat-stripe" style="background:var(--green)"></div>
             <div class="tec-stat-icon">✅</div>
             <div class="tec-stat-num"><%= tickets.filter(t=>t.estado==='completado').length %></div>
-            <div class="tec-stat-lbl">Completados</div>
+            <div class="tec-stat-lbl" data-i18n="tech.completed">Completados</div>
         </div>
         <div class="tec-stat">
             <div class="tec-stat-stripe" style="background:var(--yellow)"></div>
             <div class="tec-stat-icon">⭐</div>
             <div class="tec-stat-num" style="font-size:1.8rem"><%= promedio || '—' %></div>
-            <div class="tec-stat-lbl">Calificación</div>
+            <div class="tec-stat-lbl" data-i18n="tech.myRating">Calificación</div>
         </div>
     </div>
 
@@ -265,7 +265,7 @@
         <% if (tickets.length === 0) { %>
         <div class="tec-empty">
             <div style="font-size:2rem;opacity:.4;margin-bottom:.75rem">🎉</div>
-            <p style="font-size:.875rem">No hay tickets pendientes. ¡Buen trabajo!</p>
+            <p style="font-size:.875rem" data-i18n="tech.noTickets">No hay tickets pendientes. ¡Buen trabajo!</p>
         </div>
         <% } else { %>
         <div class="tec-tickets">
@@ -379,17 +379,17 @@
 
     <!-- Perfil -->
     <div class="tec-widget" id="perfil">
-        <div class="tec-widget-lbl">Mi Perfil</div>
+        <div class="tec-widget-lbl" data-i18n="profile.title">Mi Perfil</div>
         <div style="margin-bottom:1rem">
             <div style="font-size:.875rem;font-weight:600;color:var(--text-1);margin-bottom:.2rem" id="perfil-nombre-display">—</div>
             <div style="font-size:.78rem;color:var(--text-3);margin-bottom:.15rem" id="perfil-email-display">—</div>
             <div style="font-size:.78rem;color:var(--text-3);margin-bottom:.15rem" id="perfil-tel-display">—</div>
             <div style="font-size:.78rem;color:var(--green);font-weight:600" id="perfil-esp-display">—</div>
         </div>
-        <button class="tb tb-green tb-full" onclick="abrirModal('perfilModal')">✏️ Editar perfil</button>
-        <button class="tb tb-ghost tb-full tb-sm" style="margin-top:.5rem" onclick="abrirModal('passwordModal')">🔑 Cambiar contraseña</button>
+        <button class="tb tb-green tb-full" onclick="abrirModal('perfilModal')" data-i18n="dash.editProfile">✏️ Editar perfil</button>
+        <button class="tb tb-ghost tb-full tb-sm" style="margin-top:.5rem" onclick="abrirModal('passwordModal')" data-i18n="dash.changePassword">🔑 Cambiar contraseña</button>
         <div class="pp-div"></div>
-        <a href="/auth/logout" class="tb tb-danger tb-full" style="justify-content:center;text-align:center">🚪 Cerrar sesión</a>
+        <a href="/auth/logout" class="tb tb-danger tb-full" style="justify-content:center;text-align:center" data-i18n="nav.logout">🚪 Cerrar sesión</a>
         <button class="tb tb-full tb-sm" style="margin-top:.35rem;background:transparent;color:var(--text-3);border:1px solid var(--border)" onclick="eliminarCuenta()">🗑️ Eliminar mi cuenta</button>
     </div>
 
