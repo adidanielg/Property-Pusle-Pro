@@ -1,6 +1,5 @@
 require('dotenv').config();
 
-// ── Validar env vars ANTES de arrancar ───────────────────────
 const validateEnv = require('./middleware/validateEnv');
 validateEnv();
 
@@ -24,18 +23,41 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const app = express();
 app.set('trust proxy', 1);
 
-// ── Seguridad — Helmet ────────────────────────────────────────
+// ── Archivos estáticos PRIMERO — antes de todo middleware ─────
+// Crítico: manifest.json, sw.js, CSS, JS deben ser públicos sin auth
+const publicPath = path.join(__dirname, 'public');
+app.use(express.static(publicPath, {
+    maxAge: process.env.NODE_ENV === 'production' ? '1d' : 0,
+    etag: true,
+    index: false,
+}));
+
+// Rutas explícitas para archivos PWA críticos
+app.get('/manifest.json', (req, res) => {
+    res.setHeader('Content-Type', 'application/manifest+json');
+    res.sendFile(path.join(publicPath, 'manifest.json'));
+});
+app.get('/sw.js', (req, res) => {
+    res.setHeader('Content-Type', 'application/javascript');
+    res.setHeader('Service-Worker-Allowed', '/');
+    res.sendFile(path.join(publicPath, 'sw.js'));
+});
+
+// ── Helmet CSP ────────────────────────────────────────────────
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
-            defaultSrc:  ["'self'"],
-            scriptSrc:   ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://maps.googleapis.com"],
-            styleSrc:    ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
-            fontSrc:     ["'self'", "https://fonts.gstatic.com"],
-            imgSrc:      ["'self'", "data:", "blob:", "https://*.supabase.co", "https://maps.googleapis.com", "https://maps.gstatic.com"],
-            connectSrc:  ["'self'", "https://*.supabase.co", "https://maps.googleapis.com"],
-            workerSrc:   ["'self'"],
-            manifestSrc: ["'self'"],
+            defaultSrc:     ["'self'"],
+            scriptSrc:      ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://maps.googleapis.com"],
+            // unsafe-hashes permite onclick= onchange= onsubmit= en HTML
+            scriptSrcAttr:  ["'unsafe-inline'"],
+            styleSrc:       ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
+            fontSrc:        ["'self'", "https://fonts.gstatic.com"],
+            imgSrc:         ["'self'", "data:", "blob:", "https://*.supabase.co", "https://maps.googleapis.com", "https://maps.gstatic.com"],
+            connectSrc:     ["'self'", "https://*.supabase.co", "https://maps.googleapis.com"],
+            workerSrc:      ["'self'"],
+            manifestSrc:    ["'self'"],
+            mediaSrc:       ["'self'"],
         },
     },
     crossOriginEmbedderPolicy: false,
@@ -56,22 +78,9 @@ app.set('views', path.join(viewsRoot, 'pages'));
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-
-// ── Archivos estáticos ANTES del rate limiter y auth ─────────
-// Crítico: manifest.json, sw.js, íconos y JS/CSS deben ser públicos
-app.use(express.static(path.join(__dirname, 'public'), {
-    maxAge: process.env.NODE_ENV === 'production' ? '7d' : 0,
-    etag: true,
-}));
-
-// ── Rutas públicas que no necesitan auth ni rate limit ────────
-app.get('/sw.js',        (req, res) => res.sendFile(path.join(__dirname, 'public', 'sw.js')));
-app.get('/manifest.json',(req, res) => res.sendFile(path.join(__dirname, 'public', 'manifest.json')));
-
-// ── Sanitización global de inputs ────────────────────────────
 app.use(sanitizeInputs);
 
-// ── Rate limiting — solo en rutas de API/auth ─────────────────
+// ── Rate limiting — solo rutas de la app ──────────────────────
 app.use('/auth',           apiLimiter);
 app.use('/cliente',        apiLimiter);
 app.use('/tecnico',        apiLimiter);
@@ -79,13 +88,13 @@ app.use('/admin',          apiLimiter);
 app.use('/notificaciones', apiLimiter);
 
 // ── Rutas públicas ────────────────────────────────────────────
-app.get('/',        (req, res) => res.render('landing', { title: 'PropertyPulse — Property Maintenance, Simplified' }));
-app.get('/landing', (req, res) => res.render('landing', { title: 'PropertyPulse — Property Maintenance, Simplified' }));
+app.get('/',        (req, res) => res.render('landing',  { title: 'PropertyPulse — Property Maintenance, Simplified' }));
+app.get('/landing', (req, res) => res.render('landing',  { title: 'PropertyPulse — Property Maintenance, Simplified' }));
 app.get('/pricing', (req, res) => res.redirect('/#pricing'));
-app.get('/app',     (req, res) => res.render('index',   { title: 'Acceder — PropertyPulse' }));
+app.get('/app',     (req, res) => res.render('index',    { title: 'Acceder — PropertyPulse' }));
 app.get('/inicio',  (req, res) => res.redirect('/app'));
-app.get('/terms',   (req, res) => res.render('terms',   { title: 'Terms of Service — PropertyPulse' }));
-app.get('/privacy', (req, res) => res.render('privacy', { title: 'Privacy Policy — PropertyPulse' }));
+app.get('/terms',   (req, res) => res.render('terms',    { title: 'Terms of Service — PropertyPulse' }));
+app.get('/privacy', (req, res) => res.render('privacy',  { title: 'Privacy Policy — PropertyPulse' }));
 
 // ── Rutas de la app ───────────────────────────────────────────
 app.use('/auth',           authRoutes);
