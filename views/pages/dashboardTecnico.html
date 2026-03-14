@@ -304,6 +304,15 @@
                         <% if (ticket.foto_url) { %>
                             <a href="<%= ticket.foto_url %>" target="_blank" class="tb tb-ghost tb-sm">📸 Foto</a>
                         <% } %>
+                        <% if (ticket.propiedades && ticket.propiedades.direccion) { %>
+                            <a href="https://maps.google.com/?daddr=<%= encodeURIComponent(ticket.propiedades.direccion) %>"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="tb tb-ghost tb-sm"
+                               title="Abrir en GPS">
+                                🧭 Cómo llegar
+                            </a>
+                        <% } %>
                     </div>
                 </div>
             </div>
