@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planes y Precios — PropertyPulse</title>
+    <link rel="icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    * { font-family: 'Outfit', system-ui, sans-serif; }
+
+    /* ── Navbar ── */
+    .pr-nav {
+        position: sticky; top: 0; z-index: 100;
+        background: var(--surface); border-bottom: 1px solid var(--border);
+        padding: 0 2rem; height: 56px;
+        display: flex; align-items: center; justify-content: space-between;
+    }
+    .pr-nav-logo {
+        font-weight: 800; font-size: 1rem; letter-spacing: -.4px;
+        color: var(--text-1); text-decoration: none;
+        display: flex; align-items: center; gap: .4rem;
+    }
+    .pr-nav-logo span { color: var(--accent); }
+    .pr-nav-links { display: flex; align-items: center; gap: .5rem; }
+    .pr-nav-link {
+        font-size: .82rem; color: var(--text-2); text-decoration: none;
+        padding: .35rem .7rem; border-radius: 7px; transition: all .15s;
+    }
+    .pr-nav-link:hover { background: var(--surface-2); color: var(--text-1); }
+    .pr-nav-cta {
+        font-size: .82rem; font-weight: 600; color: #fff;
+        background: var(--accent); text-decoration: none;
+        padding: .38rem .9rem; border-radius: 8px; transition: all .15s;
+    }
+    .pr-nav-cta:hover { background: var(--accent-hover); transform: translateY(-1px); }
+
+    /* ── Hero ── */
+    .pr-hero {
+        text-align: center; padding: 5rem 1.5rem 3rem;
+        background: linear-gradient(180deg, var(--surface-2) 0%, var(--bg) 100%);
+    }
+    .pr-hero-badge {
+        display: inline-flex; align-items: center; gap: .4rem;
+        background: var(--accent-soft); color: var(--accent);
+        font-size: .75rem; font-weight: 700; letter-spacing: .06em;
+        text-transform: uppercase; padding: .35rem .85rem;
+        border-radius: 99px; margin-bottom: 1.5rem;
+        border: 1px solid rgba(108,99,255,.2);
+    }
+    .pr-hero h1 {
+        font-size: clamp(2rem, 5vw, 3.5rem);
+        font-weight: 900; letter-spacing: -2px; line-height: 1.1;
+        color: var(--text-1); margin-bottom: 1rem;
+    }
+    .pr-hero h1 span { color: var(--accent); }
+    .pr-hero p {
+        font-size: 1.1rem; color: var(--text-2); max-width: 500px;
+        margin: 0 auto 2.5rem; line-height: 1.7;
+    }
+
+    /* ── Billing toggle ── */
+    .pr-toggle {
+        display: inline-flex; align-items: center; gap: .75rem;
+        background: var(--surface); border: 1px solid var(--border);
+        border-radius: 99px; padding: .4rem .75rem;
+        margin-bottom: 3.5rem;
+    }
+    .pr-toggle span { font-size: .85rem; color: var(--text-2); font-weight: 500; }
+    .pr-toggle span.active { color: var(--text-1); font-weight: 700; }
+    .pr-toggle-switch {
+        width: 44px; height: 24px; background: var(--border);
+        border-radius: 99px; cursor: pointer; position: relative;
+        transition: background .2s; border: none;
+    }
+    .pr-toggle-switch.on { background: var(--accent); }
+    .pr-toggle-switch::after {
+        content: ''; position: absolute; top: 3px; left: 3px;
+        width: 18px; height: 18px; background: #fff;
+        border-radius: 50%; transition: transform .2s;
+        box-shadow: 0 1px 4px rgba(0,0,0,.2);
+    }
+    .pr-toggle-switch.on::after { transform: translateX(20px); }
+    .pr-save-badge {
+        background: var(--green-soft); color: var(--green);
+        font-size: .7rem; font-weight: 700; padding: .15rem .5rem;
+        border-radius: 99px; border: 1px solid var(--green);
+    }
+
+    /* ── Plans grid ── */
+    .pr-plans {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.25rem;
+        max-width: 1000px; margin: 0 auto;
+        padding: 0 1.5rem 5rem;
+    }
+
+    .pr-plan {
+        background: var(--surface); border: 1px solid var(--border);
+        border-radius: 20px; padding: 2rem;
+        display: flex; flex-direction: column;
+        transition: transform .2s, box-shadow .2s;
+        position: relative; overflow: hidden;
+    }
+    .pr-plan:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,0,.1); }
+
+    /* Plan popular */
+    .pr-plan.popular {
+        border: 2px solid var(--accent);
+        box-shadow: 0 0 0 4px var(--accent-soft);
+    }
+    .pr-popular-badge {
+        position: absolute; top: 1.25rem; right: 1.25rem;
+        background: var(--accent); color: #fff;
+        font-size: .68rem; font-weight: 700; letter-spacing: .06em;
+        text-transform: uppercase; padding: .25rem .65rem;
+        border-radius: 99px;
+    }
+
+    .pr-plan-icon {
+        width: 48px; height: 48px; border-radius: 14px;
+        display: grid; place-items: center; font-size: 1.4rem;
+        margin-bottom: 1.25rem;
+    }
+    .pr-plan-name {
+        font-size: .7rem; font-weight: 700; text-transform: uppercase;
+        letter-spacing: .1em; color: var(--text-3); margin-bottom: .35rem;
+    }
+    .pr-plan-price {
+        display: flex; align-items: baseline; gap: .2rem;
+        margin-bottom: .25rem;
+    }
+    .pr-price-num {
+        font-size: 3rem; font-weight: 900; letter-spacing: -3px;
+        color: var(--text-1); line-height: 1;
+        font-family: 'JetBrains Mono', monospace;
+    }
+    .pr-price-period { font-size: .85rem; color: var(--text-3); font-weight: 500; }
+    .pr-annual-note {
+        font-size: .75rem; color: var(--green); font-weight: 600;
+        min-height: 1.2em; margin-bottom: 1.25rem;
+    }
+    .pr-plan-desc {
+        font-size: .85rem; color: var(--text-2); line-height: 1.6;
+        margin-bottom: 1.5rem; flex: 0;
+    }
+
+    /* Features list */
+    .pr-features {
+        list-style: none; display: flex; flex-direction: column;
+        gap: .6rem; margin-bottom: 2rem; flex: 1;
+    }
+    .pr-features li {
+        display: flex; align-items: flex-start; gap: .6rem;
+        font-size: .83rem; color: var(--text-2); line-height: 1.4;
+    }
+    .pr-features li .check {
+        width: 18px; height: 18px; border-radius: 50%;
+        display: grid; place-items: center; flex-shrink: 0;
+        font-size: .7rem; margin-top: 1px;
+    }
+    .pr-features li .check.yes { background: var(--green-soft); color: var(--green); }
+    .pr-features li .check.no  { background: var(--surface-2);  color: var(--text-3); }
+    .pr-features li.highlight   { color: var(--text-1); font-weight: 500; }
+
+    /* CTA button */
+    .pr-cta {
+        display: flex; align-items: center; justify-content: center;
+        gap: .4rem; padding: .75rem 1rem; border-radius: 10px;
+        font-size: .875rem; font-weight: 700; border: none;
+        cursor: pointer; transition: all .2s; text-decoration: none;
+        width: 100%;
+    }
+    .pr-cta-primary {
+        background: var(--accent); color: #fff;
+    }
+    .pr-cta-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(108,99,255,.35); }
+    .pr-cta-secondary {
+        background: var(--surface-2); color: var(--text-1);
+        border: 1px solid var(--border);
+    }
+    .pr-cta-secondary:hover { border-color: var(--accent); color: var(--accent); }
+    .pr-cta-soon {
+        background: var(--surface-2); color: var(--text-3);
+        border: 1px dashed var(--border); cursor: default;
+        font-size: .8rem;
+    }
+
+    /* ── FAQ ── */
+    .pr-faq {
+        max-width: 680px; margin: 0 auto; padding: 0 1.5rem 5rem;
+    }
+    .pr-faq-title {
+        font-size: 1.5rem; font-weight: 800; letter-spacing: -.5px;
+        text-align: center; margin-bottom: 2rem; color: var(--text-1);
+    }
+    .pr-faq-item {
+        border-bottom: 1px solid var(--border); padding: 1.25rem 0;
+    }
+    .pr-faq-item:first-of-type { border-top: 1px solid var(--border); }
+    .pr-faq-q {
+        font-size: .95rem; font-weight: 600; color: var(--text-1);
+        cursor: pointer; display: flex; justify-content: space-between;
+        align-items: center; gap: 1rem; user-select: none;
+    }
+    .pr-faq-q .arrow { transition: transform .2s; color: var(--text-3); flex-shrink: 0; }
+    .pr-faq-q.open .arrow { transform: rotate(180deg); }
+    .pr-faq-a {
+        font-size: .875rem; color: var(--text-2); line-height: 1.7;
+        max-height: 0; overflow: hidden; transition: max-height .3s ease, padding .3s ease;
+    }
+    .pr-faq-a.open { max-height: 300px; padding-top: .75rem; }
+
+    /* ── Footer ── */
+    .pr-footer {
+        border-top: 1px solid var(--border); padding: 2rem 1.5rem;
+        text-align: center; font-size: .8rem; color: var(--text-3);
+    }
+    .pr-footer a { color: var(--text-3); text-decoration: none; }
+    .pr-footer a:hover { color: var(--accent); }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+        .pr-plans { grid-template-columns: 1fr; max-width: 420px; }
+        .pr-plan.popular { order: -1; }
+        .pr-hero h1 { letter-spacing: -1px; }
+    }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="pr-nav">
+    <a href="/" class="pr-nav-logo">🏢 Property<span>Pulse</span></a>
+    <div class="pr-nav-links">
+        <a href="/auth/login" class="pr-nav-link">Iniciar sesión</a>
+        <a href="/auth/register-cliente" class="pr-nav-cta">Empezar gratis →</a>
+    </div>
+</nav>
+
+<!-- Hero -->
+<section class="pr-hero">
+    <div class="pr-hero-badge">💰 Precios simples y transparentes</div>
+    <h1>El plan perfecto para<br><span>cada propiedad</span></h1>
+    <p>Sin contratos. Sin sorpresas. Cancela cuando quieras.<br>Todos los planes incluyen soporte y actualizaciones.</p>
+
+    <!-- Toggle mensual/anual -->
+    <div class="pr-toggle">
+        <span id="lbl-monthly" class="active">Mensual</span>
+        <button class="pr-toggle-switch" id="billingToggle" onclick="toggleBilling()"></button>
+        <span id="lbl-annual">Anual</span>
+        <span class="pr-save-badge">Ahorra 20%</span>
+    </div>
+</section>
+
+<!-- Plans -->
+<div class="pr-plans">
+
+    <!-- Starter -->
+    <div class="pr-plan">
+        <div class="pr-plan-icon" style="background:#ede9ff">🌱</div>
+        <div class="pr-plan-name">Starter</div>
+        <div class="pr-plan-price">
+            <span class="pr-price-num" id="price-starter">$9</span>
+            <span class="pr-price-period">/mes</span>
+        </div>
+        <div class="pr-annual-note" id="annual-starter"></div>
+        <div class="pr-plan-desc">Perfecto para propietarios individuales que gestionan pocas propiedades.</div>
+        <ul class="pr-features">
+            <li class="highlight"><span class="check yes">✓</span> 3 propiedades</li>
+            <li class="highlight"><span class="check yes">✓</span> 10 tickets activos</li>
+            <li class="highlight"><span class="check yes">✓</span> 1 técnico asignado</li>
+            <li><span class="check yes">✓</span> Dashboard cliente y técnico</li>
+            <li><span class="check yes">✓</span> Chat por ticket</li>
+            <li><span class="check yes">✓</span> Push notifications</li>
+            <li><span class="check yes">✓</span> App móvil (PWA)</li>
+            <li><span class="check yes">✓</span> Soporte por email</li>
+            <li><span class="check no">—</span> <span style="color:var(--text-3)">Múltiples técnicos</span></li>
+            <li><span class="check no">—</span> <span style="color:var(--text-3)">Reportes avanzados</span></li>
+        </ul>
+        <a href="/auth/register-cliente" class="pr-cta pr-cta-secondary">
+            Empezar gratis →
+        </a>
+    </div>
+
+    <!-- Pro (popular) -->
+    <div class="pr-plan popular">
+        <div class="pr-popular-badge">⭐ Más popular</div>
+        <div class="pr-plan-icon" style="background:var(--accent-soft)">🚀</div>
+        <div class="pr-plan-name">Pro</div>
+        <div class="pr-plan-price">
+            <span class="pr-price-num" id="price-pro">$29</span>
+            <span class="pr-price-period">/mes</span>
+        </div>
+        <div class="pr-annual-note" id="annual-pro"></div>
+        <div class="pr-plan-desc">Para gestores de propiedades que necesitan escalar su operación.</div>
+        <ul class="pr-features">
+            <li class="highlight"><span class="check yes">✓</span> 15 propiedades</li>
+            <li class="highlight"><span class="check yes">✓</span> 50 tickets activos</li>
+            <li class="highlight"><span class="check yes">✓</span> Hasta 5 técnicos</li>
+            <li><span class="check yes">✓</span> Todo lo de Starter</li>
+            <li><span class="check yes">✓</span> Sistema de calificaciones</li>
+            <li><span class="check yes">✓</span> Asignación automática por rating</li>
+            <li><span class="check yes">✓</span> Log de cancelaciones</li>
+            <li><span class="check yes">✓</span> Historial completo</li>
+            <li><span class="check yes">✓</span> Soporte prioritario</li>
+            <li><span class="check no">—</span> <span style="color:var(--text-3)">Propiedades ilimitadas</span></li>
+        </ul>
+        <a href="/auth/register-cliente" class="pr-cta pr-cta-primary">
+            Empezar con Pro →
+        </a>
+    </div>
+
+    <!-- Business -->
+    <div class="pr-plan">
+        <div class="pr-plan-icon" style="background:#d1fae5">🏢</div>
+        <div class="pr-plan-name">Business</div>
+        <div class="pr-plan-price">
+            <span class="pr-price-num" id="price-business">$79</span>
+            <span class="pr-price-period">/mes</span>
+        </div>
+        <div class="pr-annual-note" id="annual-business"></div>
+        <div class="pr-plan-desc">Para empresas inmobiliarias y gestores con operaciones a gran escala.</div>
+        <ul class="pr-features">
+            <li class="highlight"><span class="check yes">✓</span> Propiedades ilimitadas</li>
+            <li class="highlight"><span class="check yes">✓</span> Tickets ilimitados</li>
+            <li class="highlight"><span class="check yes">✓</span> Técnicos ilimitados</li>
+            <li><span class="check yes">✓</span> Todo lo de Pro</li>
+            <li><span class="check yes">✓</span> Panel admin completo</li>
+            <li><span class="check yes">✓</span> Fees de técnicos</li>
+            <li><span class="check yes">✓</span> Reportes de cancelaciones</li>
+            <li><span class="check yes">✓</span> Google Maps integrado</li>
+            <li><span class="check yes">✓</span> API access (próximamente)</li>
+            <li><span class="check yes">✓</span> Soporte dedicado</li>
+        </ul>
+        <button class="pr-cta pr-cta-soon" disabled>
+            🔒 Próximamente
+        </button>
+    </div>
+
+</div>
+
+<!-- Comparación rápida -->
+<div style="max-width:700px;margin:0 auto 4rem;padding:0 1.5rem;text-align:center">
+    <p style="font-size:.85rem;color:var(--text-3);margin-bottom:1.5rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em">Todos los planes incluyen</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem">
+        <% [
+            ['🔐','JWT seguro + cookies HttpOnly'],
+            ['📱','App instalable (PWA)'],
+            ['🌙','Dark / Light mode'],
+            ['🌐','ES / EN bilingüe'],
+            ['🔔','Push notifications'],
+            ['💬','Chat por ticket'],
+            ['📊','Dashboard en tiempo real'],
+            ['🗑️','Derecho al olvido (CCPA)']
+        ].forEach(([icon, text]) => { %>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.75rem;font-size:.78rem;color:var(--text-2)">
+            <div style="font-size:1.2rem;margin-bottom:.3rem"><%= icon %></div>
+            <%= text %>
+        </div>
+        <% }); %>
+    </div>
+</div>
+
+<!-- FAQ -->
+<section class="pr-faq">
+    <div class="pr-faq-title">Preguntas frecuentes</div>
+
+    <div class="pr-faq-item">
+        <div class="pr-faq-q" onclick="toggleFaq(this)">
+            ¿Puedo cancelar en cualquier momento?
+            <span class="arrow">▾</span>
+        </div>
+        <div class="pr-faq-a">Sí, puedes cancelar tu suscripción en cualquier momento desde tu perfil. No hay contratos ni penalizaciones. Tu acceso continúa hasta el final del período de facturación actual.</div>
+    </div>
+
+    <div class="pr-faq-item">
+        <div class="pr-faq-q" onclick="toggleFaq(this)">
+            ¿Qué pasa con mis datos si cancelo?
+            <span class="arrow">▾</span>
+        </div>
+        <div class="pr-faq-a">Tus datos permanecen disponibles por 30 días después de cancelar. Puedes exportarlos o reactivar tu cuenta. Después de 30 días los datos se eliminan permanentemente conforme a nuestra política de privacidad.</div>
+    </div>
+
+    <div class="pr-faq-item">
+        <div class="pr-faq-q" onclick="toggleFaq(this)">
+            ¿Puedo cambiar de plan en cualquier momento?
+            <span class="arrow">▾</span>
+        </div>
+        <div class="pr-faq-a">Sí. Puedes subir de plan inmediatamente y el costo se prorratea. Para bajar de plan el cambio aplica al siguiente ciclo de facturación. Nunca se eliminan datos por bajar de plan.</div>
+    </div>
+
+    <div class="pr-faq-item">
+        <div class="pr-faq-q" onclick="toggleFaq(this)">
+            ¿Hay un período de prueba gratuita?
+            <span class="arrow">▾</span>
+        </div>
+        <div class="pr-faq-a">El plan Starter a $9/mes es nuestro plan de entrada más accesible. Puedes crear tu cuenta y explorar todas las funcionalidades. Próximamente agregaremos una prueba gratuita de 14 días.</div>
+    </div>
+
+    <div class="pr-faq-item">
+        <div class="pr-faq-q" onclick="toggleFaq(this)">
+            ¿Cómo funciona el fee de los técnicos?
+            <span class="arrow">▾</span>
+        </div>
+        <div class="pr-faq-a">Los técnicos pagan $4.50 por cada trabajo completado. El primer trabajo es gratuito. Los fees se acumulan y se cobran periódicamente. Esto nos permite mantener los precios de suscripción bajos para los clientes.</div>
+    </div>
+
+    <div class="pr-faq-item">
+        <div class="pr-faq-q" onclick="toggleFaq(this)">
+            ¿Los pagos son seguros?
+            <span class="arrow">▾</span>
+        </div>
+        <div class="pr-faq-a">Todos los pagos se procesan a través de Stripe, el estándar de la industria para pagos online. PropertyPulse nunca almacena números de tarjeta de crédito.</div>
+    </div>
+
+</section>
+
+<!-- Footer -->
+<footer class="pr-footer">
+    <p style="margin-bottom:.5rem">
+        <a href="/landing">Inicio</a> ·
+        <a href="/terms">Términos</a> ·
+        <a href="/privacy">Privacidad</a> ·
+        <a href="mailto:support@propertypulse.app">Soporte</a>
+    </p>
+    <p>© 2026 PropertyPulse · Todos los derechos reservados</p>
+</footer>
+
+<script src="/js/app.js"></script>
+<script src="/js/theme.js"></script>
+<script src="/js/i18n.js"></script>
+
+<script>
+// ── Billing toggle ────────────────────────────────────────────
+let isAnnual = false;
+
+const prices = {
+    monthly: { starter: 9,  pro: 29,  business: 79  },
+    annual:  { starter: 7,  pro: 23,  business: 63  }  // 20% descuento
+};
+
+function toggleBilling() {
+    isAnnual = !isAnnual;
+    const btn = document.getElementById('billingToggle');
+    btn.classList.toggle('on', isAnnual);
+
+    document.getElementById('lbl-monthly').classList.toggle('active', !isAnnual);
+    document.getElementById('lbl-annual').classList.toggle('active', isAnnual);
+
+    const p = isAnnual ? prices.annual : prices.monthly;
+
+    document.getElementById('price-starter').textContent  = '$' + p.starter;
+    document.getElementById('price-pro').textContent      = '$' + p.pro;
+    document.getElementById('price-business').textContent = '$' + p.business;
+
+    const annualNote = (monthly, annual) =>
+        isAnnual ? `$${annual * 12}/año · Ahorras $${(monthly - annual) * 12}` : '';
+
+    document.getElementById('annual-starter').textContent  = annualNote(9,  7);
+    document.getElementById('annual-pro').textContent      = annualNote(29, 23);
+    document.getElementById('annual-business').textContent = annualNote(79, 63);
+}
+
+// ── FAQ accordion ─────────────────────────────────────────────
+function toggleFaq(el) {
+    const answer = el.nextElementSibling;
+    const isOpen = answer.classList.contains('open');
+
+    // Cerrar todos
+    document.querySelectorAll('.pr-faq-a').forEach(a => a.classList.remove('open'));
+    document.querySelectorAll('.pr-faq-q').forEach(q => q.classList.remove('open'));
+
+    // Abrir el clickeado si estaba cerrado
+    if (!isOpen) {
+        answer.classList.add('open');
+        el.classList.add('open');
+    }
+}
+
+// Abrir primera pregunta por defecto
+document.querySelector('.pr-faq-q')?.click();
+</script>
+
+</body>
+</html>

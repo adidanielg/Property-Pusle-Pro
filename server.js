@@ -81,7 +81,7 @@ app.use('/notificaciones', apiLimiter);
 // ── Rutas públicas ────────────────────────────────────────────
 app.get('/',        (req, res) => res.render('landing', { title: 'PropertyPulse — Property Maintenance, Simplified' }));
 app.get('/landing', (req, res) => res.render('landing', { title: 'PropertyPulse — Property Maintenance, Simplified' }));
-app.get('/pricing', (req, res) => res.redirect('/#pricing'));
+app.get('/pricing', (req, res) => res.render('pricing', { title: 'Planes y Precios — PropertyPulse' }));
 app.get('/app',     (req, res) => res.render('index',   { title: 'Acceder — PropertyPulse' }));
 app.get('/inicio',  (req, res) => res.redirect('/app'));
 app.get('/terms',   (req, res) => res.render('terms',   { title: 'Terms of Service — PropertyPulse' }));
