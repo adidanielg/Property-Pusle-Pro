@@ -406,43 +406,26 @@ const i18n = {
     },
 
     renderToggle() {
-        // Insertar toggle en todas las páginas
+        // Si ya existe un #lang-toggle en el HTML (ej. en el topbar del dashboard), solo actualizar UI
         const existing = document.getElementById('lang-toggle');
         if (existing) { this.updateToggleUI(); return; }
 
+        // En páginas sin dashboard (login, registro, landing) crear toggle flotante
         const toggle = document.createElement('div');
         toggle.id = 'lang-toggle';
-        toggle.innerHTML = `
-            <button onclick="i18n.setLang('es')" id="lang-es" title="Español">🇵🇷 ES</button>
-            <button onclick="i18n.setLang('en')" id="lang-en" title="English">🇺🇸 EN</button>
-        `;
         toggle.style.cssText = `
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            z-index: 9999;
-            display: flex;
-            gap: .25rem;
-            background: white;
-            border: 1px solid #e8eaed;
-            border-radius: 8px;
-            padding: .25rem;
+            position: fixed; top: 1rem; right: 4.5rem; z-index: 9999;
+            display: flex; gap: .2rem;
+            background: var(--surface, #fff); border: 1px solid var(--border, #e8eaed);
+            border-radius: 8px; padding: .2rem;
             box-shadow: 0 2px 8px rgba(0,0,0,.1);
         `;
-
-        const btnStyle = `
-            padding: .3rem .6rem;
-            border: none;
-            border-radius: 6px;
-            font-size: .78rem;
-            font-weight: 600;
-            cursor: pointer;
-            background: transparent;
-            color: #5c6370;
-            transition: all .15s;
+        toggle.innerHTML = `
+            <button id="lang-es" onclick="i18n.setLang('es')" title="Español"
+                style="padding:.3rem .6rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;background:transparent;color:#5c6370;transition:all .15s">ES</button>
+            <button id="lang-en" onclick="i18n.setLang('en')" title="English"
+                style="padding:.3rem .6rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;background:transparent;color:#5c6370;transition:all .15s">EN</button>
         `;
-        toggle.querySelectorAll('button').forEach(b => b.style.cssText = btnStyle);
-
         document.body.appendChild(toggle);
         this.updateToggleUI();
     },
@@ -452,11 +435,13 @@ const i18n = {
         const enBtn = document.getElementById('lang-en');
         if (!esBtn || !enBtn) return;
 
-        const activeStyle = 'background:#6c63ff;color:white;';
-        const inactiveStyle = 'background:transparent;color:#5c6370;';
+        // Usar CSS variable para el color activo (funciona en dark/light mode)
+        const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#6c63ff';
 
-        esBtn.style.cssText += this.lang === 'es' ? activeStyle : inactiveStyle;
-        enBtn.style.cssText += this.lang === 'en' ? activeStyle : inactiveStyle;
+        esBtn.style.background = this.lang === 'es' ? accent : 'transparent';
+        esBtn.style.color      = this.lang === 'es' ? '#fff'  : 'var(--text-3, #9aa0ab)';
+        enBtn.style.background = this.lang === 'en' ? accent : 'transparent';
+        enBtn.style.color      = this.lang === 'en' ? '#fff'  : 'var(--text-3, #9aa0ab)';
     }
 };
 

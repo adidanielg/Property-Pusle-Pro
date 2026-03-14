@@ -30,7 +30,7 @@ const theme = {
         document.documentElement.setAttribute('data-theme', this.current);
         localStorage.setItem('pp_theme', this.current);
         // Actualizar todos los botones de toggle que existan
-        document.querySelectorAll('.pp-theme-btn, #theme-toggle').forEach(btn => {
+        document.querySelectorAll('.pp-theme-btn, #theme-toggle, #topbar-theme-btn').forEach(btn => {
             btn.textContent = this.current === 'dark' ? '☀️' : '🌙';
             btn.title = this.current === 'dark' ? 'Modo claro' : 'Modo oscuro';
         });
@@ -54,7 +54,7 @@ const theme = {
 
     renderToggle() {
         // Si ya existe algún botón de toggle, no crear más
-        if (document.getElementById('theme-toggle') || document.querySelector('.pp-theme-btn')) return;
+        if (document.getElementById('theme-toggle') || document.getElementById('topbar-theme-btn') || document.querySelector('.pp-theme-btn')) return;
 
         // Detectar si estamos en un dashboard (tiene sidebar)
         const hasSidebar = document.querySelector('.sidebar-footer') !== null;
@@ -91,3 +91,4 @@ const theme = {
 };
 
 document.addEventListener('DOMContentLoaded', () => theme.init());
+window.toggleTheme = () => theme.toggle();

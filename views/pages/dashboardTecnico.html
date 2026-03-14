@@ -201,7 +201,10 @@
         <a href="#perfil">👤 Perfil</a>
     </nav>
     <div class="tec-nav-right">
-        <button class="tec-topbar-btn" id="topbar-lang-btn" onclick="toggleLang()" title="Cambiar idioma">🌐 <span id="topbar-lang-label">ES</span></button>
+        <div id="lang-toggle" style="display:flex;gap:.2rem;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:.2rem">
+            <button id="lang-es" onclick="i18n.setLang('es')" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:var(--text-3)" title="Español">ES</button>
+            <button id="lang-en" onclick="i18n.setLang('en')" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:var(--text-3)" title="English">EN</button>
+        </div>
         <button class="tec-topbar-btn" id="topbar-theme-btn" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
         <div class="tec-avatar" title="<%= tecnico.username %>"><%= tecnico.username.charAt(0).toUpperCase() %></div>
     </div>
@@ -601,31 +604,6 @@ async function eliminarCuenta(){
 cargarPerfil();
 cargarRanking();
 
-// IDIOMA
-function toggleLang(){
-    const cur=localStorage.getItem('pp_lang')||(document.cookie.match(/pp_lang=([^;]+)/)||[])[1]||'es';
-    const next=cur==='es'?'en':'es';
-    document.getElementById('topbar-lang-label').textContent=next.toUpperCase();
-    fetch('/auth/set-lang',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lang:next})}).then(()=>{localStorage.setItem('pp_lang',next);if(window.i18n)i18n.setLang(next);}).catch(()=>{});
-}
-// TEMA
-function toggleTheme(){
-    const cur=localStorage.getItem('pp_theme')||(document.cookie.match(/pp_theme=([^;]+)/)||[])[1]||'light';
-    const next=cur==='light'?'dark':'light';
-    document.documentElement.setAttribute('data-theme',next);
-    localStorage.setItem('pp_theme',next);
-    document.getElementById('topbar-theme-btn').textContent=next==='dark'?'☀️':'🌙';
-    fetch('/auth/set-theme',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({theme:next})}).catch(()=>{});
-}
-// Init labels
-(function(){
-    const lang=localStorage.getItem('pp_lang')||(document.cookie.match(/pp_lang=([^;]+)/)||[])[1]||'es';
-    const theme=localStorage.getItem('pp_theme')||(document.cookie.match(/pp_theme=([^;]+)/)||[])[1]||'light';
-    const lb=document.getElementById('topbar-lang-btn');
-    const tb=document.getElementById('topbar-theme-btn');
-    if(lb) document.getElementById('topbar-lang-label').textContent=lang.toUpperCase();
-    if(tb) tb.textContent=theme==='dark'?'☀️':'🌙';
-})();
 </script>
 
 <script src="/js/notifications.js"></script>
