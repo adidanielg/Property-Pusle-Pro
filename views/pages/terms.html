@@ -1,95 +1,84 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Terms of Service — PropertyPulse</title>
-    <link rel="icon" href="/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="stylesheet" href="/css/style.css">
-    <script src="/js/theme.js"></script>
     <style>
-        .legal-page { max-width: 760px; margin: 0 auto; padding: 6rem 2rem 4rem; }
-        .legal-page h1 { font-size: 2rem; font-weight: 700; margin-bottom: .5rem; }
-        .legal-page .updated { color: var(--text-3); font-size: .85rem; margin-bottom: 3rem; }
-        .legal-page h2 { font-size: 1.1rem; font-weight: 700; margin: 2rem 0 .75rem; }
-        .legal-page p, .legal-page li { color: var(--text-2); font-size: .95rem; line-height: 1.8; margin-bottom: .75rem; }
-        .legal-page ul { padding-left: 1.5rem; }
-        .legal-nav { position: fixed; top: 0; left: 0; right: 0; background: var(--surface); border-bottom: 1px solid var(--border); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; z-index: 100; }
-        .legal-nav a { font-size: .875rem; color: var(--text-2); }
-        .legal-nav a:hover { color: var(--text-1); }
-        .legal-logo { font-weight: 700; font-size: 1rem; }
-        .legal-logo span { color: var(--accent); }
+        body { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+        h1 { font-size: 2rem; font-weight: 800; letter-spacing: -.5px; margin-bottom: .5rem; }
+        h2 { font-size: 1.05rem; font-weight: 700; margin: 2rem 0 .5rem; color: var(--text-1); }
+        p  { font-size: .9rem; color: var(--text-2); line-height: 1.75; margin-bottom: .5rem; }
+        .pp-nav { display: flex; align-items: center; justify-content: space-between; padding: 1rem 0 2rem; border-bottom: 1px solid var(--border); margin-bottom: 2.5rem; }
+        .pp-nav-logo { font-weight: 800; color: var(--text-1); text-decoration: none; }
+        .pp-nav-logo span { color: var(--accent); }
+        .pp-nav-links { display: flex; align-items: center; gap: 1rem; font-size: .85rem; }
+        .pp-nav-links a { color: var(--text-2); text-decoration: none; }
+        .pp-nav-links a:hover { color: var(--text-1); }
     </style>
 </head>
 <body>
-<nav class="legal-nav">
-    <div class="legal-logo">Property<span>Pulse</span></div>
-    <a href="/landing">← Back to home</a>
-</nav>
+    <nav class="pp-nav">
+        <a href="/" class="pp-nav-logo">🏢 Property<span>Pulse</span></a>
+        <div class="pp-nav-links">
+            <a href="/">Home</a>
+            <a href="/#pricing">Pricing</a>
+            <a href="/terms">Terms</a>
+            <a href="/privacy">Privacy</a>
+            <div id="lang-toggle" style="display:flex;gap:.2rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.2rem">
+                <button id="lang-es" onclick="i18n.setLang('es')" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)">ES</button>
+                <button id="lang-en" onclick="i18n.setLang('en')" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)">EN</button>
+            </div>
+        </div>
+    </nav>
+    
+<h1>Terms of Service</h1>
+<p style="color:var(--text-2);margin-bottom:2rem">Last updated: March 2026</p>
 
-<div class="legal-page">
-    <h1>Terms of Service</h1>
-    <p class="updated">Last updated: March 2026</p>
+<h2>1. Acceptance of Terms</h2>
+<p>By accessing or using PropertyPulse, you agree to be bound by these Terms of Service. If you do not agree, please do not use the service.</p>
 
-    <p>Welcome to PropertyPulse. By accessing or using our platform, you agree to be bound by these Terms of Service. Please read them carefully.</p>
+<h2>2. Description of Service</h2>
+<p>PropertyPulse is a property maintenance management platform that connects property owners, technicians, and administrators. We provide tools to submit, track, and manage maintenance requests.</p>
 
-    <h2>1. Acceptance of Terms</h2>
-    <p>By creating an account or using PropertyPulse, you agree to these Terms. If you do not agree, do not use the service.</p>
+<h2>3. User Accounts</h2>
+<p>You are responsible for maintaining the confidentiality of your account credentials. You agree to provide accurate information and to notify us immediately of any unauthorized use of your account.</p>
 
-    <h2>2. Description of Service</h2>
-    <p>PropertyPulse is a SaaS platform that helps property managers submit, track, and manage maintenance requests. The service is available on a subscription basis with multiple plan tiers (Starter, Pro, Business).</p>
+<h2>4. Acceptable Use</h2>
+<p>You agree not to use PropertyPulse to transmit harmful, illegal, or fraudulent content. You may not attempt to access unauthorized areas of the platform or interfere with its operation.</p>
 
-    <h2>3. Account Registration</h2>
-    <ul>
-        <li>You must provide accurate and complete information when creating an account.</li>
-        <li>You are responsible for maintaining the security of your password.</li>
-        <li>You must notify us immediately of any unauthorized use of your account.</li>
-        <li>One account per individual or company. Sharing accounts is not permitted.</li>
-    </ul>
+<h2>5. Subscription and Payments</h2>
+<p>Paid plans are billed monthly or annually. Prices are listed at the time of subscription. We reserve the right to modify pricing with 30 days notice. Refunds are handled on a case-by-case basis.</p>
 
-    <h2>4. Subscription and Billing</h2>
-    <ul>
-        <li>Subscriptions are billed monthly in advance.</li>
-        <li>You may cancel your subscription at any time. Cancellation takes effect at the end of the current billing period.</li>
-        <li>We do not offer refunds for partial months.</li>
-        <li>We reserve the right to change pricing with 30 days' notice.</li>
-    </ul>
+<h2>6. Cancellation</h2>
+<p>You may cancel your subscription at any time. Access continues until the end of the billing period. We do not provide prorated refunds for unused time.</p>
 
-    <h2>5. Plan Limits</h2>
-    <p>Each plan includes limits on properties, active tickets, and technicians. If you exceed your plan's limits, you will be prompted to upgrade. Existing data is never deleted due to a plan downgrade.</p>
+<h2>7. Data and Privacy</h2>
+<p>Your use of the service is also governed by our <a href="/privacy" style="color:var(--accent)">Privacy Policy</a>. We take reasonable measures to protect your data but cannot guarantee absolute security.</p>
 
-    <h2>6. Acceptable Use</h2>
-    <p>You agree not to:</p>
-    <ul>
-        <li>Use the service for any unlawful purpose.</li>
-        <li>Attempt to gain unauthorized access to other accounts or systems.</li>
-        <li>Upload malicious content, viruses, or harmful code.</li>
-        <li>Abuse the platform in ways that affect other users' experience.</li>
-    </ul>
+<h2>8. Technician Fees</h2>
+<p>Technicians using the platform agree to a $4.50 service fee per completed job. The first job is free. Fees are tracked within the platform and collected periodically by the administrator.</p>
 
-    <h2>7. Data and Privacy</h2>
-    <p>Your use of PropertyPulse is also governed by our <a href="/privacy" style="color:var(--accent)">Privacy Policy</a>. We take data security seriously and implement industry-standard protections.</p>
+<h2>9. Intellectual Property</h2>
+<p>PropertyPulse and its content are owned by PropertyPulse and protected by applicable intellectual property laws. You may not copy, modify, or distribute our content without permission.</p>
 
-    <h2>8. Data Deletion</h2>
-    <p>You may request deletion of your account and all associated data at any time by using the "Delete my account" option in your profile settings or by contacting us directly. We will process deletion requests within 30 days.</p>
+<h2>10. Limitation of Liability</h2>
+<p>PropertyPulse is provided "as is." We are not liable for indirect, incidental, or consequential damages arising from your use of the service.</p>
 
-    <h2>9. Availability</h2>
-    <p>We strive for 99.9% uptime but do not guarantee uninterrupted service. Scheduled maintenance will be communicated in advance when possible.</p>
+<h2>11. Termination</h2>
+<p>We reserve the right to suspend or terminate accounts that violate these terms. You may terminate your account at any time from your profile settings.</p>
 
-    <h2>10. Intellectual Property</h2>
-    <p>PropertyPulse and its content are protected by copyright and other intellectual property laws. You retain ownership of data you upload to the platform.</p>
+<h2>12. Governing Law</h2>
+<p>These Terms are governed by the laws of the State of Florida, United States, without regard to conflict of law provisions.</p>
 
-    <h2>11. Termination</h2>
-    <p>We reserve the right to suspend or terminate accounts that violate these Terms. You may terminate your account at any time.</p>
+<h2>13. Changes to Terms</h2>
+<p>We may update these Terms from time to time. We will notify you of significant changes via email or in-app notification. Continued use after changes constitutes acceptance.</p>
 
-    <h2>12. Limitation of Liability</h2>
-    <p>PropertyPulse is provided "as is." To the maximum extent permitted by law, we are not liable for indirect, incidental, or consequential damages arising from your use of the service.</p>
+<h2>14. Contact</h2>
+<p>Questions about these Terms? Contact us at <a href="mailto:support@propertypulse.app" style="color:var(--accent)">support@propertypulse.app</a></p>
 
-    <h2>13. Changes to Terms</h2>
-    <p>We may update these Terms from time to time. We will notify you of significant changes via email or in-app notification. Continued use of the service after changes constitutes acceptance.</p>
-
-    <h2>14. Contact</h2>
-    <p>Questions about these Terms? Contact us at <a href="mailto:support@propertypulse.app" style="color:var(--accent)">support@propertypulse.app</a></p>
-</div>
+    <script src="/js/i18n.js"></script>
 </body>
 </html>

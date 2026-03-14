@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,16 +13,6 @@
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="stylesheet" href="/css/style.css">
-
-    <script>
-    // ── Dark mode inmediato (evita flash) ─────────────────────
-    (function() {
-        var t = localStorage.getItem('pp_theme') ||
-                (document.cookie.match(/pp_theme=([^;]+)/) || [])[1] ||
-                (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        document.documentElement.setAttribute('data-theme', t);
-    })();
-    </script>
 </head>
 <body>
 
@@ -32,204 +22,224 @@
         <div class="auth-logo">
             <div class="mark">🏢</div>
             <h1>Property<span>Pulse</span></h1>
-            <p>Crear cuenta de cliente</p>
+            <p data-i18n="reg.createAccount">Crear cuenta de cliente</p>
         </div>
 
-        <!-- El form NO tiene action ni method — JS intercepta el submit -->
-        <form id="registerForm">
+        <form id="registerForm" onsubmit="registrar(event)">
 
             <div class="form-group">
-                <label class="form-label">Tipo de cuenta</label>
-                <select name="tipo_cliente" id="tipo_cliente" class="form-select">
-                    <option value="Individual">👤 Cliente Individual</option>
-                    <option value="Compania">🏢 Compañía / Empresa</option>
+                <label class="form-label" data-i18n="reg.accountType">Tipo de cuenta</label>
+                <select name="tipo_cliente" id="tipo_cliente" class="form-select" onchange="toggleEmpresa(this)">
+                    <option value="Individual" data-i18n="reg.individual">👤 Cliente Individual</option>
+                    <option value="Compania"   data-i18n="reg.company">🏢 Compañía / Empresa</option>
                 </select>
             </div>
 
-            <div id="campo_empresa" class="form-group" style="display:none">
-                <label class="form-label">Nombre de la Empresa</label>
+            <!-- Campo empresa — se muestra/oculta según tipo -->
+            <div id="campo_empresa" class="form-group" style="display:none;animation:modalIn .2s ease">
+                <label class="form-label" data-i18n="reg.companyName">Nombre de la Empresa</label>
                 <input type="text" name="nombre_empresa" id="nombre_empresa" class="form-input"
+                    data-i18n-placeholder="reg.companyPlaceholder"
                     placeholder="Ej. Inmobiliaria Sur S.A.">
+                <p class="form-hint">📋 Este nombre aparecerá en tus tickets y reportes.</p>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">Nombre</label>
+                    <label class="form-label" data-i18n="reg.firstName">Nombre</label>
                     <input type="text" name="nombre" class="form-input" required autocomplete="given-name">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Apellido</label>
+                    <label class="form-label" data-i18n="reg.lastName">Apellido</label>
                     <input type="text" name="apellido" class="form-input" required autocomplete="family-name">
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">Email</label>
+                    <label class="form-label" data-i18n="reg.email">Email</label>
                     <input type="email" name="email" class="form-input" required autocomplete="email">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Teléfono</label>
+                    <label class="form-label" data-i18n="reg.phone">Teléfono</label>
                     <input type="tel" name="telefono" class="form-input" required autocomplete="tel">
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">Contraseña</label>
-                    <input type="password" name="password" class="form-input" required autocomplete="new-password" minlength="6">
+                    <label class="form-label" data-i18n="reg.password">Contraseña</label>
+                    <input type="password" name="password" id="pwd" class="form-input" required autocomplete="new-password" minlength="6">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Confirmar contraseña</label>
-                    <input type="password" name="confirm_password" class="form-input" required autocomplete="new-password">
+                    <label class="form-label" data-i18n="reg.confirmPassword">Confirmar contraseña</label>
+                    <input type="password" name="confirm_password" id="pwd2" class="form-input" required autocomplete="new-password">
                 </div>
             </div>
 
             <div id="registerError" class="form-error" style="display:none"></div>
 
-            <button type="submit" class="btn btn-primary btn-full mt-2" id="btnSubmit">
+            <button type="submit" class="btn btn-primary btn-full mt-2" id="btnSubmit" data-i18n="reg.createAccount">
                 Crear mi cuenta
             </button>
 
             <p class="text-small text-muted mt-2" style="text-align:center">
-                ¿Ya tienes cuenta?
-                <a href="/auth/login" style="color:var(--accent);font-weight:600">Inicia sesión</a>
+                <span data-i18n="reg.haveAccount">¿Ya tienes cuenta?</span>
+                <a href="/auth/login" style="color:var(--accent);font-weight:600" data-i18n="reg.loginLink">Inicia sesión</a>
             </p>
         </form>
 
     </div>
 </div>
 
-<!-- Modal éxito -->
+<!-- ── Modal de usuario creado exitosamente ─────────────────── -->
 <div id="successModal" class="modal-overlay">
     <div class="modal" style="max-width:420px;text-align:center">
-        <div style="font-size:3rem;margin-bottom:1rem">🎉</div>
-        <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:.4rem">¡Cuenta creada!</h2>
-        <p style="font-size:.875rem;color:var(--text-2);margin-bottom:1.5rem">
+
+        <div style="font-size:3.5rem;margin-bottom:1rem;animation:modalIn .3s ease">🎉</div>
+
+        <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:.4rem;letter-spacing:-.3px" data-i18n="reg.successTitle">
+            ¡Cuenta creada!
+        </h2>
+        <p style="font-size:.875rem;color:var(--text-2);margin-bottom:1.5rem" data-i18n="reg.successMsg">
             Este es tu nombre de usuario para iniciar sesión:
         </p>
-        <div style="background:var(--accent-soft);border:2px solid var(--accent);padding:1.25rem 1.5rem;border-radius:14px;margin-bottom:1rem">
-            <div style="font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:.4rem;opacity:.7">Tu usuario</div>
-            <div id="usernameDisplay" style="font-size:1.5rem;font-weight:700;color:var(--accent);letter-spacing:.5px;font-family:monospace"></div>
+
+        <!-- Username display -->
+        <div style="background:var(--accent-soft);border:2px solid var(--accent);padding:1.25rem 1.5rem;border-radius:14px;margin-bottom:1rem;position:relative">
+            <div style="font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:.4rem;opacity:.7">
+                Tu usuario
+            </div>
+            <div id="usernameDisplay" style="font-size:1.5rem;font-weight:700;color:var(--accent);letter-spacing:.5px;font-family:var(--font-mono)"></div>
         </div>
+
         <button onclick="copiarUsername()" id="copyBtn" class="btn btn-secondary btn-full mb-2">
             📋 Copiar nombre de usuario
         </button>
-        <div style="background:var(--yellow-soft);border-left:3px solid var(--yellow);padding:.75rem 1rem;border-radius:6px;margin-bottom:1.5rem;text-align:left">
+
+        <div style="background:var(--yellow-soft);border-left:3px solid var(--yellow);padding:.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1.5rem;text-align:left">
             <p style="font-size:.82rem;color:#92400e;font-weight:500">
-                ⚠️ <strong>Guárdalo ahora</strong> — lo necesitas para iniciar sesión.
+                ⚠️ <strong>Guárdalo ahora</strong> — lo necesitas para iniciar sesión. No usamos email como usuario.
             </p>
         </div>
-        <a href="/auth/login" class="btn btn-primary btn-full">
+
+        <a id="goLoginBtn" href="/auth/login" class="btn btn-primary btn-full" data-i18n="reg.goLogin">
             Ir a iniciar sesión →
         </a>
+
     </div>
 </div>
 
+<script src="/js/app.js"></script>
+<script src="/js/i18n.js"></script>
+
 <script>
-// ── Todo el JS es inline y autónomo — NO depende de app.js ────
+    // ── Toggle campo empresa ──────────────────────────────────
+    // FIX: usar .value directamente, que siempre es 'Individual' o 'Compania'
+    // independiente del texto traducido que se muestre al usuario
+    function toggleEmpresa(selectEl) {
+        // Si se llama desde onchange pasa el elemento, si no, buscarlo
+        const sel   = selectEl || document.getElementById('tipo_cliente');
+        const campo = document.getElementById('campo_empresa');
+        const input = document.getElementById('nombre_empresa');
 
-// Toggle campo empresa
-document.getElementById('tipo_cliente').addEventListener('change', function() {
-    var esCompania = this.value === 'Compania';
-    var campo = document.getElementById('campo_empresa');
-    var input = document.getElementById('nombre_empresa');
-    campo.style.display = esCompania ? 'block' : 'none';
-    input.required = esCompania;
-    if (!esCompania) input.value = '';
-});
+        // Comparar el VALUE del option (nunca el texto visible)
+        const esCompania = sel.value === 'Compania';
 
-// Registro — interceptar el submit
-document.getElementById('registerForm').addEventListener('submit', async function(e) {
-    e.preventDefault(); // ← SIEMPRE prevenir el submit nativo
-
-    var errDiv = document.getElementById('registerError');
-    var btn    = document.getElementById('btnSubmit');
-
-    errDiv.style.display = 'none';
-    btn.disabled = true;
-    btn.textContent = 'Creando cuenta...';
-
-    var data = {};
-    new FormData(this).forEach(function(val, key) { data[key] = val; });
-    data.role = 'cliente';
-
-    if (data.password !== data.confirm_password) {
-        errDiv.textContent = '❌ Las contraseñas no coinciden';
-        errDiv.style.display = 'block';
-        btn.disabled = false;
-        btn.textContent = 'Crear mi cuenta';
-        return;
+        campo.style.display = esCompania ? 'block' : 'none';
+        input.required      = esCompania;
+        if (!esCompania) input.value = '';
     }
 
-    if (data.password.length < 6) {
-        errDiv.textContent = '❌ La contraseña debe tener al menos 6 caracteres';
-        errDiv.style.display = 'block';
-        btn.disabled = false;
-        btn.textContent = 'Crear mi cuenta';
-        return;
-    }
-
-    try {
-        var res    = await fetch('/auth/register', {
-            method:  'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify(data)
-        });
-        var result = await res.json();
-
-        if (result.success) {
-            document.getElementById('usernameDisplay').textContent = result.username;
-            document.getElementById('successModal').classList.add('open');
-        } else {
-            errDiv.textContent = '❌ ' + (result.error || 'Error al crear cuenta');
-            errDiv.style.display = 'block';
-        }
-    } catch (err) {
-        errDiv.textContent = '❌ Error de conexión. Verifica tu internet e intenta nuevamente.';
-        errDiv.style.display = 'block';
-    }
-
-    btn.disabled = false;
-    btn.textContent = 'Crear mi cuenta';
-});
-
-// Copiar username
-function copiarUsername() {
-    var username = document.getElementById('usernameDisplay').textContent;
-    var btn = document.getElementById('copyBtn');
-    navigator.clipboard.writeText(username).then(function() {
-        btn.textContent = '✅ ¡Copiado!';
-        setTimeout(function() { btn.textContent = '📋 Copiar nombre de usuario'; }, 2000);
-    }).catch(function() {
-        var el = document.createElement('textarea');
-        el.value = username;
-        document.body.appendChild(el);
-        el.select();
-        document.execCommand('copy');
-        document.body.removeChild(el);
-        btn.textContent = '✅ ¡Copiado!';
-        setTimeout(function() { btn.textContent = '📋 Copiar nombre de usuario'; }, 2000);
+    // Inicializar al cargar (por si el browser recuerda una selección)
+    document.addEventListener('DOMContentLoaded', () => {
+        toggleEmpresa();
     });
-}
 
-// Toggle dark/light
-(function() {
-    var current = localStorage.getItem('pp_theme') || 'light';
-    var btn = document.createElement('button');
-    btn.id = 'theme-toggle';
-    btn.textContent = current === 'dark' ? '☀️' : '🌙';
-    btn.style.cssText = 'position:fixed;top:1rem;right:1rem;z-index:9999;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.35rem .55rem;cursor:pointer;font-size:1rem;box-shadow:0 2px 8px rgba(0,0,0,.07)';
-    btn.onclick = function() {
-        current = current === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', current);
-        localStorage.setItem('pp_theme', current);
-        btn.textContent = current === 'dark' ? '☀️' : '🌙';
-        fetch('/auth/set-theme', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({theme: current}) }).catch(function(){});
-    };
-    document.body.appendChild(btn);
-})();
+    // ── Copiar username ───────────────────────────────────────
+    function copiarUsername() {
+        const username = document.getElementById('usernameDisplay').textContent;
+        const btn = document.getElementById('copyBtn');
+
+        navigator.clipboard.writeText(username).then(() => {
+            btn.textContent = '✅ ¡Copiado!';
+            btn.style.background = 'var(--green-soft)';
+            btn.style.color = 'var(--green)';
+            setTimeout(() => {
+                btn.textContent = '📋 Copiar nombre de usuario';
+                btn.style.background = '';
+                btn.style.color = '';
+            }, 2000);
+            showToast('✅ Nombre de usuario copiado');
+        }).catch(() => {
+            // Fallback para browsers sin clipboard API
+            const el = document.createElement('textarea');
+            el.value = username;
+            el.style.position = 'fixed';
+            el.style.opacity = '0';
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showToast('✅ Copiado');
+        });
+    }
+
+    // ── Registro ──────────────────────────────────────────────
+    async function registrar(e) {
+        e.preventDefault();
+
+        const errDiv = document.getElementById('registerError');
+        errDiv.style.display = 'none';
+
+        const btn  = document.getElementById('btnSubmit');
+        const done = btnLoading(btn, 'Creando cuenta...');
+        const data = Object.fromEntries(new FormData(e.target));
+        data.role  = 'cliente';
+
+        // Validar contraseñas
+        if (data.password !== data.confirm_password) {
+            errDiv.textContent = '❌ Las contraseñas no coinciden';
+            errDiv.style.display = 'block';
+            done();
+            return;
+        }
+
+        if (data.password.length < 6) {
+            errDiv.textContent = '❌ La contraseña debe tener al menos 6 caracteres';
+            errDiv.style.display = 'block';
+            done();
+            return;
+        }
+
+        try {
+            const res    = await fetch('/auth/register', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify(data)
+            });
+            const result = await res.json();
+
+            if (result.success) {
+                document.getElementById('usernameDisplay').textContent = result.username;
+                document.getElementById('successModal').classList.add('open');
+            } else {
+                errDiv.textContent = '❌ ' + result.error;
+                errDiv.style.display = 'block';
+                errDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        } catch (err) {
+            errDiv.textContent = '❌ Error de conexión. Intenta nuevamente.';
+            errDiv.style.display = 'block';
+        } finally {
+            done();
+        }
+    }
 </script>
 
+<div style="position:fixed;top:1rem;right:1rem;z-index:9999"><div id="lang-toggle" style="display:flex;gap:.2rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.2rem">
+    <button id="lang-es" onclick="i18n.setLang('es')" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)" title="Español">ES</button>
+    <button id="lang-en" onclick="i18n.setLang('en')" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)" title="English">EN</button>
+</div></div>
 </body>
 </html>

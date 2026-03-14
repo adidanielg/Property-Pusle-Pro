@@ -205,7 +205,7 @@
             <button id="lang-es" onclick="i18n.setLang('es')" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:var(--text-3)" title="Español">ES</button>
             <button id="lang-en" onclick="i18n.setLang('en')" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:var(--text-3)" title="English">EN</button>
         </div>
-        <button class="tec-topbar-btn" id="topbar-theme-btn" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
+        
         <div class="tec-avatar" title="<%= tecnico.username %>"><%= tecnico.username.charAt(0).toUpperCase() %></div>
     </div>
 </header>
@@ -607,7 +607,6 @@ cargarRanking();
 </script>
 
 <script src="/js/app.js"></script>
-<script src="/js/theme.js"></script>
 <script src="/js/i18n.js"></script>
 <script src="/js/notifications.js"></script>
 </body>

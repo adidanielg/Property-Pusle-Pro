@@ -1,101 +1,75 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Privacy Policy — PropertyPulse</title>
-    <link rel="icon" href="/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="stylesheet" href="/css/style.css">
-    <script src="/js/theme.js"></script>
     <style>
-        .legal-page { max-width: 760px; margin: 0 auto; padding: 6rem 2rem 4rem; }
-        .legal-page h1 { font-size: 2rem; font-weight: 700; margin-bottom: .5rem; }
-        .legal-page .updated { color: var(--text-3); font-size: .85rem; margin-bottom: 3rem; }
-        .legal-page h2 { font-size: 1.1rem; font-weight: 700; margin: 2rem 0 .75rem; }
-        .legal-page p, .legal-page li { color: var(--text-2); font-size: .95rem; line-height: 1.8; margin-bottom: .75rem; }
-        .legal-page ul { padding-left: 1.5rem; }
-        .legal-nav { position: fixed; top: 0; left: 0; right: 0; background: var(--surface); border-bottom: 1px solid var(--border); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; z-index: 100; }
-        .legal-nav a { font-size: .875rem; color: var(--text-2); }
-        .legal-nav a:hover { color: var(--text-1); }
-        .legal-logo { font-weight: 700; font-size: 1rem; }
-        .legal-logo span { color: var(--accent); }
+        body { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+        h1 { font-size: 2rem; font-weight: 800; letter-spacing: -.5px; margin-bottom: .5rem; }
+        h2 { font-size: 1.05rem; font-weight: 700; margin: 2rem 0 .5rem; color: var(--text-1); }
+        p  { font-size: .9rem; color: var(--text-2); line-height: 1.75; margin-bottom: .5rem; }
+        .pp-nav { display: flex; align-items: center; justify-content: space-between; padding: 1rem 0 2rem; border-bottom: 1px solid var(--border); margin-bottom: 2.5rem; }
+        .pp-nav-logo { font-weight: 800; color: var(--text-1); text-decoration: none; }
+        .pp-nav-logo span { color: var(--accent); }
+        .pp-nav-links { display: flex; align-items: center; gap: 1rem; font-size: .85rem; }
+        .pp-nav-links a { color: var(--text-2); text-decoration: none; }
+        .pp-nav-links a:hover { color: var(--text-1); }
     </style>
 </head>
 <body>
-<nav class="legal-nav">
-    <div class="legal-logo">Property<span>Pulse</span></div>
-    <a href="/landing">← Back to home</a>
-</nav>
+    <nav class="pp-nav">
+        <a href="/" class="pp-nav-logo">🏢 Property<span>Pulse</span></a>
+        <div class="pp-nav-links">
+            <a href="/">Home</a>
+            <a href="/#pricing">Pricing</a>
+            <a href="/terms">Terms</a>
+            <a href="/privacy">Privacy</a>
+            <div id="lang-toggle" style="display:flex;gap:.2rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.2rem">
+                <button id="lang-es" onclick="i18n.setLang('es')" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)">ES</button>
+                <button id="lang-en" onclick="i18n.setLang('en')" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)">EN</button>
+            </div>
+        </div>
+    </nav>
+    
+<h1>Privacy Policy</h1>
+<p style="color:var(--text-2);margin-bottom:2rem">Last updated: March 2026</p>
 
-<div class="legal-page">
-    <h1>Privacy Policy</h1>
-    <p class="updated">Last updated: March 2026</p>
+<h2>1. Information We Collect</h2>
+<p>We collect information you provide directly: name, email, phone number, property addresses, and account credentials. We also collect usage data and device information automatically when you use the service.</p>
 
-    <p>PropertyPulse ("we", "us", or "our") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and protect your information when you use our platform.</p>
+<h2>2. How We Use Your Information</h2>
+<p>We use your information to provide and improve the service, process transactions, send notifications, respond to support requests, and comply with legal obligations.</p>
 
-    <h2>1. Information We Collect</h2>
-    <p>We collect information you provide directly:</p>
-    <ul>
-        <li>Account information: name, email address, phone number, company name.</li>
-        <li>Property data: addresses, descriptions, photos you upload.</li>
-        <li>Maintenance tickets: descriptions, photos, status updates, chat messages.</li>
-        <li>Payment information: processed securely by Stripe — we never store card numbers.</li>
-        <li>Usage data: pages visited, features used, session duration.</li>
-    </ul>
+<h2>3. Data Storage</h2>
+<p>Your data is stored securely using Supabase (PostgreSQL) with encrypted connections. We implement industry-standard security measures to protect your information.</p>
 
-    <h2>2. How We Use Your Information</h2>
-    <ul>
-        <li>To provide and improve the PropertyPulse service.</li>
-        <li>To send you transactional notifications (ticket updates, account alerts).</li>
-        <li>To process payments via Stripe.</li>
-        <li>To respond to your support requests.</li>
-        <li>To comply with legal obligations.</li>
-    </ul>
-    <p>We do not sell your data to third parties. Ever.</p>
+<h2>4. Data Sharing</h2>
+<p>We do not sell your personal data. We may share information with service providers (Stripe for payments, Supabase for storage) who assist in operating the platform. We may disclose information when required by law.</p>
 
-    <h2>3. Data Storage and Security</h2>
-    <p>Your data is stored in Supabase (PostgreSQL), hosted on secure cloud infrastructure. We use industry-standard encryption for data in transit (HTTPS/TLS) and at rest. Authentication uses JWT tokens stored in HttpOnly cookies, not accessible by JavaScript.</p>
+<h2>5. Cookies</h2>
+<p>We use HttpOnly cookies for authentication (JWT tokens) and preference cookies for theme and language settings. These are essential for the service to function.</p>
 
-    <h2>4. Push Notifications</h2>
-    <p>If you enable push notifications, your browser's push subscription endpoint is stored to deliver maintenance updates. You can disable notifications at any time in your browser settings.</p>
+<h2>6. Push Notifications</h2>
+<p>If you opt in to push notifications, we store your push subscription endpoint to send you maintenance updates. You can revoke this permission at any time through your browser settings.</p>
 
-    <h2>5. Cookies</h2>
-    <p>We use the following cookies:</p>
-    <ul>
-        <li><strong>jwt</strong> — Authentication session (HttpOnly, expires in 8 hours).</li>
-        <li><strong>pp_lang</strong> — Your language preference (English/Spanish).</li>
-        <li><strong>pp_theme</strong> — Your theme preference (light/dark).</li>
-    </ul>
-    <p>We do not use advertising or tracking cookies.</p>
+<h2>7. Your Rights (CCPA / GDPR)</h2>
+<p>You have the right to access, correct, or delete your personal data. You can delete your account and all associated data from your profile settings. For additional requests, contact us at the email below.</p>
 
-    <h2>6. Third-Party Services</h2>
-    <ul>
-        <li><strong>Supabase</strong> — Database and file storage.</li>
-        <li><strong>Stripe</strong> — Payment processing. See <a href="https://stripe.com/privacy" target="_blank" style="color:var(--accent)">Stripe's Privacy Policy</a>.</li>
-        <li><strong>Vercel</strong> — Hosting and deployment.</li>
-        <li><strong>Resend</strong> — Transactional email delivery.</li>
-    </ul>
+<h2>8. Data Retention</h2>
+<p>We retain your data while your account is active. After account deletion, data is removed within 30 days. Some information may be retained longer if required by law.</p>
 
-    <h2>7. Your Rights (CCPA / US)</h2>
-    <p>If you are a California resident, you have the right to:</p>
-    <ul>
-        <li>Know what personal data we collect and how it's used.</li>
-        <li>Request deletion of your personal data.</li>
-        <li>Opt out of the sale of your data (we do not sell data).</li>
-        <li>Non-discrimination for exercising your privacy rights.</li>
-    </ul>
+<h2>9. Children</h2>
+<p>PropertyPulse is not directed at children under 13. We do not knowingly collect personal information from children.</p>
 
-    <h2>8. Data Deletion</h2>
-    <p>You can delete your account and all associated data at any time from your profile settings. Upon request, we will permanently delete your data within 30 days. Some anonymized usage data may be retained for analytics purposes.</p>
+<h2>10. Changes to This Policy</h2>
+<p>We may update this Privacy Policy periodically. We will notify you of material changes via email or in-app notification. Continued use after changes constitutes acceptance.</p>
 
-    <h2>9. Children's Privacy</h2>
-    <p>PropertyPulse is not intended for users under 18 years of age. We do not knowingly collect data from children.</p>
+<h2>11. Contact</h2>
+<p>Privacy questions or data requests? Contact us at <a href="mailto:support@propertypulse.app" style="color:var(--accent)">support@propertypulse.app</a></p>
 
-    <h2>10. Changes to This Policy</h2>
-    <p>We may update this Privacy Policy periodically. We will notify you of material changes via email or in-app notification. Continued use of the service after changes constitutes acceptance.</p>
-
-    <h2>11. Contact</h2>
-    <p>Privacy questions or data requests? Contact us at <a href="mailto:privacy@propertypulse.app" style="color:var(--accent)">privacy@propertypulse.app</a></p>
-</div>
+    <script src="/js/i18n.js"></script>
 </body>
 </html>
