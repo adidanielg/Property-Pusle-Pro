@@ -3,6 +3,7 @@ const router     = express.Router();
 const { requireAuth } = require('../middleware/authMiddleware');
 const supabase   = require('../services/supabaseClient');
 const { validate, schemas } = require('../middleware/validate');
+const feeService = require('../services/feeService');
 
 router.use(requireAuth(['admin']));
 
@@ -192,6 +193,30 @@ router.get('/cancelaciones', async (req, res) => {
             .order('created_at', { ascending: false })
             .limit(100);
         res.json({ success: true, cancelaciones: data || [] });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+
+// ── Fees pendientes por técnico ───────────────────────────────
+router.get('/fees', async (req, res) => {
+    try {
+        const { data } = await supabase
+            .from('resumen_fees')
+            .select('*')
+            .order('fee_pendiente', { ascending: false });
+        res.json({ success: true, fees: data || [] });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── Marcar fees como cobrados ─────────────────────────────────
+router.post('/fees/:tecnicoId/cobrar', async (req, res) => {
+    try {
+        await feeService.marcarCobrado(req.params.tecnicoId);
+        res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

@@ -317,6 +317,31 @@
             </table>
         </div>
 
+
+            <!-- ── Fees de Técnicos ── -->
+            <div class="section-header mb-3 mt-4">
+                <h2>💰 Fees pendientes de técnicos</h2>
+                <button class="btn btn-secondary btn-sm" onclick="cargarFees()">Actualizar</button>
+            </div>
+            <div class="table-wrapper mb-4" id="feesContainer">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Técnico</th>
+                            <th>Especialidad</th>
+                            <th>Trabajos</th>
+                            <th>Rating</th>
+                            <th>Fee pendiente</th>
+                            <th>Fee cobrado</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="feesBody">
+                        <tr><td colspan="7" style="text-align:center;padding:1.5rem;color:var(--text-3)">Cargando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
     </main>
 </div>
 
@@ -641,6 +666,59 @@
         } catch (err) { alert('Error de conexión'); }
         finally { btn.disabled = false; btn.textContent = i18n.t('admin.deleteConfirmBtn'); idAEliminar = null; tipoAEliminar = null; }
     }
+    // ── Fees de técnicos ──────────────────────────────────────
+    async function cargarFees() {
+        try {
+            const res  = await fetch('/admin/fees');
+            const data = await res.json();
+            const tbody = document.getElementById('feesBody');
+
+            if (!data.fees?.length) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:1.5rem;color:var(--text-3)">No hay fees registrados aún.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.fees.map(f => `
+                <tr>
+                    <td style="font-weight:600">${f.nombre}</td>
+                    <td class="text-small text-muted">${f.especialidad || '—'}</td>
+                    <td>${f.total_trabajos || 0}</td>
+                    <td>${f.promedio_estrellas ? parseFloat(f.promedio_estrellas).toFixed(1) + ' ★' : '—'}</td>
+                    <td style="font-weight:600;color:var(--accent)">$${parseFloat(f.fee_pendiente || 0).toFixed(2)}</td>
+                    <td class="text-small text-muted">$${parseFloat(f.fee_cobrado || 0).toFixed(2)}</td>
+                    <td>
+                        ${parseFloat(f.fee_pendiente || 0) > 0 ? `
+                            <button class="btn btn-success btn-sm"
+                                onclick="cobrarFee('${f.tecnico_id}', '${f.nombre}', ${parseFloat(f.fee_pendiente || 0).toFixed(2)})">
+                                ✅ Marcar cobrado
+                            </button>
+                        ` : '<span class="text-small text-muted">Sin pendiente</span>'}
+                    </td>
+                </tr>
+            `).join('');
+        } catch (e) {
+            console.error('Error cargando fees:', e);
+        }
+    }
+
+    async function cobrarFee(tecnicoId, nombre, monto) {
+        const ok = await confirmAction(
+            `Marcar $${monto} de ${nombre} como cobrado. Esta acción no se puede deshacer.`,
+            'Sí, cobrado', 'Cancelar'
+        );
+        if (!ok) return;
+        try {
+            const res  = await fetch(`/admin/fees/${tecnicoId}/cobrar`, { method: 'POST' });
+            const data = await res.json();
+            if (data.success) {
+                showToast(`✅ Fee de ${nombre} marcado como cobrado`);
+                cargarFees();
+            }
+        } catch (e) { showToast('Error de conexión', 'error'); }
+    }
+
+    cargarFees();
+
 </script>
 
 </body>

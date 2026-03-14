@@ -163,3 +163,39 @@ CREATE OR REPLACE VIEW propiedades_activas AS
 
 CREATE OR REPLACE VIEW tickets_activos AS
     SELECT * FROM tickets WHERE deleted_at IS NULL;
+
+-- ── Sistema de fees para técnicos ────────────────────────────
+
+-- Tabla de fees acumulados por trabajo
+CREATE TABLE IF NOT EXISTS fees_tecnicos (
+    id          UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tecnico_id  UUID        NOT NULL REFERENCES tecnicos(id) ON DELETE CASCADE,
+    ticket_id   UUID        NOT NULL UNIQUE REFERENCES tickets(id) ON DELETE CASCADE,
+    monto       DECIMAL(10,2) NOT NULL DEFAULT 4.50,
+    es_gratis   BOOLEAN     NOT NULL DEFAULT FALSE,
+    cobrado     BOOLEAN     NOT NULL DEFAULT FALSE,
+    cobrado_at  TIMESTAMPTZ,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_fees_tecnico  ON fees_tecnicos(tecnico_id);
+CREATE INDEX IF NOT EXISTS idx_fees_ticket   ON fees_tecnicos(ticket_id);
+CREATE INDEX IF NOT EXISTS idx_fees_cobrado  ON fees_tecnicos(cobrado);
+
+ALTER TABLE fees_tecnicos DISABLE ROW LEVEL SECURITY;
+
+-- Vista de resumen de fees por técnico
+CREATE OR REPLACE VIEW resumen_fees AS
+SELECT
+    t.id         AS tecnico_id,
+    t.nombre,
+    t.especialidad,
+    COUNT(f.id)                                          AS total_trabajos,
+    COUNT(f.id) FILTER (WHERE f.es_gratis = FALSE)       AS trabajos_con_fee,
+    SUM(f.monto) FILTER (WHERE f.cobrado = FALSE AND f.es_gratis = FALSE) AS fee_pendiente,
+    SUM(f.monto) FILTER (WHERE f.cobrado = TRUE)         AS fee_cobrado,
+    AVG(c.estrellas)                                     AS promedio_estrellas
+FROM tecnicos t
+LEFT JOIN fees_tecnicos f  ON f.tecnico_id = t.id
+LEFT JOIN calificaciones c ON c.tecnico_id = t.id
+GROUP BY t.id, t.nombre, t.especialidad;

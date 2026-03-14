@@ -182,6 +182,55 @@
         <% } %>
 
 
+
+        <!-- ── Earnings & Rating ── -->
+        <div class="section-header mb-3 mt-4">
+            <h2>💰 <span data-i18n="tech.earnings">Mis Ganancias</span></h2>
+        </div>
+
+        <div class="stats-grid mb-4" id="earningsGrid">
+            <div class="stat-card">
+                <div class="stat-icon">🔧</div>
+                <div class="stat-label">Trabajos completados</div>
+                <div class="stat-value" id="totalTrabajos"><%= fees ? fees.totalTrabajos : 0 %></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">💵</div>
+                <div class="stat-label">Fee pendiente</div>
+                <div class="stat-value" id="feePendiente">$<%= fees ? fees.feePendiente.toFixed(2) : '0.00' %></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-label">Fee cobrado</div>
+                <div class="stat-value" id="feeCobrado">$<%= fees ? fees.feeCobrado.toFixed(2) : '0.00' %></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-label">Mi rating</div>
+                <div class="stat-value"><%= promedio ? promedio + ' ★' : 'Sin rating' %></div>
+            </div>
+        </div>
+
+        <!-- Próximo fee info -->
+        <% if (fees && fees.primerTrabajo) { %>
+        <div style="background:var(--green-soft);border:1px solid var(--green);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;font-size:.875rem;color:var(--green);font-weight:500">
+            🎁 Tu primer trabajo es <strong>gratuito</strong> — no se cobra fee. ¡Completa tu primer ticket para empezar!
+        </div>
+        <% } else { %>
+        <div style="background:var(--accent-soft);border:1px solid var(--accent);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;font-size:.875rem;color:var(--accent)">
+            💡 Se cobra <strong>$4.50</strong> por cada trabajo completado. El fee se acumula y PropertyPulse lo cobra mensualmente.
+        </div>
+        <% } %>
+
+        <!-- Ranking -->
+        <div class="section-header mb-3">
+            <h2>🏆 Mi posición en el ranking</h2>
+            <button class="btn btn-secondary btn-sm" onclick="cargarRanking()">Actualizar</button>
+        </div>
+        <div id="rankingContainer" class="card mb-4">
+            <p class="text-muted text-small" style="text-align:center;padding:1rem">Cargando ranking...</p>
+        </div>
+
         <!-- ── Perfil ── -->
         <div class="section-header mb-3 mt-4" id="perfil">
             <h2>👤 <span data-i18n="profile.title">Mi Perfil</span></h2>
@@ -470,6 +519,47 @@
             cargarMensajesTec();
         } catch (e) {}
     }
+
+
+    // ── Earnings & Ranking ───────────────────────────────────
+    async function cargarRanking() {
+        try {
+            const res  = await fetch('/tecnico/ranking');
+            const data = await res.json();
+            if (!data.success) return;
+
+            const container = document.getElementById('rankingContainer');
+            const miId = document.body.getAttribute('data-user-id');
+
+            if (!data.ranking?.length) {
+                container.innerHTML = '<p class="text-muted text-small" style="text-align:center;padding:1rem">No hay datos de ranking aún.</p>';
+                return;
+            }
+
+            container.innerHTML = `
+                <p class="text-small text-muted mb-2">Tu posición: <strong>#${data.miPosicion}</strong> de ${data.ranking.length} técnicos</p>
+                <div style="display:flex;flex-direction:column;gap:.4rem">
+                    ${data.ranking.slice(0, 5).map((t, i) => `
+                        <div style="display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:8px;background:${t.id === miId ? 'var(--accent-soft)' : 'var(--surface-2)'}">
+                            <span style="font-size:1rem;width:24px;text-align:center">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i+1)}</span>
+                            <span style="font-size:.875rem;font-weight:${t.id === miId ? '700' : '400'};flex:1;color:${t.id === miId ? 'var(--accent)' : 'var(--text-1)'}">${t.nombre}</span>
+                            <span style="font-size:.8rem;color:var(--text-2)">${t.especialidad}</span>
+                            <span style="font-size:.85rem;font-weight:600;color:#f59e0b">${t.promedio.toFixed(1)} ★</span>
+                            <span style="font-size:.75rem;color:var(--text-3)">(${t.totalCalif} reseñas)</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        } catch (e) {
+            document.getElementById('rankingContainer').innerHTML =
+                '<p class="text-muted text-small" style="text-align:center;padding:1rem">Error cargando ranking.</p>';
+        }
+    }
+
+    cargarRanking();
+
+    // Actualizar earnings cuando se completa un ticket
+    const originalCambiarEstado = window.cambiarEstado;
 
     async function cambiarEstado(ticketId, nuevoEstado) {
         try {

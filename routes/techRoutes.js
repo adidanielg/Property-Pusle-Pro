@@ -2,19 +2,22 @@ const express     = require('express');
 const router      = express.Router();
 const { requireAuth } = require('../middleware/authMiddleware');
 const ticketService   = require('../services/ticketService');
+const feeService      = require('../services/feeService');
 const supabase        = require('../services/supabaseClient');
 const { validate, schemas } = require('../middleware/validate');
+
 router.use(requireAuth(['tecnico']));
 
 // ── Dashboard ─────────────────────────────────────────────────
 router.get('/dashboard', async (req, res) => {
     try {
-        const [tickets, { data: calificaciones }] = await Promise.all([
+        const [tickets, { data: calificaciones }, resumenFees] = await Promise.all([
             ticketService.getTicketsParaTecnico(req.user.id),
             supabase.from('calificaciones')
                 .select('estrellas, comentario, created_at, companias:cliente_id(nombre_contacto, nombre_empresa)')
                 .eq('tecnico_id', req.user.id)
-                .order('created_at', { ascending: false })
+                .order('created_at', { ascending: false }),
+            feeService.getResumenTecnico(req.user.id)
         ]);
 
         const totalCalif = calificaciones?.length || 0;
@@ -28,7 +31,8 @@ router.get('/dashboard', async (req, res) => {
             tickets:        tickets        || [],
             calificaciones: calificaciones || [],
             promedio,
-            totalCalif
+            totalCalif,
+            fees:           resumenFees
         });
     } catch (err) {
         console.error('[TECH DASHBOARD]', err);
@@ -40,12 +44,7 @@ router.get('/dashboard', async (req, res) => {
 router.post('/tickets/:id/estado', validate(schemas.estadoTicket), async (req, res) => {
     try {
         const { estado } = req.body;
-        const validos = ['en_proceso', 'completado'];
 
-        if (!validos.includes(estado))
-            return res.status(400).json({ error: 'Estado no válido' });
-
-        // ── SEGURIDAD: verificar que el ticket le pertenece ───
         const { data: ticket, error: fetchErr } = await supabase
             .from('tickets')
             .select('id, tecnico_asignado, estado')
@@ -55,29 +54,62 @@ router.post('/tickets/:id/estado', validate(schemas.estadoTicket), async (req, r
         if (fetchErr || !ticket)
             return res.status(404).json({ error: 'Ticket no encontrado' });
 
-        // Pendiente: cualquier técnico puede aceptarlo (aún no tiene dueño)
-        // En proceso / completado: solo el técnico asignado puede avanzarlo
         if (ticket.estado !== 'pendiente' && ticket.tecnico_asignado !== req.user.id)
             return res.status(403).json({ error: 'No tienes permiso para modificar este ticket' });
 
-        // Si ya está completado no se puede cambiar
         if (ticket.estado === 'completado')
             return res.status(400).json({ error: 'Este ticket ya está completado' });
 
         const ticketActualizado = await ticketService.actualizarEstado(
-            req.params.id,
-            req.user.id,
-            estado
+            req.params.id, req.user.id, estado
         );
-        res.json({ success: true, ticket: ticketActualizado });
+
+        // Si completado → info del fee para mostrar en UI
+        let feeInfo = null;
+        if (estado === 'completado') {
+            feeInfo = await feeService.getResumenTecnico(req.user.id);
+        }
+
+        res.json({ success: true, ticket: ticketActualizado, feeInfo });
 
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
+// ── Earnings: detalle de fees ─────────────────────────────────
+router.get('/earnings', async (req, res) => {
+    try {
+        const resumen = await feeService.getResumenTecnico(req.user.id);
 
-// ── Perfil: obtener datos actuales ───────────────────────────
+        // Obtener rating
+        const { data: califs } = await supabase
+            .from('calificaciones')
+            .select('estrellas')
+            .eq('tecnico_id', req.user.id);
+
+        const promedio = califs?.length > 0
+            ? (califs.reduce((a, c) => a + c.estrellas, 0) / califs.length).toFixed(1)
+            : null;
+
+        res.json({ success: true, ...resumen, promedio, totalCalif: califs?.length || 0 });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── Ranking de técnicos (para mostrar posición) ───────────────
+router.get('/ranking', async (req, res) => {
+    try {
+        const tecnicos = await feeService.getTecnicoPorRating();
+        const miPosicion = tecnicos?.findIndex(t => t.id === req.user.id) + 1;
+        res.json({ success: true, ranking: tecnicos, miPosicion });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── Perfil: obtener ───────────────────────────────────────────
 router.get('/perfil', async (req, res) => {
     try {
         const { data, error } = await supabase
@@ -92,7 +124,7 @@ router.get('/perfil', async (req, res) => {
     }
 });
 
-// ── Perfil: actualizar datos ──────────────────────────────────
+// ── Perfil: actualizar ────────────────────────────────────────
 router.put('/perfil', validate(schemas.perfilTecnico), async (req, res) => {
     try {
         const bcrypt = require('bcryptjs');
@@ -106,9 +138,7 @@ router.put('/perfil', validate(schemas.perfilTecnico), async (req, res) => {
         }
 
         const updates = { nombre, email, telefono, especialidad };
-        if (nueva_password) {
-            updates.password = await bcrypt.hash(nueva_password, 10);
-        }
+        if (nueva_password) updates.password = await bcrypt.hash(nueva_password, 10);
 
         const { data, error } = await supabase
             .from('tecnicos')
@@ -127,24 +157,22 @@ router.put('/perfil', validate(schemas.perfilTecnico), async (req, res) => {
     }
 });
 
-
-// ── Cancelar ticket (técnico) ─────────────────────────────────
+// ── Cancelar ticket ───────────────────────────────────────────
 router.post('/tickets/:id/cancelar', validate(schemas.cancelarTicket), async (req, res) => {
     try {
         const { motivo } = req.body;
         const { data: ticket } = await supabase
-            .from('tickets').select('id, titulo, categoria, compania_id, tecnico_id')
-            .eq('id', req.params.id).eq('tecnico_id', req.user.id).single();
+            .from('tickets').select('id, motivo, categoria, cliente_id, tecnico_asignado')
+            .eq('id', req.params.id).eq('tecnico_asignado', req.user.id).single();
 
         if (!ticket) return res.status(404).json({ error: 'Ticket no encontrado' });
 
         await supabase.from('tickets')
-            .update({ estado: 'cancelado', tecnico_id: null })
+            .update({ estado: 'pendiente', tecnico_asignado: null })
             .eq('id', ticket.id);
 
-        // Log
         const { data: tec } = await supabase
-            .from('tecnicos').select('nombre, especialidad').eq('id', req.user.id).single();
+            .from('tecnicos').select('nombre').eq('id', req.user.id).single();
 
         await supabase.from('cancelaciones').insert({
             ticket_id:      ticket.id,
@@ -153,30 +181,8 @@ router.post('/tickets/:id/cancelar', validate(schemas.cancelarTicket), async (re
             usuario_nombre: tec?.nombre || 'Técnico',
             motivo:         motivo || 'Sin motivo',
             categoria:      ticket.categoria,
-            titulo:         ticket.titulo
+            titulo:         ticket.motivo
         });
-
-        // Notificar al cliente
-        const { data: cliSub } = await supabase
-            .from('push_subscriptions').select('subscription').eq('user_id', ticket.compania_id).single();
-        if (cliSub) {
-            const webpush = require('web-push');
-            webpush.setVapidDetails(
-                'mailto:admin@propertypulse.com',
-                process.env.VAPID_PUBLIC_KEY,
-                process.env.VAPID_PRIVATE_KEY
-            );
-            webpush.sendNotification(cliSub.subscription, JSON.stringify({
-                title: '❌ Técnico canceló el trabajo',
-                body:  `${tec?.nombre || 'El técnico'} canceló: ${ticket.titulo}`,
-                url:   '/cliente/dashboard'
-            })).catch(() => {});
-        }
-
-        // Volver a poner el ticket como pendiente sin técnico
-        await supabase.from('tickets')
-            .update({ estado: 'pendiente' })
-            .eq('id', ticket.id);
 
         res.json({ success: true });
     } catch (err) {
@@ -184,7 +190,7 @@ router.post('/tickets/:id/cancelar', validate(schemas.cancelarTicket), async (re
     }
 });
 
-// ── Chat: obtener mensajes ─────────────────────────────────────
+// ── Chat: obtener mensajes ────────────────────────────────────
 router.get('/tickets/:id/mensajes', async (req, res) => {
     try {
         const { data } = await supabase
@@ -198,12 +204,10 @@ router.get('/tickets/:id/mensajes', async (req, res) => {
     }
 });
 
-// ── Chat: enviar mensaje ───────────────────────────────────────
+// ── Chat: enviar mensaje ──────────────────────────────────────
 router.post('/tickets/:id/mensajes', validate(schemas.mensajeChat), async (req, res) => {
     try {
         const { mensaje } = req.body;
-        if (!mensaje?.trim()) return res.status(400).json({ error: 'Mensaje vacío' });
-
         const { data: tec } = await supabase
             .from('tecnicos').select('nombre').eq('id', req.user.id).single();
 
@@ -221,8 +225,7 @@ router.post('/tickets/:id/mensajes', validate(schemas.mensajeChat), async (req, 
     }
 });
 
-
-// ── Eliminar cuenta (CCPA / derecho al olvido) ────────────────
+// ── Eliminar cuenta ───────────────────────────────────────────
 router.delete('/cuenta', async (req, res) => {
     try {
         const id = req.user.id;

@@ -1,9 +1,10 @@
 const supabase            = require('./supabaseClient');
 const notificationService = require('./notificationService');
+const feeService          = require('./feeService');
 
 const ticketService = {
 
-    // Tickets visibles para un técnico: pendientes + los suyos en proceso/completado
+    // Tickets visibles para un técnico: pendientes (ordenados por rating) + los suyos
     async getTicketsParaTecnico(tecnicoId) {
         const { data, error } = await supabase
             .from('tickets')
@@ -15,9 +16,8 @@ const ticketService = {
         return data;
     },
 
-    // Cambiar estado del ticket + notificar al cliente
+    // Cambiar estado del ticket + notificar al cliente + registrar fee si completado
     async actualizarEstado(ticketId, tecnicoId, nuevoEstado) {
-        // Obtener ticket actual con datos del cliente
         const { data: ticketActual, error: fetchError } = await supabase
             .from('tickets')
             .select('*, propiedades(direccion)')
@@ -26,7 +26,6 @@ const ticketService = {
 
         if (fetchError) throw fetchError;
 
-        // Actualizar en base de datos
         const { data: ticket, error } = await supabase
             .from('tickets')
             .update({ estado: nuevoEstado, tecnico_asignado: tecnicoId })
@@ -36,7 +35,13 @@ const ticketService = {
 
         if (error) throw error;
 
-        // Notificar al cliente sin bloquear la respuesta HTTP
+        // Si se completó → registrar fee automáticamente
+        if (nuevoEstado === 'completado') {
+            feeService.registrarFee(tecnicoId, ticketId)
+                .catch(err => console.error('[FEE]', err.message));
+        }
+
+        // Notificar al cliente
         notificationService.notificarCliente(
             ticketActual.cliente_id,
             nuevoEstado,
