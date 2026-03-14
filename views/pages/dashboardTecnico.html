@@ -72,6 +72,25 @@
             </div>
         </div>
 
+        <!-- Banner estado técnico -->
+        <% if (tecnico.ocupado) { %>
+        <div style="background:var(--yellow-soft);border:1px solid var(--yellow);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:.75rem">
+            <span style="font-size:1.5rem">🔨</span>
+            <div>
+                <div style="font-weight:600;font-size:.9rem">Estás actualmente ocupado</div>
+                <div class="text-small text-muted">Completa o cancela tu trabajo en curso para recibir nuevos tickets.</div>
+            </div>
+        </div>
+        <% } else { %>
+        <div style="background:var(--green-soft);border:1px solid var(--green);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:.75rem">
+            <span style="font-size:1.5rem">✅</span>
+            <div>
+                <div style="font-weight:600;font-size:.9rem">Estás disponible</div>
+                <div class="text-small text-muted">Puedes aceptar nuevos trabajos.</div>
+            </div>
+        </div>
+        <% } %>
+
         <!-- Tickets -->
         <div class="section-header mb-3">
             <h2 data-i18n="tech.availableJobs">Tickets disponibles y activos</h2>

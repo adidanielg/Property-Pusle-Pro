@@ -11,13 +11,14 @@ router.use(requireAuth(['tecnico']));
 // ── Dashboard ─────────────────────────────────────────────────
 router.get('/dashboard', async (req, res) => {
     try {
-        const [tickets, { data: calificaciones }, resumenFees] = await Promise.all([
+        const [tickets, { data: calificaciones }, resumenFees, { data: tecnicoData }] = await Promise.all([
             ticketService.getTicketsParaTecnico(req.user.id),
             supabase.from('calificaciones')
                 .select('estrellas, comentario, created_at, companias:cliente_id(nombre_contacto, nombre_empresa)')
                 .eq('tecnico_id', req.user.id)
                 .order('created_at', { ascending: false }),
-            feeService.getResumenTecnico(req.user.id)
+            feeService.getResumenTecnico(req.user.id),
+            supabase.from('tecnicos').select('ocupado').eq('id', req.user.id).single()
         ]);
 
         const totalCalif = calificaciones?.length || 0;
@@ -27,7 +28,7 @@ router.get('/dashboard', async (req, res) => {
 
         res.render('dashboardTecnico.html', {
             title:          'Panel Técnico | PropertyPulse',
-            tecnico:        req.user,
+            tecnico:        { ...req.user, ocupado: tecnicoData?.ocupado || false },
             tickets:        tickets        || [],
             calificaciones: calificaciones || [],
             promedio,
@@ -171,6 +172,11 @@ router.post('/tickets/:id/cancelar', validate(schemas.cancelarTicket), async (re
             .update({ estado: 'pendiente', tecnico_asignado: null })
             .eq('id', ticket.id);
 
+        // Liberar al técnico cuando cancela
+        await supabase.from('tecnicos')
+            .update({ ocupado: false })
+            .eq('id', req.user.id);
+
         const { data: tec } = await supabase
             .from('tecnicos').select('nombre').eq('id', req.user.id).single();
 
@@ -229,7 +235,7 @@ router.post('/tickets/:id/mensajes', validate(schemas.mensajeChat), async (req, 
 router.delete('/cuenta', async (req, res) => {
     try {
         const id = req.user.id;
-        await supabase.from('push_subscriptions').delete().eq('tecnico_id', id);
+        await supabase.from('tecnicos').update({ push_subscription: null }).eq('id', id);
         await supabase.from('tecnicos').delete().eq('id', id);
         res.clearCookie('jwt');
         res.json({ success: true });

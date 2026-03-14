@@ -83,7 +83,8 @@ const feeService = {
                 id, nombre, especialidad,
                 calificaciones(estrellas)
             `)
-            .eq('activo', true);
+            .eq('activo', true)
+            .eq('ocupado', false); // Solo técnicos disponibles
 
         if (!tecnicos?.length) return null;
 

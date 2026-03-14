@@ -72,6 +72,7 @@
                         <th data-i18n="admin.col.phone">Teléfono</th>
                         <th data-i18n="admin.col.rating">Calificación</th>
                         <th data-i18n="admin.col.status">Estado</th>
+                        <th>Disponibilidad</th>
                         <th data-i18n="admin.col.actions">Acciones</th>
                     </tr>
                 </thead>
@@ -98,6 +99,13 @@
                                 <span class="badge badge-completado" data-i18n="admin.active">Activo</span>
                             <% } else { %>
                                 <span class="badge badge-pendiente" data-i18n="admin.inactive">Inactivo</span>
+                            <% } %>
+                        </td>
+                        <td>
+                            <% if (t.ocupado) { %>
+                                <span class="badge" style="background:var(--yellow-soft);color:#92400e">🔨 Ocupado</span>
+                            <% } else { %>
+                                <span class="badge badge-completado">✅ Libre</span>
                             <% } %>
                         </td>
                         <td>

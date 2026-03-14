@@ -4,19 +4,24 @@ const feeService          = require('./feeService');
 
 const ticketService = {
 
-    // Tickets visibles para un técnico: pendientes (ordenados por rating) + los suyos
+    // Tickets visibles para un técnico:
+    // - Pendientes sin asignar (solo si el técnico está disponible, o los suyos propios)
+    // - Los tickets que ya tiene asignados (en cualquier estado)
     async getTicketsParaTecnico(tecnicoId) {
         const { data, error } = await supabase
             .from('tickets')
             .select('*, propiedades(direccion), companias(nombre_empresa, nombre_contacto)')
             .or(`estado.eq.pendiente,tecnico_asignado.eq.${tecnicoId}`)
+            .is('deleted_at', null)
             .order('created_at', { ascending: false });
 
         if (error) throw error;
         return data;
     },
 
-    // Cambiar estado del ticket + notificar al cliente + registrar fee si completado
+    // Cambiar estado del ticket
+    // en_proceso → marcar técnico como OCUPADO
+    // completado/cancelado → marcar técnico como LIBRE
     async actualizarEstado(ticketId, tecnicoId, nuevoEstado) {
         const { data: ticketActual, error: fetchError } = await supabase
             .from('tickets')
@@ -35,10 +40,30 @@ const ticketService = {
 
         if (error) throw error;
 
-        // Si se completó → registrar fee automáticamente
-        if (nuevoEstado === 'completado') {
+        // ── Actualizar estado de ocupación del técnico ────────
+        if (nuevoEstado === 'en_proceso') {
+            // Técnico acepta trabajo → ocupado
+            await supabase
+                .from('tecnicos')
+                .update({ ocupado: true })
+                .eq('id', tecnicoId);
+
+        } else if (nuevoEstado === 'completado') {
+            // Trabajo completado → registrar fee y liberar técnico
             feeService.registrarFee(tecnicoId, ticketId)
                 .catch(err => console.error('[FEE]', err.message));
+
+            await supabase
+                .from('tecnicos')
+                .update({ ocupado: false })
+                .eq('id', tecnicoId);
+
+        } else if (nuevoEstado === 'cancelado') {
+            // Cancelado → liberar técnico
+            await supabase
+                .from('tecnicos')
+                .update({ ocupado: false })
+                .eq('id', tecnicoId);
         }
 
         // Notificar al cliente

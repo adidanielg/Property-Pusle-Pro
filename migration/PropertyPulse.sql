@@ -199,3 +199,27 @@ FROM tecnicos t
 LEFT JOIN fees_tecnicos f  ON f.tecnico_id = t.id
 LEFT JOIN calificaciones c ON c.tecnico_id = t.id
 GROUP BY t.id, t.nombre, t.especialidad;
+
+-- ============================================================
+-- PropertyPulse — Migración: técnico ocupado
+-- Ejecutar en Supabase → SQL Editor → Run
+-- ============================================================
+
+-- Agregar columna ocupado a técnicos
+ALTER TABLE tecnicos 
+    ADD COLUMN IF NOT EXISTS ocupado BOOLEAN NOT NULL DEFAULT FALSE;
+
+-- Índice para filtrar técnicos disponibles rápido
+CREATE INDEX IF NOT EXISTS idx_tecnicos_disponible 
+    ON tecnicos(activo, ocupado) 
+    WHERE activo = TRUE AND ocupado = FALSE;
+
+-- Marcar como libre a todos los técnicos que no tengan ticket en_proceso
+-- (sincronizar estado actual)
+UPDATE tecnicos t
+SET ocupado = TRUE
+WHERE EXISTS (
+    SELECT 1 FROM tickets tk
+    WHERE tk.tecnico_asignado = t.id
+    AND tk.estado = 'en_proceso'
+);
