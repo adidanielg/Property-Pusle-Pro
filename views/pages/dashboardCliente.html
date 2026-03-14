@@ -50,6 +50,15 @@
     padding: .3rem .6rem; border-radius: 6px; transition: all .15s;
 }
 .pp-nav-logout:hover { color: var(--red); background: var(--red-soft); }
+.pp-topbar-btn {
+    display: inline-flex; align-items: center; gap: .3rem;
+    padding: .3rem .6rem; border-radius: 7px; border: 1px solid var(--border);
+    background: var(--surface-2); color: var(--text-2);
+    font-size: .78rem; font-weight: 600; cursor: pointer;
+    transition: all .15s; font-family: 'Outfit', sans-serif;
+    white-space: nowrap;
+}
+.pp-topbar-btn:hover { border-color: var(--accent); color: var(--accent); }
 
 /* ── Body grid ── */
 .pp-body {
@@ -241,6 +250,8 @@
         <a href="#perfil">👤 Perfil</a>
     </nav>
     <div class="pp-nav-right">
+        <button class="pp-topbar-btn" id="topbar-lang-btn" onclick="toggleLang()" title="Cambiar idioma">🌐 <span id="topbar-lang-label">ES</span></button>
+        <button class="pp-topbar-btn" id="topbar-theme-btn" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
         <div class="pp-avatar" title="<%= cliente.username %>"><%= cliente.username.charAt(0).toUpperCase() %></div>
         <a href="/auth/logout" class="pp-nav-logout">Salir →</a>
     </div>
@@ -406,35 +417,16 @@
     <!-- Perfil -->
     <div class="pp-widget" id="perfil">
         <div class="pp-widget-lbl">Mi Perfil</div>
-        <div class="pp-field">
-            <label>Nombre</label>
-            <input type="text" id="p_nombre">
+        <div id="perfil-info" style="margin-bottom:1rem">
+            <div style="font-size:.875rem;font-weight:600;color:var(--text-1);margin-bottom:.2rem" id="perfil-nombre-display">—</div>
+            <div style="font-size:.78rem;color:var(--text-3);margin-bottom:.15rem" id="perfil-email-display">—</div>
+            <div style="font-size:.78rem;color:var(--text-3)" id="perfil-tel-display">—</div>
         </div>
-        <div class="pp-field">
-            <label>Email</label>
-            <input type="email" id="p_email">
-        </div>
-        <div class="pp-field">
-            <label>Teléfono</label>
-            <input type="text" id="p_telefono">
-        </div>
-        <div class="pp-field">
-            <label>Empresa</label>
-            <input type="text" id="p_empresa" placeholder="Solo si eres empresa">
-        </div>
-        <div id="perfilMsg" style="display:none;font-size:.78rem;padding:.45rem .7rem;border-radius:8px;margin-bottom:.5rem"></div>
-        <button class="ppb ppb-primary ppb-full" onclick="guardarPerfil()">Guardar cambios</button>
+        <button class="ppb ppb-primary ppb-full" onclick="abrirModal('perfilModal')">✏️ Editar perfil</button>
+        <button class="ppb ppb-ghost ppb-full ppb-sm" style="margin-top:.5rem" onclick="abrirModal('passwordModal')">🔑 Cambiar contraseña</button>
         <div class="pp-div"></div>
-        <div class="pp-field">
-            <label>Contraseña actual</label>
-            <input type="password" id="p_pwd_actual" placeholder="••••••••">
-        </div>
-        <div class="pp-field">
-            <label>Nueva contraseña</label>
-            <input type="password" id="p_pwd_nueva" placeholder="Min. 6 caracteres">
-        </div>
-        <button class="ppb ppb-ghost ppb-full ppb-sm" onclick="cambiarPassword()" style="margin-bottom:.5rem">🔑 Cambiar contraseña</button>
-        <button class="ppb ppb-danger ppb-full ppb-sm" onclick="eliminarCuenta()">🗑️ Eliminar mi cuenta</button>
+        <a href="/auth/logout" class="ppb ppb-danger ppb-full ppb-sm" style="text-align:center">🚪 Cerrar sesión</a>
+        <button class="ppb ppb-danger ppb-full ppb-sm" style="margin-top:.35rem;background:transparent;color:var(--text-3);border:1px solid var(--border)" onclick="eliminarCuenta()">🗑️ Eliminar mi cuenta</button>
     </div>
 
 </aside>
@@ -642,10 +634,43 @@ async function cargarMensajes(){ if(!chatId)return; try{ const res=await fetch(`
 async function enviarMensaje(){ const input=document.getElementById('chatInput'),msg=input.value.trim(); if(!msg||!chatId)return; input.value=''; try{await fetch(`/cliente/tickets/${chatId}/mensajes`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mensaje:msg})});cargarMensajes();}catch{} }
 
 // PERFIL
-async function cargarPerfil(){ try{const res=await fetch('/cliente/perfil');const data=await res.json();if(data.success){document.getElementById('p_nombre').value=data.perfil.nombre_contacto||'';document.getElementById('p_email').value=data.perfil.email||'';document.getElementById('p_telefono').value=data.perfil.telefono||'';document.getElementById('p_empresa').value=data.perfil.nombre_empresa!=='Individual'?data.perfil.nombre_empresa:'';}}catch{} }
+async function cargarPerfil(){
+    try{
+        const res=await fetch('/cliente/perfil');
+        const data=await res.json();
+        if(data.success){
+            document.getElementById('p_nombre').value=data.perfil.nombre_contacto||'';
+            document.getElementById('p_email').value=data.perfil.email||'';
+            document.getElementById('p_telefono').value=data.perfil.telefono||'';
+            document.getElementById('p_empresa').value=data.perfil.nombre_empresa!=='Individual'?data.perfil.nombre_empresa:'';
+            actualizarDisplayPerfil(data.perfil);
+        }
+    }catch{}
+}
 async function guardarPerfil(){
     const msg=document.getElementById('perfilMsg');
-    try{const res=await fetch('/cliente/perfil',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre_contacto:document.getElementById('p_nombre').value,email:document.getElementById('p_email').value,telefono:document.getElementById('p_telefono').value,nombre_empresa:document.getElementById('p_empresa').value||'Individual'})});const data=await res.json();msg.style.display='block';if(data.success){msg.style.background='var(--green-soft)';msg.style.color='var(--green)';msg.textContent='✅ Perfil actualizado';}else{msg.style.background='var(--red-soft)';msg.style.color='var(--red)';msg.textContent='❌ '+(data.error||'Error');}setTimeout(()=>{msg.style.display='none';},3000);}catch{showToast('Error','error');}
+    try{
+        const res=await fetch('/cliente/perfil',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre_contacto:document.getElementById('p_nombre').value,email:document.getElementById('p_email').value,telefono:document.getElementById('p_telefono').value,nombre_empresa:document.getElementById('p_empresa').value||'Individual'})});
+        const data=await res.json();
+        if(data.success){
+            cerrarModal('perfilModal');
+            showToast('✅ Perfil actualizado');
+            actualizarDisplayPerfil(data.perfil);
+        }else{
+            msg.style.display='block';
+            msg.style.background='var(--red-soft)'; msg.style.color='var(--red)';
+            msg.textContent='❌ '+(data.error||'Error');
+            setTimeout(()=>{msg.style.display='none';},3000);
+        }
+    }catch{showToast('Error de conexión','error');}
+}
+function actualizarDisplayPerfil(p){
+    const n=document.getElementById('perfil-nombre-display');
+    const e=document.getElementById('perfil-email-display');
+    const t=document.getElementById('perfil-tel-display');
+    if(n) n.textContent=p.nombre_contacto||'—';
+    if(e) e.textContent=p.email||'—';
+    if(t) t.textContent=p.telefono||'—';
 }
 async function cambiarPassword(){ const a=document.getElementById('p_pwd_actual').value,n=document.getElementById('p_pwd_nueva').value; if(!a||!n)return showToast('Completa ambos campos','error'); if(n.length<6)return showToast('Mínimo 6 caracteres','error'); try{const res=await fetch('/cliente/perfil',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre_contacto:document.getElementById('p_nombre').value,email:document.getElementById('p_email').value,telefono:document.getElementById('p_telefono').value,nombre_empresa:document.getElementById('p_empresa').value||'Individual',password:a,nueva_password:n})});const data=await res.json();if(data.success){showToast('✅ Contraseña actualizada');document.getElementById('p_pwd_actual').value='';document.getElementById('p_pwd_nueva').value='';}else showToast(data.error,'error');}catch{showToast('Error','error');} }
 async function eliminarCuenta(){ if(!await confirmAction('¿Eliminar tu cuenta? Esta acción es irreversible.','Sí, eliminar mi cuenta'))return; try{await fetch('/cliente/cuenta',{method:'DELETE'});window.location.href='/';}catch{showToast('Error','error');} }
@@ -663,6 +688,45 @@ async function checkUpgradeBanner(){
 
 cargarPerfil();
 checkUpgradeBanner();
+
+// ── IDIOMA ────────────────────────────────────────────────────
+function toggleLang() {
+    const current = localStorage.getItem('pp_lang') ||
+        (document.cookie.match(/pp_lang=([^;]+)/)||[])[1] || 'es';
+    const next = current === 'es' ? 'en' : 'es';
+    document.getElementById('topbar-lang-label').textContent = next.toUpperCase();
+    fetch('/auth/set-lang', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ lang: next })
+    }).then(() => {
+        localStorage.setItem('pp_lang', next);
+        if (window.i18n) { i18n.setLang(next); }
+    }).catch(() => {});
+}
+
+// ── TEMA ──────────────────────────────────────────────────────
+function toggleTheme() {
+    const current = localStorage.getItem('pp_theme') ||
+        (document.cookie.match(/pp_theme=([^;]+)/)||[])[1] || 'light';
+    const next = current === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('pp_theme', next);
+    document.getElementById('topbar-theme-btn').textContent = next === 'dark' ? '☀️' : '🌙';
+    fetch('/auth/set-theme', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ theme: next })
+    }).catch(() => {});
+}
+
+// Inicializar labels
+(function() {
+    const lang  = localStorage.getItem('pp_lang') || (document.cookie.match(/pp_lang=([^;]+)/)||[])[1] || 'es';
+    const theme = localStorage.getItem('pp_theme') || (document.cookie.match(/pp_theme=([^;]+)/)||[])[1] || 'light';
+    const lb = document.getElementById('topbar-lang-label');
+    const tb = document.getElementById('topbar-theme-btn');
+    if (lb) lb.textContent = lang.toUpperCase();
+    if (tb) tb.textContent = theme === 'dark' ? '☀️' : '🌙';
+})();
 </script>
 
 <script src="/js/imageOptimizer.js"></script>

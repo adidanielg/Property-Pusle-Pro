@@ -46,6 +46,15 @@
     padding: .3rem .6rem; border-radius: 6px; transition: all .15s;
 }
 .tec-logout:hover { color: var(--red); background: var(--red-soft); }
+.tec-topbar-btn {
+    display: inline-flex; align-items: center; gap: .3rem;
+    padding: .3rem .6rem; border-radius: 7px; border: 1px solid var(--border);
+    background: var(--surface-2); color: var(--text-2);
+    font-size: .78rem; font-weight: 600; cursor: pointer;
+    transition: all .15s; font-family: 'Outfit', sans-serif;
+    white-space: nowrap;
+}
+.tec-topbar-btn:hover { border-color: var(--green); color: var(--green); }
 
 /* Estado banner */
 .tec-status-bar {
@@ -192,8 +201,9 @@
         <a href="#perfil">👤 Perfil</a>
     </nav>
     <div class="tec-nav-right">
+        <button class="tec-topbar-btn" id="topbar-lang-btn" onclick="toggleLang()" title="Cambiar idioma">🌐 <span id="topbar-lang-label">ES</span></button>
+        <button class="tec-topbar-btn" id="topbar-theme-btn" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
         <div class="tec-avatar" title="<%= tecnico.username %>"><%= tecnico.username.charAt(0).toUpperCase() %></div>
-        <a href="/auth/logout" class="tec-logout">Salir →</a>
     </div>
 </header>
 
@@ -367,12 +377,45 @@
     <!-- Perfil -->
     <div class="tec-widget" id="perfil">
         <div class="tec-widget-lbl">Mi Perfil</div>
-        <div class="tec-field"><label>Nombre</label><input type="text" id="p_nombre"></div>
-        <div class="tec-field"><label>Email</label><input type="email" id="p_email"></div>
-        <div class="tec-field"><label>Teléfono</label><input type="text" id="p_telefono"></div>
-        <div class="tec-field">
-            <label>Especialidad</label>
-            <select id="p_especialidad">
+        <div style="margin-bottom:1rem">
+            <div style="font-size:.875rem;font-weight:600;color:var(--text-1);margin-bottom:.2rem" id="perfil-nombre-display">—</div>
+            <div style="font-size:.78rem;color:var(--text-3);margin-bottom:.15rem" id="perfil-email-display">—</div>
+            <div style="font-size:.78rem;color:var(--text-3);margin-bottom:.15rem" id="perfil-tel-display">—</div>
+            <div style="font-size:.78rem;color:var(--green);font-weight:600" id="perfil-esp-display">—</div>
+        </div>
+        <button class="tb tb-green tb-full" onclick="abrirModal('perfilModal')">✏️ Editar perfil</button>
+        <button class="tb tb-ghost tb-full tb-sm" style="margin-top:.5rem" onclick="abrirModal('passwordModal')">🔑 Cambiar contraseña</button>
+        <div class="pp-div"></div>
+        <a href="/auth/logout" class="tb tb-danger tb-full" style="justify-content:center;text-align:center">🚪 Cerrar sesión</a>
+        <button class="tb tb-full tb-sm" style="margin-top:.35rem;background:transparent;color:var(--text-3);border:1px solid var(--border)" onclick="eliminarCuenta()">🗑️ Eliminar mi cuenta</button>
+    </div>
+
+</aside>
+</div>
+</div>
+
+<!-- Modal: Editar Perfil Técnico -->
+<div id="perfilModal" class="modal-overlay">
+    <div class="modal" style="max-width:460px">
+        <div class="modal-header">
+            <h2>👤 Editar Perfil</h2>
+            <button class="modal-close" onclick="cerrarModal('perfilModal')">✕</button>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Nombre completo</label>
+            <input type="text" id="p_nombre" class="form-input" required>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" id="p_email" class="form-input" required>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Teléfono</label>
+            <input type="text" id="p_telefono" class="form-input" required>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Especialidad</label>
+            <select id="p_especialidad" class="form-select">
                 <option value="Climatización (HVAC)">❄️ Climatización (HVAC)</option>
                 <option value="Electricidad">⚡ Electricidad</option>
                 <option value="Plomería">🔧 Plomería</option>
@@ -387,17 +430,28 @@
                 <option value="General">🛠️ Mantenimiento General</option>
             </select>
         </div>
-        <div id="perfilMsg" style="display:none;font-size:.78rem;padding:.45rem .7rem;border-radius:8px;margin-bottom:.5rem"></div>
-        <button class="tb tb-green tb-full" onclick="guardarPerfil()">Guardar cambios</button>
-        <div class="pp-div"></div>
-        <div class="tec-field"><label>Contraseña actual</label><input type="password" id="p_pass_actual" placeholder="••••••••"></div>
-        <div class="tec-field"><label>Nueva contraseña</label><input type="password" id="p_pass_nueva" placeholder="Min. 6 caracteres"></div>
-        <button class="tb tb-ghost tb-full tb-sm" onclick="cambiarPassword()" style="margin-bottom:.5rem">🔑 Cambiar contraseña</button>
-        <button class="tb tb-danger tb-full tb-sm" onclick="eliminarCuenta()">🗑️ Eliminar mi cuenta</button>
+        <div id="perfilMsg" style="display:none;font-size:.8rem;padding:.5rem .75rem;border-radius:8px;margin-bottom:.75rem"></div>
+        <button class="btn btn-primary btn-full" onclick="guardarPerfil()">Guardar cambios</button>
     </div>
-
-</aside>
 </div>
+
+<!-- Modal: Cambiar Contraseña Técnico -->
+<div id="passwordModal" class="modal-overlay">
+    <div class="modal" style="max-width:420px">
+        <div class="modal-header">
+            <h2>🔑 Cambiar Contraseña</h2>
+            <button class="modal-close" onclick="cerrarModal('passwordModal')">✕</button>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Contraseña actual</label>
+            <input type="password" id="p_pass_actual" class="form-input" placeholder="••••••••">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Nueva contraseña</label>
+            <input type="password" id="p_pass_nueva" class="form-input" placeholder="Mínimo 6 caracteres">
+        </div>
+        <button class="btn btn-primary btn-full" onclick="cambiarPassword()">Actualizar contraseña</button>
+    </div>
 </div>
 
 <!-- MODALES -->
@@ -478,7 +532,27 @@ async function cargarRanking(){
 }
 
 // PERFIL
-async function cargarPerfil(){ try{const res=await fetch('/tecnico/perfil');const data=await res.json();if(data.success){document.getElementById('p_nombre').value=data.perfil.nombre||'';document.getElementById('p_email').value=data.perfil.email||'';document.getElementById('p_telefono').value=data.perfil.telefono||'';document.getElementById('p_especialidad').value=data.perfil.especialidad||'';}}catch{} }
+async function cargarPerfil(){
+    try{
+        const res=await fetch('/tecnico/perfil');
+        const data=await res.json();
+        if(data.success){
+            document.getElementById('p_nombre').value=data.perfil.nombre||'';
+            document.getElementById('p_email').value=data.perfil.email||'';
+            document.getElementById('p_telefono').value=data.perfil.telefono||'';
+            document.getElementById('p_especialidad').value=data.perfil.especialidad||'';
+            // Actualizar display
+            const dn=document.getElementById('perfil-nombre-display');
+            const de=document.getElementById('perfil-email-display');
+            const dt=document.getElementById('perfil-tel-display');
+            const ds=document.getElementById('perfil-esp-display');
+            if(dn) dn.textContent=data.perfil.nombre||'—';
+            if(de) de.textContent=data.perfil.email||'—';
+            if(dt) dt.textContent=data.perfil.telefono||'—';
+            if(ds) ds.textContent=data.perfil.especialidad||'—';
+        }
+    }catch{}
+}
 
 function mostrarMsgPerfil(tipo,texto){ const m=document.getElementById('perfilMsg'); m.style.display='block'; m.style.background=tipo==='success'?'var(--green-soft)':'var(--red-soft)'; m.style.color=tipo==='success'?'var(--green)':'var(--red)'; m.textContent=texto; setTimeout(()=>{m.style.display='none';},3500); }
 
@@ -487,8 +561,21 @@ async function guardarPerfil(){
         const body={nombre:document.getElementById('p_nombre').value,email:document.getElementById('p_email').value,telefono:document.getElementById('p_telefono').value,especialidad:document.getElementById('p_especialidad').value};
         const res=await fetch('/tecnico/perfil',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
         const data=await res.json();
-        if(data.success)mostrarMsgPerfil('success','✅ Perfil actualizado');
-        else mostrarMsgPerfil('error',data.error||'Error');
+        if(data.success){
+            cerrarModal('perfilModal');
+            showToast('✅ Perfil actualizado');
+            // Actualizar display
+            const dn=document.getElementById('perfil-nombre-display');
+            const de=document.getElementById('perfil-email-display');
+            const dt=document.getElementById('perfil-tel-display');
+            const ds=document.getElementById('perfil-esp-display');
+            if(dn) dn.textContent=body.nombre||'—';
+            if(de) de.textContent=body.email||'—';
+            if(dt) dt.textContent=body.telefono||'—';
+            if(ds) ds.textContent=body.especialidad||'—';
+        } else {
+            mostrarMsgPerfil('error',data.error||'Error');
+        }
     }catch{mostrarMsgPerfil('error','Error de conexión');}
 }
 
@@ -513,6 +600,32 @@ async function eliminarCuenta(){
 
 cargarPerfil();
 cargarRanking();
+
+// IDIOMA
+function toggleLang(){
+    const cur=localStorage.getItem('pp_lang')||(document.cookie.match(/pp_lang=([^;]+)/)||[])[1]||'es';
+    const next=cur==='es'?'en':'es';
+    document.getElementById('topbar-lang-label').textContent=next.toUpperCase();
+    fetch('/auth/set-lang',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lang:next})}).then(()=>{localStorage.setItem('pp_lang',next);if(window.i18n)i18n.setLang(next);}).catch(()=>{});
+}
+// TEMA
+function toggleTheme(){
+    const cur=localStorage.getItem('pp_theme')||(document.cookie.match(/pp_theme=([^;]+)/)||[])[1]||'light';
+    const next=cur==='light'?'dark':'light';
+    document.documentElement.setAttribute('data-theme',next);
+    localStorage.setItem('pp_theme',next);
+    document.getElementById('topbar-theme-btn').textContent=next==='dark'?'☀️':'🌙';
+    fetch('/auth/set-theme',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({theme:next})}).catch(()=>{});
+}
+// Init labels
+(function(){
+    const lang=localStorage.getItem('pp_lang')||(document.cookie.match(/pp_lang=([^;]+)/)||[])[1]||'es';
+    const theme=localStorage.getItem('pp_theme')||(document.cookie.match(/pp_theme=([^;]+)/)||[])[1]||'light';
+    const lb=document.getElementById('topbar-lang-btn');
+    const tb=document.getElementById('topbar-theme-btn');
+    if(lb) document.getElementById('topbar-lang-label').textContent=lang.toUpperCase();
+    if(tb) tb.textContent=theme==='dark'?'☀️':'🌙';
+})();
 </script>
 
 <script src="/js/notifications.js"></script>
