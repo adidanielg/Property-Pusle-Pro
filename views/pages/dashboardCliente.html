@@ -1,1014 +1,671 @@
 <%- include('../layouts/mainLayout.html') %>
 
-<div class="dashboard-layout">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
 
-    <aside class="sidebar">
-        <div class="sidebar-logo">
-            <div class="logo-mark">🏢</div>
-            <div class="logo-text">Property<span>Pulse</span></div>
+.pp-dash * { font-family: 'Outfit', system-ui, sans-serif; }
+.pp-mono   { font-family: 'JetBrains Mono', monospace !important; }
+
+/* ── Topbar ── */
+.pp-topbar {
+    position: sticky; top: 0; z-index: 200;
+    height: 54px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center;
+    padding: 0 1.5rem; gap: 1rem;
+}
+.pp-logo {
+    display: flex; align-items: center; gap: .5rem;
+    font-weight: 800; font-size: 1rem; letter-spacing: -.4px;
+    color: var(--text-1); text-decoration: none; flex-shrink: 0;
+}
+.pp-logo span { color: var(--accent); }
+.pp-logo-role {
+    font-size: .62rem; font-weight: 700;
+    background: var(--accent-soft); color: var(--accent);
+    padding: .15rem .5rem; border-radius: 99px;
+    text-transform: uppercase; letter-spacing: .08em;
+}
+.pp-nav { display: flex; align-items: center; gap: .15rem; flex: 1; overflow-x: auto; }
+.pp-nav a {
+    display: flex; align-items: center; gap: .4rem;
+    padding: .38rem .7rem; border-radius: 7px;
+    font-size: .82rem; font-weight: 500;
+    color: var(--text-2); text-decoration: none;
+    white-space: nowrap; transition: all .15s;
+}
+.pp-nav a:hover  { background: var(--surface-2); color: var(--text-1); }
+.pp-nav a.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.pp-nav-right { display: flex; align-items: center; gap: .6rem; margin-left: auto; flex-shrink: 0; }
+.pp-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), #a78bfa);
+    color: #fff; font-weight: 700; font-size: .8rem;
+    border: none; cursor: default;
+    display: grid; place-items: center; flex-shrink: 0;
+}
+.pp-nav-logout {
+    font-size: .78rem; color: var(--text-3); text-decoration: none;
+    padding: .3rem .6rem; border-radius: 6px; transition: all .15s;
+}
+.pp-nav-logout:hover { color: var(--red); background: var(--red-soft); }
+
+/* ── Body grid ── */
+.pp-body {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 2rem;
+    max-width: 1280px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 1.75rem 1.5rem;
+}
+.pp-main { min-width: 0; display: flex; flex-direction: column; gap: 2rem; }
+.pp-side  { display: flex; flex-direction: column; gap: 1.25rem; }
+
+/* ── Stats ── */
+.pp-stats {
+    display: grid; grid-template-columns: repeat(4,1fr); gap: .75rem;
+}
+.pp-stat {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.1rem 1.2rem;
+    position: relative; overflow: hidden;
+    transition: transform .15s, box-shadow .15s;
+}
+.pp-stat:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,.09); }
+.pp-stat-stripe { position:absolute; top:0; left:0; right:0; height:3px; border-radius:3px 3px 0 0; }
+.pp-stat-icon  { font-size: 1.1rem; margin-bottom: .45rem; opacity: .6; }
+.pp-stat-num   { font-size: 2.4rem; font-weight: 800; letter-spacing: -2.5px; line-height: 1; color: var(--text-1); margin-bottom: .2rem; }
+.pp-stat-lbl   { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--text-3); }
+
+/* ── Section head ── */
+.pp-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1rem;
+}
+.pp-head h2 {
+    font-size: .72rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .1em; color: var(--text-3);
+}
+
+/* ── Property cards ── */
+.pp-props { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; }
+.pp-prop {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1rem;
+    display: flex; flex-direction: column; gap: .35rem;
+    transition: border-color .15s, box-shadow .15s;
+}
+.pp-prop:hover { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.pp-prop-icon {
+    width: 34px; height: 34px; border-radius: 9px;
+    background: var(--accent-soft); display: grid; place-items: center;
+    font-size: .95rem; margin-bottom: .2rem;
+}
+.pp-prop-addr { font-weight: 600; font-size: .875rem; line-height: 1.35; color: var(--text-1); }
+.pp-prop-srv  { font-size: .73rem; color: var(--text-3); }
+.pp-prop-btns { display: flex; gap: .35rem; margin-top: .35rem; }
+
+/* ── Ticket list ── */
+.pp-tickets { display: flex; flex-direction: column; gap: .5rem; }
+.pp-ticket {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: .9rem 1rem;
+    display: grid; grid-template-columns: 10px 1fr auto;
+    gap: .7rem; align-items: start;
+    transition: border-color .15s, box-shadow .15s;
+}
+.pp-ticket:hover { border-color: rgba(108,99,255,.3); box-shadow: 0 2px 12px rgba(108,99,255,.07); }
+.pp-tdot {
+    width: 10px; height: 10px; border-radius: 50%; margin-top: 5px; flex-shrink: 0;
+}
+.pp-tdot.pendiente  { background:var(--yellow); box-shadow:0 0 0 3px rgba(245,158,11,.18); }
+.pp-tdot.en_proceso { background:var(--blue);   box-shadow:0 0 0 3px rgba(59,130,246,.18); }
+.pp-tdot.completado { background:var(--green);  box-shadow:0 0 0 3px rgba(16,185,129,.18); }
+.pp-tdot.cancelado  { background:var(--text-3); }
+.pp-t-title { font-weight: 600; font-size: .88rem; color: var(--text-1); margin-bottom: .2rem; line-height: 1.3; }
+.pp-t-meta  { display: flex; gap: .6rem; flex-wrap: wrap; font-size: .75rem; color: var(--text-3); margin-bottom: .4rem; }
+.pp-t-cat   { display:inline-block; font-size:.68rem; font-weight:700; background:var(--accent-soft); color:var(--accent); padding:.1rem .45rem; border-radius:99px; }
+.pp-t-date  { font-size: .73rem; color: var(--text-3); white-space: nowrap; padding-top: 3px; font-family: 'JetBrains Mono', monospace; }
+.pp-t-actions { display: flex; gap: .35rem; flex-wrap: wrap; }
+
+/* ── Badge ── */
+.pp-badge {
+    display: inline-flex; align-items: center; gap: .3rem;
+    padding: .18rem .55rem; border-radius: 99px;
+    font-size: .68rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .05em;
+}
+.pp-badge::before { content:''; width:5px; height:5px; border-radius:50%; background:currentColor; }
+.pp-b-pendiente  { background:var(--yellow-soft); color:#92400e; }
+.pp-b-en_proceso { background:var(--blue-soft);   color:#1e40af; }
+.pp-b-completado { background:var(--green-soft);  color:#065f46; }
+.pp-b-cancelado  { background:var(--red-soft);    color:#991b1b; }
+[data-theme="dark"] .pp-b-pendiente  { color:#fbbf24; }
+[data-theme="dark"] .pp-b-en_proceso { color:#60a5fa; }
+[data-theme="dark"] .pp-b-completado { color:#34d399; }
+[data-theme="dark"] .pp-b-cancelado  { color:#f87171; }
+
+/* ── Btns ── */
+.ppb {
+    display: inline-flex; align-items: center; justify-content: center; gap: .3rem;
+    padding: .38rem .85rem; border-radius: 8px;
+    font-size: .78rem; font-weight: 600; border: none;
+    cursor: pointer; transition: all .15s; white-space: nowrap;
+    text-decoration: none; font-family: 'Outfit', sans-serif;
+}
+.ppb-primary  { background:var(--accent);    color:#fff; }
+.ppb-primary:hover  { background:var(--accent-hover); transform:translateY(-1px); }
+.ppb-ghost    { background:var(--surface-2); color:var(--text-2); border:1px solid var(--border); }
+.ppb-ghost:hover    { border-color:var(--accent); color:var(--accent); }
+.ppb-danger   { background:var(--red-soft);  color:var(--red); }
+.ppb-danger:hover   { background:#fecaca; }
+.ppb-blue     { background:var(--blue-soft); color:var(--blue); }
+.ppb-full     { width:100%; }
+.ppb-sm       { padding:.28rem .6rem; font-size:.73rem; }
+.ppb[disabled]{ opacity:.4; cursor:not-allowed; transform:none !important; }
+
+/* ── Empty ── */
+.pp-empty {
+    text-align:center; padding:2.5rem 1.5rem;
+    border: 1.5px dashed var(--border); border-radius: 14px;
+    color:var(--text-3);
+}
+
+/* ── Side widgets ── */
+.pp-widget {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.2rem;
+}
+.pp-widget-lbl {
+    font-size:.68rem; font-weight:700; text-transform:uppercase;
+    letter-spacing:.1em; color:var(--text-3); margin-bottom:.9rem;
+}
+
+/* Plan bars */
+.pp-bar-wrap { height:4px; background:var(--border); border-radius:99px; overflow:hidden; margin:.35rem 0 .2rem; }
+.pp-bar      { height:100%; border-radius:99px; background:var(--accent); transition:width .5s; }
+
+/* Profile fields */
+.pp-field { margin-bottom:.7rem; }
+.pp-field label { display:block; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--text-3); margin-bottom:.25rem; }
+.pp-field input, .pp-field select {
+    width:100%; padding:.48rem .7rem;
+    background:var(--surface-2); border:1px solid var(--border);
+    border-radius:8px; color:var(--text-1);
+    font-size:.84rem; font-family:'Outfit',sans-serif;
+    outline:none; transition:border-color .15s;
+}
+.pp-field input:focus, .pp-field select:focus {
+    border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft);
+}
+
+/* Stars */
+.pp-stars { display:flex; gap:.2rem; justify-content:center; }
+.pp-stars button { background:none; border:none; font-size:1.6rem; cursor:pointer; transition:transform .1s; color:var(--border); }
+.pp-stars button.on, .pp-stars button:hover { color:var(--yellow); transform:scale(1.15); }
+
+/* Chat */
+.pp-chat-box { height:250px; overflow-y:auto; display:flex; flex-direction:column; gap:.45rem; padding:.25rem 0; margin-bottom:.6rem; }
+.pp-chat-msg { max-width:76%; padding:.45rem .8rem; border-radius:10px; font-size:.84rem; line-height:1.5; }
+.pp-chat-msg.me    { background:var(--accent); color:#fff; align-self:flex-end; border-bottom-right-radius:3px; }
+.pp-chat-msg.other { background:var(--surface-2); color:var(--text-1); align-self:flex-start; border-bottom-left-radius:3px; }
+.pp-chat-msg .who  { font-size:.65rem; font-weight:700; opacity:.6; margin-bottom:.1rem; }
+.pp-chat-send { display:flex; gap:.4rem; }
+.pp-chat-send input {
+    flex:1; padding:.45rem .7rem; border:1px solid var(--border);
+    border-radius:8px; background:var(--surface-2); color:var(--text-1);
+    font-size:.84rem; font-family:'Outfit',sans-serif; outline:none;
+}
+.pp-chat-send input:focus { border-color:var(--accent); }
+
+/* Divider */
+.pp-div { height:1px; background:var(--border); margin:1rem 0; }
+
+/* Responsive */
+@media (max-width:960px)  { .pp-body { grid-template-columns:1fr; } .pp-side { display:none; } .pp-stats { grid-template-columns:1fr 1fr; } }
+@media (max-width:560px)  { .pp-props { grid-template-columns:1fr; } .pp-nav { display:none; } }
+@media (max-width:420px)  { .pp-stats { grid-template-columns:1fr 1fr; } }
+</style>
+
+<div class="pp-dash">
+
+<!-- Topbar -->
+<header class="pp-topbar">
+    <a href="/cliente/dashboard" class="pp-logo">🏢 Property<span>Pulse</span> <span class="pp-logo-role">Cliente</span></a>
+    <nav class="pp-nav">
+        <a href="#propiedades" class="active">🏠 Propiedades</a>
+        <a href="#tickets">🎫 Tickets</a>
+        <a href="#perfil">👤 Perfil</a>
+    </nav>
+    <div class="pp-nav-right">
+        <div class="pp-avatar" title="<%= cliente.username %>"><%= cliente.username.charAt(0).toUpperCase() %></div>
+        <a href="/auth/logout" class="pp-nav-logout">Salir →</a>
+    </div>
+</header>
+
+<div class="pp-body">
+
+<!-- Main -->
+<main class="pp-main">
+
+    <!-- Stats -->
+    <div class="pp-stats">
+        <div class="pp-stat">
+            <div class="pp-stat-stripe" style="background:var(--accent)"></div>
+            <div class="pp-stat-icon">🏠</div>
+            <div class="pp-stat-num"><%= propiedades.length %></div>
+            <div class="pp-stat-lbl">Propiedades</div>
         </div>
-        <nav class="sidebar-nav">
-            <div class="nav-section" data-i18n="nav.dashboard">Panel</div>
-            <a class="nav-item active" href="/cliente/dashboard">
-                <span class="icon">📊</span> <span data-i18n="nav.dashboard">Dashboard</span>
-            </a>
-            <a class="nav-item" href="#perfil" onclick="scrollToPerfil()">
-                <span class="icon">👤</span> <span data-i18n="nav.profile">Mi Perfil</span>
-            </a>
-        </nav>
-        <div class="sidebar-footer">
-            <div class="user-pill">
-                <div class="avatar"><%= cliente.username.charAt(0).toUpperCase() %></div>
-                <div class="user-info">
-                    <div class="name"><%= cliente.username %></div>
-                    <div class="role">Cliente</div>
-                </div>
-            </div>
-            <a href="/auth/logout" class="nav-item" style="color:var(--red)">
-                <span class="icon">🚪</span> <span data-i18n="nav.logout">Cerrar sesión</span>
-            </a>
+        <div class="pp-stat">
+            <div class="pp-stat-stripe" style="background:var(--blue)"></div>
+            <div class="pp-stat-icon">🎫</div>
+            <div class="pp-stat-num"><%= tickets.length %></div>
+            <div class="pp-stat-lbl">Total tickets</div>
         </div>
-    </aside>
-
-    <main class="main-content">
-
-        <div class="page-header">
-            <h1><span data-i18n="dash.hello">Bienvenido</span>, <%= cliente.username %> 👋</h1>
-            <p data-i18n="dash.clientSub">Gestiona tus propiedades y reporta problemas de mantenimiento.</p>
+        <div class="pp-stat">
+            <div class="pp-stat-stripe" style="background:var(--yellow)"></div>
+            <div class="pp-stat-icon">⏳</div>
+            <div class="pp-stat-num"><%= tickets.filter(t=>t.estado==='pendiente').length %></div>
+            <div class="pp-stat-lbl">Pendientes</div>
         </div>
-
-        <!-- Stats -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">🏠</div>
-                <div class="stat-label" data-i18n="dash.properties">Propiedades</div>
-                <div class="stat-value"><%= propiedades.length %></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">🎫</div>
-                <div class="stat-label" data-i18n="dash.myTickets">Tickets totales</div>
-                <div class="stat-value"><%= tickets.length %></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">⏳</div>
-                <div class="stat-label" data-i18n="tech.pending">Pendientes</div>
-                <div class="stat-value"><%= tickets.filter(t => t.estado === 'pendiente').length %></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">✅</div>
-                <div class="stat-label" data-i18n="dash.completed">Completados</div>
-                <div class="stat-value"><%= tickets.filter(t => t.estado === 'completado').length %></div>
-            </div>
+        <div class="pp-stat">
+            <div class="pp-stat-stripe" style="background:var(--green)"></div>
+            <div class="pp-stat-icon">✅</div>
+            <div class="pp-stat-num"><%= tickets.filter(t=>t.estado==='completado').length %></div>
+            <div class="pp-stat-lbl">Completados</div>
         </div>
+    </div>
 
-        <!-- Propiedades -->
-        <div class="section-header mb-3">
-            <h2 data-i18n="dash.myProperties">Mis Propiedades</h2>
-            <button class="btn btn-secondary btn-sm" onclick="abrirModal('propiedadModal')" data-i18n="dash.addProperty">+ Añadir</button>
+    <!-- Upgrade banner -->
+    <div id="upgrade-banner" style="display:none;background:linear-gradient(90deg,rgba(245,200,66,.1),rgba(245,200,66,.05));border:1px solid rgba(245,200,66,.3);border-radius:12px;padding:.8rem 1rem;display:none;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap">
+        <span style="font-size:.85rem;color:#f5c842;font-weight:600">⚠️ Te acercas al límite de tu plan</span>
+        <a href="/landing#pricing" class="ppb ppb-sm" style="background:#f5c842;color:#0a0a0f">Mejorar plan →</a>
+    </div>
+
+    <!-- Propiedades -->
+    <section id="propiedades">
+        <div class="pp-head">
+            <h2>Mis Propiedades</h2>
+            <button class="ppb ppb-ghost ppb-sm" onclick="abrirModal('propiedadModal')">+ Añadir</button>
         </div>
-
         <% if (propiedades.length === 0) { %>
-            <div class="card mb-4" style="text-align:center;padding:2.5rem;color:var(--text-2)">
-                <div style="font-size:2rem;margin-bottom:.75rem">🏠</div>
-                <p data-i18n="dash.noProperties">No tienes propiedades registradas. Añade una para comenzar.</p>
-            </div>
+        <div class="pp-empty">
+            <div style="font-size:2rem;margin-bottom:.75rem;opacity:.4">🏠</div>
+            <p style="font-size:.875rem">No tienes propiedades. Añade una para comenzar.</p>
+            <button class="ppb ppb-primary ppb-sm" style="margin-top:1rem" onclick="abrirModal('propiedadModal')">+ Añadir propiedad</button>
+        </div>
         <% } else { %>
-        <div class="cards-grid mb-4">
+        <div class="pp-props">
             <% propiedades.forEach(function(prop) { %>
-            <div class="property-card">
-                <div class="flex-between mb-2">
-                    <span style="font-size:1.2rem">🏢</span>
-                    <div class="flex gap-1">
-                        <button class="btn btn-secondary btn-sm"
-                            data-id="<%= prop.id %>"
-                            data-dir="<%= prop.direccion %>"
-                            data-srv="<%= prop.servicios_contratados || '' %>"
-                            onclick="editarPropiedad(this)" data-i18n="dash.edit">Editar</button>
-                        <button class="btn btn-danger btn-sm"
-                            onclick="eliminarPropiedad('<%= prop.id %>')" data-i18n="dash.delete">Eliminar</button>
-                    </div>
-                </div>
-                <div class="fw-600 mb-1"><%= prop.direccion %></div>
-                <div class="text-small text-muted">
-                    <% if (prop.servicios_contratados) { %>
-                        📋 <%= prop.servicios_contratados %>
-                    <% } else { %>
-                        <span data-i18n="dash.noTickets">Sin servicios especificados</span>
-                    <% } %>
+            <div class="pp-prop">
+                <div class="pp-prop-icon">🏢</div>
+                <div class="pp-prop-addr"><%= prop.direccion %></div>
+                <% if (prop.servicios_contratados) { %><div class="pp-prop-srv">📋 <%= prop.servicios_contratados %></div><% } %>
+                <div class="pp-prop-btns">
+                    <button class="ppb ppb-ghost ppb-sm" data-id="<%= prop.id %>" data-dir="<%= prop.direccion %>" data-srv="<%= prop.servicios_contratados||'' %>" onclick="editarPropiedad(this)">✏️ Editar</button>
+                    <button class="ppb ppb-danger ppb-sm" onclick="eliminarPropiedad('<%= prop.id %>')">🗑️</button>
                 </div>
             </div>
             <% }); %>
         </div>
         <% } %>
+    </section>
 
-        <!-- Tickets -->
-        <div class="section-header mb-3">
-            <h2 data-i18n="dash.myTickets">Historial de Reportes</h2>
+    <!-- Tickets -->
+    <section id="tickets">
+        <div class="pp-head">
+            <h2>Historial de Reportes</h2>
             <% if (propiedades.length === 0) { %>
-                <button class="btn btn-secondary btn-sm" disabled title="Primero añade una propiedad" style="opacity:.5;cursor:not-allowed">
-                    🔒 Necesitas una propiedad
-                </button>
+                <button class="ppb ppb-ghost ppb-sm" disabled>🔒 Sin propiedades</button>
             <% } else { %>
-                <button class="btn btn-primary btn-sm" onclick="abrirModal('ticketModal')" data-i18n="dash.newTicket">+ Nuevo reporte</button>
+                <button class="ppb ppb-primary ppb-sm" onclick="abrirModal('ticketModal')">+ Nuevo reporte</button>
             <% } %>
         </div>
-
         <% if (tickets.length === 0) { %>
-            <div class="card" style="text-align:center;padding:2.5rem;color:var(--text-2)">
-                <div style="font-size:2rem;margin-bottom:.75rem">🎫</div>
-                <p data-i18n="dash.noTickets">No has reportado ningún problema aún.</p>
-            </div>
+        <div class="pp-empty">
+            <div style="font-size:2rem;margin-bottom:.75rem;opacity:.4">🎫</div>
+            <p style="font-size:.875rem">No has reportado ningún problema aún.</p>
+        </div>
         <% } else { %>
-        <div class="cards-grid">
+        <div class="pp-tickets">
             <% tickets.forEach(function(ticket) { %>
-            <div class="ticket-card">
-                <div class="ticket-header">
-                    <span class="badge badge-<%= ticket.estado %>">
-                        <% if (ticket.estado === 'pendiente') { %><span data-i18n="badge.pending">Pendiente</span>
-                        <% } else if (ticket.estado === 'en_proceso') { %><span data-i18n="badge.inProgress">En proceso</span>
-                        <% } else { %><span data-i18n="badge.completed">Completado</span><% } %>
-                    </span>
-                    <span class="text-small text-muted"><%= new Date(ticket.created_at).toLocaleDateString() %></span>
-                </div>
-                <% if (ticket.categoria) { %>
-                    <div class="text-small mb-1" style="color:var(--accent);font-weight:600">🏷️ <%= ticket.categoria %></div>
-                <% } %>
-                <div class="ticket-title"><%= ticket.motivo %></div>
-                <div class="ticket-meta">📍 <%= ticket.propiedades ? ticket.propiedades.direccion : 'Propiedad eliminada' %></div>
-                <% if (ticket.tecnicos) { %>
-                    <div class="ticket-meta">🔧 <%= ticket.tecnicos.nombre %></div>
-                <% } %>
-                <div class="ticket-desc"><%= ticket.descripcion %></div>
-                <% if (ticket.foto_url) { %>
-                    <a href="<%= ticket.foto_url %>" target="_blank" class="text-small" style="color:var(--accent)">📸 Ver foto</a>
-                <% } %>
-
-                <% if (ticket.estado === 'completado' && ticket.tecnico_asignado && !ticketsCalificados.has(ticket.id)) { %>
-                    <button class="btn btn-primary btn-full btn-sm mt-2"
-                        data-ticket="<%= ticket.id %>"
-                        data-tecnico="<%= ticket.tecnicos ? ticket.tecnicos.nombre : 'el técnico' %>"
-                        onclick="abrirCalificar(this)" data-i18n="dash.rate">
-                        ⭐ Calificar servicio
-                    </button>
-                <% } else if (ticket.estado === 'completado' && ticketsCalificados.has(ticket.id)) { %>
-                    <div class="text-small mt-2" style="color:var(--green);font-weight:600" data-i18n="dash.rated">✅ Servicio calificado</div>
-                <% } %>
-
-                <% if (ticket.estado === 'en_proceso') { %>
-                    <div class="flex gap-1 mt-2">
-                        <button class="btn btn-sm" style="flex:1;background:var(--blue-soft);color:var(--blue);border:none"
-                            data-ticket-id="<%= ticket.id %>"
-                            data-ticket-titulo="<%= ticket.motivo %>"
-                            onclick="abrirChat(this.dataset.ticketId, this.dataset.ticketTitulo)">
-                            💬 Chat
-                        </button>
-                        <button class="btn btn-danger btn-sm" style="flex:1"
-                            onclick="cancelarTicket('<%= ticket.id %>')">
-                            ❌ Cancelar
-                        </button>
+            <div class="pp-ticket">
+                <div class="pp-tdot <%= ticket.estado %>"></div>
+                <div>
+                    <div style="display:flex;align-items:center;gap:.45rem;flex-wrap:wrap;margin-bottom:.2rem">
+                        <span class="pp-t-title"><%= ticket.motivo %></span>
+                        <% if(ticket.categoria){%><span class="pp-t-cat"><%= ticket.categoria %></span><%}%>
                     </div>
-                <% } else if (ticket.estado === 'pendiente') { %>
-                    <button class="btn btn-danger btn-sm btn-full mt-2"
-                        onclick="cancelarTicket('<%= ticket.id %>')">
-                        ❌ Cancelar ticket
-                    </button>
-                <% } else if (ticket.estado === 'cancelado') { %>
-                    <div class="text-small mt-2" style="color:var(--red);font-weight:600">❌ Cancelado</div>
-                <% } %>
+                    <div class="pp-t-meta">
+                        <span>📍 <%= ticket.propiedades ? ticket.propiedades.direccion : '—' %></span>
+                        <% if(ticket.tecnicos){%><span>🔧 <%= ticket.tecnicos.nombre %></span><%}%>
+                    </div>
+                    <% if(ticket.descripcion){%><div style="font-size:.78rem;color:var(--text-3);margin-bottom:.4rem;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden"><%= ticket.descripcion %></div><%}%>
+                    <div class="pp-t-actions">
+                        <span class="pp-badge pp-b-<%= ticket.estado %>">
+                            <%if(ticket.estado==='pendiente'){%>Pendiente<%}else if(ticket.estado==='en_proceso'){%>En proceso<%}else if(ticket.estado==='completado'){%>Completado<%}else{%>Cancelado<%}%>
+                        </span>
+                        <%if(ticket.estado==='en_proceso'){%>
+                            <button class="ppb ppb-blue ppb-sm" data-ticket-id="<%= ticket.id %>" data-ticket-titulo="<%= ticket.motivo %>" onclick="abrirChat(this.dataset.ticketId,this.dataset.ticketTitulo)">💬 Chat</button>
+                            <button class="ppb ppb-danger ppb-sm" onclick="cancelarTicket('<%= ticket.id %>')">❌ Cancelar</button>
+                        <%}else if(ticket.estado==='pendiente'){%>
+                            <button class="ppb ppb-danger ppb-sm" onclick="cancelarTicket('<%= ticket.id %>')">❌ Cancelar</button>
+                        <%}else if(ticket.estado==='completado'&&ticket.tecnico_asignado&&!ticketsCalificados.has(ticket.id)){%>
+                            <button class="ppb ppb-primary ppb-sm" data-ticket="<%= ticket.id %>" data-tecnico="<%= ticket.tecnicos?ticket.tecnicos.nombre:'el técnico' %>" onclick="abrirCalificar(this)">⭐ Calificar</button>
+                        <%}else if(ticket.estado==='completado'&&ticketsCalificados.has(ticket.id)){%>
+                            <span style="font-size:.73rem;color:var(--green);font-weight:600">✅ Calificado</span>
+                        <%}%>
+                    </div>
+                    <%if(ticket.foto_url){%><a href="<%= ticket.foto_url %>" target="_blank" style="font-size:.72rem;color:var(--accent);display:inline-block;margin-top:.3rem">📸 Ver foto</a><%}%>
+                </div>
+                <div class="pp-t-date"><%= new Date(ticket.created_at).toLocaleDateString() %></div>
             </div>
             <% }); %>
         </div>
         <% } %>
+    </section>
 
+</main>
 
+<!-- Aside -->
+<aside class="pp-side">
 
-        <!-- ── Upgrade banner (aparece solo cuando está al 80%+ del límite) ── -->
-        <div id="upgrade-banner" style="display:none;background:linear-gradient(90deg,rgba(245,200,66,.12),rgba(245,200,66,.06));border:1px solid rgba(245,200,66,.3);border-radius:10px;padding:.85rem 1.25rem;margin-bottom:1.5rem;display:none;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
-            <span style="font-size:.875rem;color:#f5c842;font-weight:500">⚠️ You're approaching your plan limits.</span>
-            <a href="/landing#pricing" style="background:#f5c842;color:#0a0a0f;padding:.4rem 1rem;border-radius:6px;font-size:.8rem;font-weight:700;white-space:nowrap">Upgrade plan →</a>
+    <!-- Plan -->
+    <div class="pp-widget">
+        <div class="pp-widget-lbl">Tu Plan</div>
+        <div id="planNombre" style="font-size:1.5rem;font-weight:800;letter-spacing:-.5px;color:var(--text-1);text-transform:capitalize;margin-bottom:.75rem">Starter</div>
+        <div>
+            <div style="display:flex;justify-content:space-between;font-size:.73rem">
+                <span style="color:var(--text-2)">Propiedades</span>
+                <span id="planPropsLabel" class="pp-mono" style="color:var(--text-2)">— / —</span>
+            </div>
+            <div class="pp-bar-wrap"><div id="planPropsBar" class="pp-bar" style="width:0%"></div></div>
+            <div style="display:flex;justify-content:space-between;font-size:.73rem;margin-top:.6rem">
+                <span style="color:var(--text-2)">Tickets activos</span>
+                <span id="planTicketsLabel" class="pp-mono" style="color:var(--text-2)">— / —</span>
+            </div>
+            <div class="pp-bar-wrap"><div id="planTicketsBar" class="pp-bar" style="width:0%"></div></div>
         </div>
-        <!-- ── Perfil ── -->
-        <div class="section-header mb-3 mt-4" id="perfil">
-            <h2>👤 <span data-i18n="profile.title">Mi Perfil</span></h2>
+        <a href="/landing#pricing" id="planUpgradeBtn" class="ppb ppb-ghost ppb-full" style="margin-top:1rem;display:none">Mejorar plan →</a>
+    </div>
+
+    <!-- Quick action -->
+    <div class="pp-widget" style="background:linear-gradient(135deg,var(--accent-soft),var(--surface));border-color:var(--accent)">
+        <div class="pp-widget-lbl" style="color:var(--accent)">Nuevo reporte</div>
+        <p style="font-size:.82rem;color:var(--text-2);margin-bottom:1rem;line-height:1.6">¿Problema en tu propiedad? Repórtalo ahora.</p>
+        <% if (propiedades.length > 0) { %>
+            <button class="ppb ppb-primary ppb-full" onclick="abrirModal('ticketModal')">🎫 Crear reporte</button>
+        <% } else { %>
+            <button class="ppb ppb-ghost ppb-full" onclick="abrirModal('propiedadModal')">🏠 Añade una propiedad primero</button>
+        <% } %>
+    </div>
+
+    <!-- Perfil -->
+    <div class="pp-widget" id="perfil">
+        <div class="pp-widget-lbl">Mi Perfil</div>
+        <div class="pp-field">
+            <label>Nombre</label>
+            <input type="text" id="p_nombre">
         </div>
-
-        <div class="card" style="max-width:600px">
-            <form id="perfilForm" onsubmit="guardarPerfil(event)">
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label" data-i18n="reg.firstName">Nombre y apellido</label>
-                        <input type="text" id="p_nombre" name="nombre_contacto" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" data-i18n="reg.phone">Teléfono</label>
-                        <input type="text" id="p_telefono" name="telefono" class="form-input" required>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" data-i18n="reg.companyName">Nombre de empresa</label>
-                    <input type="text" id="p_empresa" name="nombre_empresa" class="form-input"
-                        placeholder="Solo para cuentas de compañía">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input type="email" id="p_email" name="email" class="form-input" required>
-                </div>
-
-                <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0">
-
-                <p class="text-small text-muted mb-2" data-i18n="profile.passwordHint">
-                    Deja en blanco si no quieres cambiar tu contraseña
-                </p>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label" data-i18n="profile.currentPassword">Contraseña actual</label>
-                        <input type="password" id="p_pass_actual" name="password" class="form-input"
-                            placeholder="••••••••">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" data-i18n="profile.newPassword">Nueva contraseña</label>
-                        <input type="password" id="p_pass_nueva" name="nueva_password" class="form-input"
-                            placeholder="••••••••">
-                    </div>
-                </div>
-
-                <div id="perfilMsg" style="display:none;margin-bottom:1rem"></div>
-
-                <button type="submit" class="btn btn-primary" id="btnPerfil" data-i18n="profile.save">
-                    Guardar cambios
-                </button>
-
-
-                <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border)">
-                    <p class="text-small text-muted mb-2">Danger zone</p>
-                    <button onclick="eliminarCuenta()" class="btn btn-danger btn-sm">
-                        🗑️ Delete my account
-                    </button>
-                </div>
-            </form>
+        <div class="pp-field">
+            <label>Email</label>
+            <input type="email" id="p_email">
         </div>
+        <div class="pp-field">
+            <label>Teléfono</label>
+            <input type="text" id="p_telefono">
+        </div>
+        <div class="pp-field">
+            <label>Empresa</label>
+            <input type="text" id="p_empresa" placeholder="Solo si eres empresa">
+        </div>
+        <div id="perfilMsg" style="display:none;font-size:.78rem;padding:.45rem .7rem;border-radius:8px;margin-bottom:.5rem"></div>
+        <button class="ppb ppb-primary ppb-full" onclick="guardarPerfil()">Guardar cambios</button>
+        <div class="pp-div"></div>
+        <div class="pp-field">
+            <label>Contraseña actual</label>
+            <input type="password" id="p_pwd_actual" placeholder="••••••••">
+        </div>
+        <div class="pp-field">
+            <label>Nueva contraseña</label>
+            <input type="password" id="p_pwd_nueva" placeholder="Min. 6 caracteres">
+        </div>
+        <button class="ppb ppb-ghost ppb-full ppb-sm" onclick="cambiarPassword()" style="margin-bottom:.5rem">🔑 Cambiar contraseña</button>
+        <button class="ppb ppb-danger ppb-full ppb-sm" onclick="eliminarCuenta()">🗑️ Eliminar mi cuenta</button>
+    </div>
 
-    </main>
+</aside>
+</div>
 </div>
 
+<!-- ═══ MODALES ═══════════════════════════════════════════════ -->
 
-<!-- ── Modal: Cancelar ticket ────────────────────────────── -->
+<!-- Cancelar -->
 <div id="cancelModal" class="modal-overlay">
     <div class="modal">
-        <div class="modal-header">
-            <h2>❌ Cancelar ticket</h2>
-            <button class="modal-close" onclick="cerrarModal('cancelModal')">✕</button>
-        </div>
+        <div class="modal-header"><h2>❌ Cancelar ticket</h2><button class="modal-close" onclick="cerrarModal('cancelModal')">✕</button></div>
         <div class="form-group">
-            <label class="form-label">Motivo de cancelación (opcional)</label>
-            <textarea id="cancelMotivo" class="form-textarea" placeholder="¿Por qué cancelas este ticket?" rows="3"></textarea>
+            <label class="form-label">Motivo (opcional)</label>
+            <textarea id="cancelMotivo" class="form-textarea" placeholder="¿Por qué cancelas?" rows="3"></textarea>
         </div>
-        <div style="display:flex;gap:.75rem">
+        <div style="display:flex;gap:.75rem;margin-top:1rem">
             <button class="btn btn-secondary" style="flex:1" onclick="cerrarModal('cancelModal')">Volver</button>
             <button class="btn btn-danger" style="flex:1" onclick="confirmarCancelacion()">Sí, cancelar</button>
         </div>
     </div>
 </div>
 
-<!-- ── Modal: Chat ─────────────────────────────────────────── -->
+<!-- Chat -->
 <div id="chatModal" class="modal-overlay">
-    <div class="modal" style="max-width:480px">
-        <div class="modal-header">
-            <h2>💬 Chat — <span id="chatTicketTitulo" style="color:var(--accent);font-size:.9rem"></span></h2>
-            <button class="modal-close" onclick="cerrarChat()">✕</button>
-        </div>
-
-        <div id="chatMensajes" style="height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:.6rem;padding:.5rem 0;margin-bottom:1rem">
-            <div style="text-align:center;color:var(--text-3);font-size:.82rem;padding:2rem 0">Cargando mensajes...</div>
-        </div>
-
-        <div style="display:flex;gap:.5rem">
-            <input type="text" id="chatInput" class="form-input" placeholder="Escribe un mensaje..."
-                onkeydown="if(event.key==='Enter')enviarMensaje()"
-                style="flex:1">
-            <button class="btn btn-primary" onclick="enviarMensaje()" style="padding:.65rem 1rem">→</button>
-        </div>
-        <p class="text-small text-muted mt-2" style="font-size:.75rem">Los mensajes son visibles para ti y el técnico. Se borran cuando cierras este chat.</p>
-    </div>
-</div>
-
-
-<!-- ── Modal: Límite de plan alcanzado ───────────────────── -->
-<div id="limitModal" class="modal-overlay">
-    <div class="modal" style="max-width:420px;text-align:center">
-        <div style="font-size:3rem;margin-bottom:1rem">🚀</div>
-        <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:.75rem">Plan limit reached</h2>
-        <p id="limitMsg" style="color:var(--text-2);font-size:.9rem;line-height:1.7;margin-bottom:1.75rem"></p>
-        <div style="display:flex;flex-direction:column;gap:.75rem">
-            <a id="limitUpgradeBtn" href="/landing#pricing"
-                style="display:block;background:var(--accent);color:#fff;padding:.8rem;border-radius:8px;font-weight:600;font-size:.95rem">
-                Upgrade plan →
-            </a>
-            <button onclick="cerrarModal('limitModal')"
-                style="background:none;border:none;color:var(--text-3);font-size:.85rem;cursor:pointer;padding:.4rem">
-                Maybe later
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- Modal: Nuevo Ticket -->
-<div id="ticketModal" class="modal-overlay">
     <div class="modal">
         <div class="modal-header">
-            <h2 data-i18n="dash.newTicket">Nuevo Reporte</h2>
-            <button class="modal-close" onclick="cerrarModal('ticketModal')">✕</button>
+            <h2>💬 <span id="chatTicketTitulo" style="font-size:.9rem;color:var(--accent)"></span></h2>
+            <button class="modal-close" onclick="cerrarChat()">✕</button>
         </div>
-        <form id="ticketForm" onsubmit="enviarTicket(event)">
+        <div id="chatMensajes" class="pp-chat-box"></div>
+        <div class="pp-chat-send">
+            <input type="text" id="chatInput" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter'){event.preventDefault();enviarMensaje()}">
+            <button class="ppb ppb-primary" onclick="enviarMensaje()">Enviar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Límite plan -->
+<div id="limitModal" class="modal-overlay">
+    <div class="modal" style="max-width:400px;text-align:center">
+        <div style="font-size:2.5rem;margin-bottom:1rem">🚀</div>
+        <h2 style="margin-bottom:.5rem" id="limitModalTitle">Límite alcanzado</h2>
+        <p class="text-muted mb-4" id="limitModalMsg" style="font-size:.9rem"></p>
+        <a href="/landing#pricing" class="btn btn-primary btn-full">Ver planes →</a>
+        <button class="btn btn-secondary btn-full" style="margin-top:.5rem" onclick="cerrarModal('limitModal')">Cerrar</button>
+    </div>
+</div>
+
+<!-- Nuevo ticket -->
+<div id="ticketModal" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-header"><h2>🎫 Nuevo Reporte</h2><button class="modal-close" onclick="cerrarModal('ticketModal')">✕</button></div>
+        <form id="ticketForm">
             <div class="form-group">
-                <label class="form-label" data-i18n="dash.property">Propiedad afectada</label>
+                <label class="form-label">Propiedad afectada</label>
                 <select name="propiedad_id" class="form-select" required>
                     <option value="">Selecciona una propiedad...</option>
-                    <% propiedades.forEach(function(p) { %>
-                        <option value="<%= p.id %>"><%= p.direccion %></option>
-                    <% }); %>
+                    <% propiedades.forEach(function(p) { %><option value="<%= p.id %>"><%= p.direccion %></option><% }); %>
                 </select>
             </div>
             <div class="form-group">
-                <label class="form-label" data-i18n="dash.category">Categoría</label>
+                <label class="form-label">Categoría</label>
                 <select name="categoria" id="selectCategoria" class="form-select" required onchange="actualizarMotivos()">
                     <option value="">Selecciona una categoría...</option>
                 </select>
             </div>
             <div class="form-group">
-                <label class="form-label" data-i18n="dash.reason">Motivo</label>
+                <label class="form-label">Motivo</label>
                 <select name="motivo" id="selectMotivo" class="form-select" required disabled>
                     <option value="">Primero selecciona una categoría...</option>
                 </select>
             </div>
             <div class="form-group">
-                <label class="form-label" data-i18n="dash.description">Descripción</label>
-                <textarea name="descripcion" class="form-textarea" placeholder="Describe el problema con más detalle..." required></textarea>
+                <label class="form-label">Descripción</label>
+                <textarea name="descripcion" class="form-textarea" placeholder="Describe el problema..." required></textarea>
             </div>
             <div class="form-group">
-                <label class="form-label" data-i18n="dash.photo">Foto (opcional)</label>
+                <label class="form-label">Foto (opcional)</label>
                 <input type="file" name="foto" id="fotoTicket" accept="image/*" class="form-input" onchange="previewFoto(this)">
                 <div id="fotoPreviewWrap" style="display:none;margin-top:.5rem">
-                    <img id="fotoPreview" style="max-width:100%;border-radius:8px;max-height:180px;object-fit:cover">
+                    <img id="fotoPreview" style="max-width:100%;border-radius:8px;max-height:160px;object-fit:cover">
                     <p id="fotoInfo" class="text-small text-muted mt-1"></p>
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary btn-full" id="btnTicket" data-i18n="dash.submit">Enviar reporte</button>
+            <button type="submit" class="btn btn-primary btn-full" id="btnTicket">Enviar reporte</button>
         </form>
     </div>
 </div>
 
-<!-- Modal: Propiedad -->
+<!-- Propiedad -->
 <div id="propiedadModal" class="modal-overlay">
     <div class="modal">
-        <div class="modal-header">
-            <h2 id="propModalTitle" data-i18n="dash.addProperty">Añadir Propiedad</h2>
-            <button class="modal-close" onclick="cerrarModal('propiedadModal')">✕</button>
-        </div>
-        <form id="propiedadForm" onsubmit="guardarPropiedad(event)">
-            <input type="hidden" id="prop_id">
+        <div class="modal-header"><h2 id="propModalTitle">Añadir Propiedad</h2><button class="modal-close" onclick="cerrarModal('propiedadModal')">✕</button></div>
+        <form id="propiedadForm">
             <div class="form-group">
-                <label class="form-label" data-i18n="dash.address">Dirección completa</label>
-                <input type="text" id="prop_dir" name="direccion" class="form-input" placeholder="Ej. Av. Siempre Viva 742" required>
+                <label class="form-label">Dirección</label>
+                <input type="text" id="propDireccion" class="form-input" required placeholder="123 Main St, Miami, FL">
             </div>
             <div class="form-group">
-                <label class="form-label" data-i18n="dash.services">Servicios de interés (opcional)</label>
-                <input type="text" id="prop_srv" name="servicios_contratados" class="form-input" placeholder="Ej. Plomería, Electricidad">
+                <label class="form-label">Servicios contratados (opcional)</label>
+                <input type="text" id="propServicios" class="form-input" placeholder="HVAC, Plomería...">
             </div>
-            <button type="submit" class="btn btn-primary btn-full" id="btnProp" data-i18n="dash.save">Guardar</button>
+            <button type="submit" class="btn btn-primary btn-full" id="btnProp">Guardar</button>
         </form>
     </div>
 </div>
 
-<!-- Modal: Calificar -->
+<!-- Calificar -->
 <div id="calificarModal" class="modal-overlay">
     <div class="modal" style="max-width:420px">
-        <div class="modal-header">
-            <h2>Calificar servicio</h2>
-            <button class="modal-close" onclick="cerrarModal('calificarModal')">✕</button>
-        </div>
-        <div style="text-align:center;margin-bottom:1.25rem">
-            <p class="text-muted text-small" id="calificarSubtitulo"></p>
-        </div>
+        <div class="modal-header"><h2>⭐ Calificar servicio</h2><button class="modal-close" onclick="cerrarModal('calificarModal')">✕</button></div>
         <input type="hidden" id="cal_ticket_id">
-        <div class="star-rating" id="starRating">
-            <span class="star" data-val="1">★</span>
-            <span class="star" data-val="2">★</span>
-            <span class="star" data-val="3">★</span>
-            <span class="star" data-val="4">★</span>
-            <span class="star" data-val="5">★</span>
+        <p class="text-muted mb-3" style="font-size:.9rem">¿Cómo fue el servicio de <strong id="cal_tecnico_nombre"></strong>?</p>
+        <div class="pp-stars" id="starsContainer" style="margin-bottom:.75rem">
+            <button class="star" onclick="actualizarEstrellas(1)">★</button>
+            <button class="star" onclick="actualizarEstrellas(2)">★</button>
+            <button class="star" onclick="actualizarEstrellas(3)">★</button>
+            <button class="star" onclick="actualizarEstrellas(4)">★</button>
+            <button class="star" onclick="actualizarEstrellas(5)">★</button>
         </div>
-        <p id="starLabel" class="text-small text-muted" style="text-align:center;margin-bottom:1rem;min-height:1.2rem"></p>
+        <div id="calEtiqueta" style="text-align:center;font-size:.85rem;color:var(--text-3);margin-bottom:1rem;min-height:1.2em"></div>
         <div class="form-group">
             <label class="form-label">Comentario (opcional)</label>
-            <textarea id="cal_comentario" class="form-textarea" placeholder="¿Cómo fue el servicio?"></textarea>
+            <textarea id="cal_comentario" class="form-textarea" rows="3" placeholder="Cuéntanos sobre el servicio..."></textarea>
         </div>
-        <button class="btn btn-primary btn-full" id="btnCalificar" onclick="enviarCalificacion()">
-            Enviar calificación
-        </button>
+        <button class="btn btn-primary btn-full" id="btnCalificar" onclick="enviarCalificacion()">Enviar calificación</button>
     </div>
 </div>
-
-<style>
-    .star-rating { display:flex; justify-content:center; gap:.5rem; font-size:2.5rem; margin-bottom:.5rem; cursor:pointer; }
-    .star { color:var(--surface-2); transition:color .15s; }
-    .star.active { color:#f59e0b; }
-</style>
 
 <script>
-    const MOTIVOS = {
-        "Climatización (HVAC)": ["Aire acondicionado no enfría","Aire acondicionado no enciende","Fuga de agua del A/C","Cambio de filtro de aire","Termostato dañado","Calefacción no funciona","Ruido en el sistema HVAC","Mantenimiento preventivo HVAC"],
-        "Electricidad": ["Corte de electricidad en área específica","Interruptor (breaker) disparado","Enchufe no funciona","Luz no enciende","Luces parpadeando","Instalación de lámpara","Problema con ventilador de techo","Problema con panel eléctrico"],
-        "Plomería": ["Fuga de agua","Grifo goteando","Inodoro tapado","Inodoro no descarga","Baja presión de agua","Tubería rota","Desagüe lento","Fuga bajo el fregadero","Calentador de agua no funciona"],
-        "Piscina": ["Agua sucia","Bomba de piscina dañada","Filtro de piscina obstruido","Nivel químico incorrecto","Fuga en piscina","Limpieza de piscina","Reparación de iluminación de piscina"],
-        "Jardinería / Landscaping": ["Corte de césped","Árbol caído","Sistema de riego roto","Plantas secas","Maleza excesiva","Limpieza de jardín","Poda de árboles"],
-        "Irrigation / Sistema de riego": ["Aspersor roto","Aspersores no funcionan","Fuga en sistema de riego","Temporizador de riego dañado","Zona de riego no funciona"],
-        "Pest Control": ["Hormigas","Cucarachas","Roedores","Avispas","Termitas","Mosquitos","Inspección de plagas"],
-        "Limpieza / Pressure Washing": ["Lavado de driveway","Lavado de paredes exteriores","Lavado de techo","Lavado de patio","Limpieza de ventanas exteriores"],
-        "Electrodomésticos": ["Refrigerador no enfría","Estufa no funciona","Lavadora dañada","Secadora dañada","Lavavajillas no funciona","Microondas dañado"],
-        "Estructura / Reparaciones": ["Puerta dañada","Cerradura rota","Ventana rota","Pared dañada","Techo con gotera","Piso dañado","Escalera dañada"],
-        "Seguridad": ["Alarma no funciona","Cámara de seguridad dañada","Sensor de humo dañado","Sensor de movimiento dañado"],
-        "Bajo voltaje / Cámaras": ["Instalación de cámara","Cámara no graba","Cámara sin imagen","DVR/NVR no funciona","Instalación de timbre inteligente","Control de acceso dañado","Cableado de bajo voltaje","Sistema de intercomunicación","Instalación de alarma","Revisión de sistema de seguridad"],
-        "Handyman": ["Instalación de muebles","Montaje en pared","Reparación de gabinetes","Cambio de bisagras","Reparación de persianas","Instalación de cortinas","Sellado de grietas","Pintura menor","Reparación de drywall","Reparación general menor","Instalación de estantes","Otro trabajo de handyman"],
-        "General": ["Inspección general","Mantenimiento preventivo","Reparación menor","Otro problema"]
-    };
+// MOTIVOS
+const MOTIVOS = {"Climatización (HVAC)":["Aire acondicionado no enfría","Aire acondicionado no enciende","Fuga de agua del A/C","Cambio de filtro de aire","Termostato dañado","Calefacción no funciona","Ruido en el sistema HVAC","Mantenimiento preventivo HVAC"],"Electricidad":["Corte de electricidad en área específica","Interruptor (breaker) disparado","Enchufe no funciona","Luz no enciende","Luces parpadeando","Instalación de lámpara","Problema con ventilador de techo","Problema con panel eléctrico"],"Plomería":["Fuga de agua","Grifo goteando","Inodoro tapado","Inodoro no descarga","Baja presión de agua","Tubería rota","Desagüe lento","Fuga bajo el fregadero","Calentador de agua no funciona"],"Piscina":["Agua sucia","Bomba de piscina dañada","Filtro de piscina obstruido","Nivel químico incorrecto","Fuga en piscina","Limpieza de piscina","Reparación de iluminación de piscina"],"Jardinería / Landscaping":["Corte de césped","Árbol caído","Sistema de riego roto","Plantas secas","Maleza excesiva","Limpieza de jardín","Poda de árboles"],"Irrigation / Sistema de riego":["Aspersor roto","Aspersores no funcionan","Fuga en sistema de riego","Temporizador de riego dañado","Zona de riego no funciona"],"Pest Control":["Hormigas","Cucarachas","Roedores","Avispas","Termitas","Mosquitos","Inspección de plagas"],"Limpieza / Pressure Washing":["Lavado de driveway","Lavado de paredes exteriores","Lavado de techo","Lavado de patio","Limpieza de ventanas exteriores"],"Electrodomésticos":["Refrigerador no enfría","Estufa no funciona","Lavadora dañada","Secadora dañada","Lavavajillas no funciona","Microondas dañado"],"Estructura / Reparaciones":["Puerta dañada","Cerradura rota","Ventana rota","Pared dañada","Techo con gotera","Piso dañado","Escalera dañada"],"Seguridad":["Alarma no funciona","Cámara de seguridad dañada","Sensor de humo dañado","Sensor de movimiento dañado"],"Bajo voltaje / Cámaras":["Instalación de cámara","Cámara no graba","Cámara sin imagen","DVR/NVR no funciona","Instalación de timbre inteligente","Control de acceso dañado","Cableado de bajo voltaje","Sistema de intercomunicación","Instalación de alarma","Revisión de sistema de seguridad"],"Handyman":["Instalación de muebles","Montaje en pared","Reparación de gabinetes","Cambio de bisagras","Reparación de persianas","Instalación de cortinas","Sellado de grietas","Pintura menor","Reparación de drywall","Reparación general menor","Instalación de estantes","Otro trabajo de handyman"],"General":["Inspección general","Mantenimiento preventivo","Reparación menor","Otro problema"]};
 
-    const selCat = document.getElementById('selectCategoria');
-    Object.keys(MOTIVOS).forEach(cat => {
-        const opt = document.createElement('option');
-        opt.value = cat; opt.textContent = cat;
-        selCat.appendChild(opt);
-    });
+const selCat = document.getElementById('selectCategoria');
+Object.keys(MOTIVOS).forEach(cat => { const o=document.createElement('option'); o.value=cat; o.textContent=cat; selCat.appendChild(o); });
+function actualizarMotivos() {
+    const cat=selCat.value, sel=document.getElementById('selectMotivo');
+    sel.innerHTML='<option value="">Selecciona un motivo...</option>';
+    sel.disabled=!cat;
+    if(cat&&MOTIVOS[cat]) MOTIVOS[cat].forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;sel.appendChild(o);});
+}
 
-    function actualizarMotivos() {
-        const cat    = selCat.value;
-        const selMot = document.getElementById('selectMotivo');
-        selMot.innerHTML = '<option value="">Selecciona un motivo...</option>';
-        selMot.disabled  = !cat;
-        if (cat && MOTIVOS[cat]) {
-            MOTIVOS[cat].forEach(m => {
-                const opt = document.createElement('option');
-                opt.value = m; opt.textContent = m;
-                selMot.appendChild(opt);
-            });
-        }
-    }
+// MODALES
+function abrirModal(id)  { document.getElementById(id).classList.add('open'); }
+function cerrarModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(el => el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');}));
 
-    function abrirModal(id)  { document.getElementById(id).classList.add('open'); }
-    function cerrarModal(id) { document.getElementById(id).classList.remove('open'); }
+// ESTRELLAS
+let estrellas=0;
+const etiquetas=['','Muy malo','Malo','Regular','Bueno','Excelente'];
+function actualizarEstrellas(v){ estrellas=v; document.querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('on',i<v)); document.getElementById('calEtiqueta').textContent=etiquetas[v]||''; }
+function abrirCalificar(btn){ estrellas=0; document.querySelectorAll('.star').forEach(s=>s.classList.remove('on')); document.getElementById('calEtiqueta').textContent=''; document.getElementById('cal_comentario').value=''; document.getElementById('cal_ticket_id').value=btn.dataset.ticket; document.getElementById('cal_tecnico_nombre').textContent=btn.dataset.tecnico||'el técnico'; abrirModal('calificarModal'); }
+async function enviarCalificacion(){
+    if(!estrellas) return alert('Selecciona una calificación');
+    const btn=document.getElementById('btnCalificar'); btn.disabled=true; btn.textContent='Enviando...';
+    try{ const res=await fetch('/cliente/calificar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ticket_id:document.getElementById('cal_ticket_id').value,estrellas,comentario:document.getElementById('cal_comentario').value})}); const data=await res.json(); if(data.success){cerrarModal('calificarModal');showToast('✅ Calificación enviada');setTimeout(()=>location.reload(),800);}else showToast(data.error||'Error','error'); }catch{showToast('Error de conexión','error');}
+    btn.disabled=false; btn.textContent='Enviar calificación';
+}
 
-    document.querySelectorAll('.modal-overlay').forEach(el => {
-        el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
-    });
+// PROPIEDADES
+let editPropId=null;
+function editarPropiedad(btn){ editPropId=btn.dataset.id; document.getElementById('propDireccion').value=btn.dataset.dir; document.getElementById('propServicios').value=btn.dataset.srv; document.getElementById('propModalTitle').textContent='Editar Propiedad'; abrirModal('propiedadModal'); }
+document.getElementById('propiedadForm').addEventListener('submit',async function(e){
+    e.preventDefault();
+    const btn=document.getElementById('btnProp'); btn.disabled=true; btn.textContent='Guardando...';
+    const body={direccion:document.getElementById('propDireccion').value,servicios_contratados:document.getElementById('propServicios').value};
+    try{ const res=await fetch(editPropId?`/cliente/propiedades/${editPropId}`:'/cliente/propiedades',{method:editPropId?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); const data=await res.json(); if(data.success){cerrarModal('propiedadModal');showToast(editPropId?'✅ Propiedad actualizada':'✅ Propiedad añadida');setTimeout(()=>location.reload(),800);}else if(data.error==='limit_reached')mostrarLimitModal(data);else showToast(data.error||'Error','error');}catch{showToast('Error de conexión','error');}
+    btn.disabled=false; btn.textContent='Guardar'; editPropId=null;
+});
+async function eliminarPropiedad(id){ if(!await confirmAction('¿Eliminar esta propiedad?','Sí, eliminar'))return; try{const res=await fetch(`/cliente/propiedades/${id}`,{method:'DELETE'});const data=await res.json();if(data.success){showToast('✅ Eliminada');setTimeout(()=>location.reload(),800);}else showToast(data.error,'error');}catch{showToast('Error','error');} }
 
-    let estrellasSeleccionadas = 0;
-    const etiquetas = ['','Muy malo','Malo','Regular','Bueno','Excelente'];
+// TICKETS
+document.getElementById('ticketForm').addEventListener('submit',async function(e){
+    e.preventDefault();
+    const btn=document.getElementById('btnTicket'); btn.disabled=true; btn.textContent='Enviando...';
+    try{
+        const fi=document.getElementById('fotoTicket'), fd=new FormData();
+        fd.append('propiedad_id',this.propiedad_id.value); fd.append('categoria',this.categoria.value); fd.append('motivo',this.motivo.value); fd.append('descripcion',this.descripcion.value);
+        if(fi.files[0]){ const c=await ImageOptimizer.compress(fi.files[0]); fd.append('foto',c,'foto.jpg'); }
+        const res=await fetch('/cliente/tickets',{method:'POST',body:fd}); const data=await res.json();
+        if(data.success){showToast('✅ Ticket creado');cerrarModal('ticketModal');this.reset();document.getElementById('fotoPreviewWrap').style.display='none';setTimeout(()=>location.reload(),1000);}
+        else if(data.error==='limit_reached')mostrarLimitModal(data);
+        else showToast(data.error||'Error','error');
+    }catch(err){showToast('Error de conexión','error');console.error(err);}
+    btn.disabled=false; btn.textContent='Enviar reporte';
+});
+function previewFoto(input){ const f=input.files[0]; if(!f)return; document.getElementById('fotoPreviewWrap').style.display='block'; ImageOptimizer.preview(f,document.getElementById('fotoPreview')); document.getElementById('fotoInfo').textContent=ImageOptimizer.formatSize(f.size)+' — se comprimirá'; }
 
-    document.querySelectorAll('.star').forEach(star => {
-        star.addEventListener('click',     () => { estrellasSeleccionadas = parseInt(star.dataset.val); actualizarEstrellas(estrellasSeleccionadas); });
-        star.addEventListener('mouseover', () => actualizarEstrellas(parseInt(star.dataset.val)));
-        star.addEventListener('mouseout',  () => actualizarEstrellas(estrellasSeleccionadas));
-    });
+// CANCELAR
+let ticketACancelar=null;
+function cancelarTicket(id){ ticketACancelar=id; document.getElementById('cancelMotivo').value=''; abrirModal('cancelModal'); }
+async function confirmarCancelacion(){
+    if(!ticketACancelar)return;
+    const motivo=document.getElementById('cancelMotivo').value||'Sin motivo';
+    try{const res=await fetch(`/cliente/tickets/${ticketACancelar}/cancelar`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({motivo})});const data=await res.json();if(data.success){cerrarModal('cancelModal');showToast('✅ Ticket cancelado');setTimeout(()=>location.reload(),800);}else showToast(data.error,'error');}catch{showToast('Error','error');}
+    ticketACancelar=null;
+}
 
-    function actualizarEstrellas(val) {
-        document.querySelectorAll('.star').forEach(s => s.classList.toggle('active', parseInt(s.dataset.val) <= val));
-        document.getElementById('starLabel').textContent = val > 0 ? etiquetas[val] : '';
-    }
+// CHAT
+let chatId=null, chatInt=null;
+function abrirChat(id,titulo){ chatId=id; document.getElementById('chatTicketTitulo').textContent=titulo; document.getElementById('chatMensajes').innerHTML=''; document.getElementById('chatInput').value=''; abrirModal('chatModal'); cargarMensajes(); chatInt=setInterval(cargarMensajes,5000); }
+function cerrarChat(){ clearInterval(chatInt);chatInt=null;cerrarModal('chatModal'); }
+async function cargarMensajes(){ if(!chatId)return; try{ const res=await fetch(`/cliente/tickets/${chatId}/mensajes`); const data=await res.json(); const box=document.getElementById('chatMensajes'); const atBot=box.scrollHeight-box.scrollTop<=box.clientHeight+50; box.innerHTML=(data.mensajes||[]).map(m=>`<div class="pp-chat-msg ${m.autor_rol==='cliente'?'me':'other'}"><div class="who">${m.autor_nombre}</div>${m.mensaje}</div>`).join('')||'<div style="text-align:center;color:var(--text-3);font-size:.8rem;padding:1rem">Sin mensajes aún</div>'; if(atBot)box.scrollTop=box.scrollHeight; }catch{} }
+async function enviarMensaje(){ const input=document.getElementById('chatInput'),msg=input.value.trim(); if(!msg||!chatId)return; input.value=''; try{await fetch(`/cliente/tickets/${chatId}/mensajes`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mensaje:msg})});cargarMensajes();}catch{} }
 
-    function abrirCalificar(btn) {
-        estrellasSeleccionadas = 0;
-        actualizarEstrellas(0);
-        document.getElementById('cal_ticket_id').value         = btn.dataset.ticket;
-        document.getElementById('cal_comentario').value        = '';
-        document.getElementById('calificarSubtitulo').textContent = `Técnico: ${btn.dataset.tecnico}`;
-        abrirModal('calificarModal');
-    }
+// PERFIL
+async function cargarPerfil(){ try{const res=await fetch('/cliente/perfil');const data=await res.json();if(data.success){document.getElementById('p_nombre').value=data.perfil.nombre_contacto||'';document.getElementById('p_email').value=data.perfil.email||'';document.getElementById('p_telefono').value=data.perfil.telefono||'';document.getElementById('p_empresa').value=data.perfil.nombre_empresa!=='Individual'?data.perfil.nombre_empresa:'';}}catch{} }
+async function guardarPerfil(){
+    const msg=document.getElementById('perfilMsg');
+    try{const res=await fetch('/cliente/perfil',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre_contacto:document.getElementById('p_nombre').value,email:document.getElementById('p_email').value,telefono:document.getElementById('p_telefono').value,nombre_empresa:document.getElementById('p_empresa').value||'Individual'})});const data=await res.json();msg.style.display='block';if(data.success){msg.style.background='var(--green-soft)';msg.style.color='var(--green)';msg.textContent='✅ Perfil actualizado';}else{msg.style.background='var(--red-soft)';msg.style.color='var(--red)';msg.textContent='❌ '+(data.error||'Error');}setTimeout(()=>{msg.style.display='none';},3000);}catch{showToast('Error','error');}
+}
+async function cambiarPassword(){ const a=document.getElementById('p_pwd_actual').value,n=document.getElementById('p_pwd_nueva').value; if(!a||!n)return showToast('Completa ambos campos','error'); if(n.length<6)return showToast('Mínimo 6 caracteres','error'); try{const res=await fetch('/cliente/perfil',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre_contacto:document.getElementById('p_nombre').value,email:document.getElementById('p_email').value,telefono:document.getElementById('p_telefono').value,nombre_empresa:document.getElementById('p_empresa').value||'Individual',password:a,nueva_password:n})});const data=await res.json();if(data.success){showToast('✅ Contraseña actualizada');document.getElementById('p_pwd_actual').value='';document.getElementById('p_pwd_nueva').value='';}else showToast(data.error,'error');}catch{showToast('Error','error');} }
+async function eliminarCuenta(){ if(!await confirmAction('¿Eliminar tu cuenta? Esta acción es irreversible.','Sí, eliminar mi cuenta'))return; try{await fetch('/cliente/cuenta',{method:'DELETE'});window.location.href='/';}catch{showToast('Error','error');} }
 
-    async function enviarCalificacion() {
-        if (estrellasSeleccionadas === 0) { alert('Selecciona al menos una estrella'); return; }
-        const btn = document.getElementById('btnCalificar');
-        btn.disabled = true; btn.textContent = 'Enviando...';
-        try {
-            const res  = await fetch('/cliente/calificar', {
-                method:  'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    ticket_id:  document.getElementById('cal_ticket_id').value,
-                    estrellas:  estrellasSeleccionadas,
-                    comentario: document.getElementById('cal_comentario').value
-                })
-            });
-            const data = await res.json();
-            if (data.success) location.reload();
-            else alert('Error: ' + data.error);
-        } catch (err) { alert('Error de conexión'); }
-        finally { btn.disabled = false; btn.textContent = 'Enviar calificación'; }
-    }
+// PLAN
+function mostrarLimitModal(data){ document.getElementById('limitModalTitle').textContent='Límite del plan alcanzado'; document.getElementById('limitModalMsg').textContent=data.message||'Has alcanzado el límite de tu plan. Mejora para continuar.'; abrirModal('limitModal'); }
+async function checkUpgradeBanner(){
+    try{const res=await fetch('/cliente/limits');const data=await res.json();
+    const pN=document.getElementById('planNombre'),pB=document.getElementById('planPropsBar'),pL=document.getElementById('planPropsLabel'),tB=document.getElementById('planTicketsBar'),tL=document.getElementById('planTicketsLabel'),uB=document.getElementById('planUpgradeBtn'),ban=document.getElementById('upgrade-banner');
+    if(pN)pN.textContent=(data.plan||'starter').charAt(0).toUpperCase()+(data.plan||'starter').slice(1);
+    if(data.propiedades){const p=data.propiedades,pct=p.limite===null?0:Math.round(p.actual/p.limite*100);pB.style.width=pct+'%';pB.style.background=pct>=80?'var(--red)':'var(--accent)';pL.textContent=`${p.actual} / ${p.limite===null?'∞':p.limite}`;}
+    if(data.tickets){const t=data.tickets,pct=t.limite===null?0:Math.round(t.actual/t.limite*100);tB.style.width=pct+'%';tB.style.background=pct>=80?'var(--red)':'var(--accent)';tL.textContent=`${t.actual} / ${t.limite===null?'∞':t.limite}`;}
+    if(data.show_upgrade){if(ban)ban.style.display='flex';if(uB)uB.style.display='flex';}}catch{}
+}
 
-    function editarPropiedad(btn) {
-        document.getElementById('propModalTitle').textContent = 'Editar' + ' Propiedad';
-        document.getElementById('prop_id').value  = btn.dataset.id;
-        document.getElementById('prop_dir').value = btn.dataset.dir;
-        document.getElementById('prop_srv').value = btn.dataset.srv !== 'null' ? btn.dataset.srv : '';
-        abrirModal('propiedadModal');
-    }
-
-    async function guardarPropiedad(e) {
-        e.preventDefault();
-        const id  = document.getElementById('prop_id').value;
-        const btn = document.getElementById('btnProp');
-        btn.disabled = true; btn.textContent = 'Enviando...';
-        try {
-            const res = await fetch(id ? `/cliente/propiedades/${id}` : '/cliente/propiedades', {
-                method:  id ? 'PUT' : 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    direccion:             document.getElementById('prop_dir').value,
-                    servicios_contratados: document.getElementById('prop_srv').value
-                })
-            });
-            const data = await res.json();
-            if (data.success) {
-                location.reload();
-            } else if (data.error === 'limit_reached') {
-                cerrarModal('propModal');
-                mostrarLimitModal(data.message, data.upgrade_to);
-            } else {
-                showToast('Error: ' + data.message || data.error);
-            }
-        } catch (err) { showToast('Error de conexión'); }
-        finally { btn.disabled = false; btn.textContent = 'Guardar'; }
-    }
-
-    async function eliminarPropiedad(id) {
-        if (!confirm('¿Eliminar esta propiedad? También se eliminarán los tickets asociados.')) return;
-        try {
-            const res  = await fetch(`/cliente/propiedades/${id}`, { method: 'DELETE' });
-            const data = await res.json();
-            if (data.success) location.reload();
-            else alert('Error: ' + data.error);
-        } catch (err) { alert('Error de conexión'); }
-    }
-
-    // ── Perfil ────────────────────────────────────────────────
-
-    async function eliminarCuenta() {
-        const ok = await confirmAction('This will permanently delete your account, all properties, and all tickets. This cannot be undone.', 'Delete everything', 'Cancel');
-        if (!ok) return;
-        try {
-            const res = await fetch('/cliente/cuenta', { method: 'DELETE' });
-            const data = await res.json();
-            if (data.success) window.location.href = '/landing';
-            else alert('Error: ' + data.error);
-        } catch (e) { alert('Connection error'); }
-    }
-
-    async function cargarPerfil() {
-        try {
-            const res  = await fetch('/cliente/perfil');
-            const data = await res.json();
-            if (data.success) {
-                document.getElementById('p_nombre').value   = data.perfil.nombre_contacto || '';
-                document.getElementById('p_telefono').value = data.perfil.telefono        || '';
-                document.getElementById('p_empresa').value  = data.perfil.nombre_empresa !== 'Individual' ? data.perfil.nombre_empresa : '';
-                document.getElementById('p_email').value    = data.perfil.email           || '';
-            }
-        } catch (err) { console.error('Error cargando perfil:', err); }
-    }
-
-    async function guardarPerfil(e) {
-        e.preventDefault();
-        const btn = document.getElementById('btnPerfil');
-        const msg = document.getElementById('perfilMsg');
-        const passActual = document.getElementById('p_pass_actual').value;
-        const passNueva  = document.getElementById('p_pass_nueva').value;
-
-        if (passNueva && !passActual) {
-            mostrarMsg('error', 'Debes ingresar tu contraseña actual para cambiarla');
-            return;
-        }
-
-        btn.disabled = true; btn.textContent = 'Enviando...';
-
-        try {
-            const body = {
-                nombre_contacto: document.getElementById('p_nombre').value,
-                nombre_empresa:  document.getElementById('p_empresa').value || 'Individual',
-                email:           document.getElementById('p_email').value,
-                telefono:        document.getElementById('p_telefono').value,
-            };
-            if (passNueva) { body.password = passActual; body.nueva_password = passNueva; }
-
-            const res  = await fetch('/cliente/perfil', {
-                method:  'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify(body)
-            });
-            const data = await res.json();
-
-            if (data.success) {
-                showToast('✅ Perfil actualizado');
-                document.getElementById('p_pass_actual').value = '';
-                document.getElementById('p_pass_nueva').value  = '';
-            } else {
-                mostrarMsg('error', data.error);
-            }
-        } catch (err) { mostrarMsg('error', 'Error de conexión'); }
-        finally { btn.disabled = false; btn.textContent = 'Guardar cambios'; }
-    }
-
-
-    function mostrarLimitModal(mensaje, upgradeTo) {
-        document.getElementById('limitMsg').textContent = mensaje;
-        const btn = document.getElementById('limitUpgradeBtn');
-        btn.textContent = upgradeTo
-            ? `Upgrade to ${upgradeTo.charAt(0).toUpperCase() + upgradeTo.slice(1)} →`
-            : 'View plans →';
-        document.getElementById('limitModal').classList.add('open');
-        // Mostrar el banner también
-        const banner = document.getElementById('upgrade-banner');
-        if (banner) banner.style.display = 'flex';
-    }
-
-    function mostrarMsg(tipo, texto) {
-        const msg = document.getElementById('perfilMsg');
-        msg.style.display = 'block';
-        msg.style.cssText = `display:block;padding:.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem;font-size:.875rem;font-weight:500;${
-            tipo === 'success'
-            ? 'background:var(--green-soft);color:var(--green);border-left:3px solid var(--green)'
-            : 'background:var(--red-soft);color:var(--red);border-left:3px solid var(--red)'
-        }`;
-        msg.textContent = texto;
-        setTimeout(() => { msg.style.display = 'none'; }, 4000);
-    }
-
-    function scrollToPerfil() {
-        document.getElementById('perfil').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    // Cargar perfil al abrir la página
-    cargarPerfil();
-
-    // ── Onboarding ────────────────────────────────────────────
-    const OB_KEY = 'pp_onboarding_done_' + (document.body.getAttribute('data-user-id') || 'x');
-    let obCurrentStep = 1;
-    const OB_TOTAL = 5;
-
-    function obInit() {
-        if (localStorage.getItem(OB_KEY)) return; // ya completó onboarding
-        const overlay = document.getElementById('onboarding-overlay');
-        overlay.style.display = 'flex';
-        // Poner el link del técnico
-        const base = window.location.origin;
-        const el = document.getElementById('ob-tech-link');
-        if (el) el.textContent = base + '/auth/register-tecnico';
-        obUpdateProgress();
-    }
-
-    function obShowStep(n) {
-        document.querySelectorAll('.ob-step').forEach(s => s.style.display = 'none');
-        const step = document.querySelector(`.ob-step[data-step="${n}"]`);
-        if (step) step.style.display = 'block';
-        obCurrentStep = n;
-        obUpdateProgress();
-    }
-
-    function obUpdateProgress() {
-        const pct = obCurrentStep === 1 ? 0 : Math.round(((obCurrentStep - 1) / OB_TOTAL) * 100);
-        const bar = document.getElementById('ob-progress');
-        if (bar) bar.style.width = pct + '%';
-    }
-
-    function obNext() {
-        if (obCurrentStep < 6) obShowStep(obCurrentStep + 1);
-    }
-
-    function obBack() {
-        if (obCurrentStep > 1) obShowStep(obCurrentStep - 1);
-    }
-
-    function obOpenPropModal() {
-        const modal = document.getElementById('propModal');
-        if (modal) modal.classList.add('open');
-    }
-
-    function obSkip() {
-        obDone();
-    }
-
-    function obDone() {
-        localStorage.setItem(OB_KEY, '1');
-        const overlay = document.getElementById('onboarding-overlay');
-        overlay.style.opacity = '0';
-        overlay.style.transition = 'opacity .3s';
-        setTimeout(() => overlay.style.display = 'none', 300);
-    }
-
-    function copyTechLink() {
-        const link = document.getElementById('ob-tech-link')?.textContent;
-        if (!link) return;
-        navigator.clipboard.writeText(link).then(() => {
-            showToast('✅ Link copied!');
-        });
-    }
-
-    // Iniciar después de cargar perfil
-    setTimeout(obInit, 800);
-
-
-    // ── Upgrade banner ────────────────────────────────────────
-    async function checkUpgradeBanner() {
-        try {
-            const res  = await fetch('/cliente/limits');
-            const data = await res.json();
-            if (data.show_upgrade) {
-                const banner = document.getElementById('upgrade-banner');
-                if (banner) banner.style.display = 'flex';
-            }
-        } catch (e) {}
-    }
-    checkUpgradeBanner();
-
-
-    function previewFoto(input) {
-        const file = input.files[0];
-        if (!file) return;
-        const wrap = document.getElementById('fotoPreviewWrap');
-        const img  = document.getElementById('fotoPreview');
-        const info = document.getElementById('fotoInfo');
-        wrap.style.display = 'block';
-        ImageOptimizer.preview(file, img);
-        info.textContent = `Original: ${ImageOptimizer.formatSize(file.size)} — se comprimirá antes de subir`;
-    }
-
-    async function enviarTicket(e) {
-        e.preventDefault();
-        const btn  = document.getElementById('btnTicket');
-        const done = btnLoading(btn, 'Enviando...');
-
-        try {
-            const form     = e.target;
-            const fileInput = document.getElementById('fotoTicket');
-            const formData  = new FormData();
-
-            // Campos del form
-            formData.append('propiedad_id', form.propiedad_id.value);
-            formData.append('categoria',    form.categoria.value);
-            formData.append('motivo',       form.motivo.value);
-            formData.append('descripcion',  form.descripcion.value);
-
-            // Comprimir imagen si existe
-            if (fileInput.files[0]) {
-                const original   = fileInput.files[0];
-                const compressed = await ImageOptimizer.compress(original);
-                formData.append('foto', compressed, 'foto.jpg');
-                console.log(`Imagen: ${ImageOptimizer.formatSize(original.size)} → ${ImageOptimizer.formatSize(compressed.size)}`);
-            }
-
-            const res  = await fetch('/cliente/tickets', { method: 'POST', body: formData });
-            const data = await res.json();
-
-            if (data.success) {
-                showToast('✅ Ticket creado');
-                document.getElementById('ticketModal').classList.remove('open');
-                form.reset();
-                document.getElementById('fotoPreviewWrap').style.display = 'none';
-                setTimeout(() => location.reload(), 1000);
-            } else {
-                showToast(data.message || data.error || 'Error', 'error');
-            }
-        } catch (err) {
-            showToast('Error de conexión', 'error');
-        } finally {
-            done();
-        }
-    }
+cargarPerfil();
+checkUpgradeBanner();
 </script>
 
-
-<!-- ══════════════════════════════════════════════════════════
-     ONBOARDING MODAL — aparece solo en el primer login
-═══════════════════════════════════════════════════════════ -->
-<div id="onboarding-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);z-index:2000;align-items:center;justify-content:center;padding:1rem">
-    <div id="onboarding-modal" style="background:var(--surface);border:1px solid var(--border);border-radius:24px;width:100%;max-width:520px;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.5);animation:modalIn .3s cubic-bezier(.34,1.56,.64,1)">
-
-        <!-- Progress bar -->
-        <div style="height:3px;background:var(--border)">
-            <div id="ob-progress" style="height:100%;background:var(--accent);transition:width .4s ease;width:0%"></div>
-        </div>
-
-        <!-- Steps container -->
-        <div id="ob-steps">
-
-            <!-- Step 1: Bienvenida -->
-            <div class="ob-step" data-step="1">
-                <div style="padding:2.5rem 2.5rem 0;text-align:center">
-                    <div style="width:64px;height:64px;background:var(--accent-soft);border-radius:20px;display:inline-grid;place-items:center;font-size:2rem;margin-bottom:1.25rem">🏠</div>
-                    <h2 style="font-size:1.4rem;font-weight:700;letter-spacing:-.4px;margin-bottom:.6rem">Welcome to PropertyPulse!</h2>
-                    <p style="color:var(--text-2);font-size:.925rem;line-height:1.7;max-width:380px;margin:0 auto">
-                        You're set up and ready to go. This quick guide will help you get the most out of your account in just a few minutes.
-                    </p>
-                </div>
-                <div style="padding:2rem 2.5rem">
-                    <div style="display:flex;flex-direction:column;gap:.75rem;margin-bottom:2rem">
-                        <div style="display:flex;align-items:center;gap:.85rem;padding:.85rem 1rem;background:var(--surface-2);border:1px solid var(--border);border-radius:10px">
-                            <span style="font-size:1.3rem">🏠</span>
-                            <div>
-                                <div style="font-size:.875rem;font-weight:600">Add your first property</div>
-                                <div style="font-size:.78rem;color:var(--text-3)">Register the properties you manage</div>
-                            </div>
-                            <span style="margin-left:auto;color:var(--text-3);font-size:.8rem">01</span>
-                        </div>
-                        <div style="display:flex;align-items:center;gap:.85rem;padding:.85rem 1rem;background:var(--surface-2);border:1px solid var(--border);border-radius:10px">
-                            <span style="font-size:1.3rem">🎫</span>
-                            <div>
-                                <div style="font-size:.875rem;font-weight:600">Create your first ticket</div>
-                                <div style="font-size:.78rem;color:var(--text-3)">Log a maintenance request</div>
-                            </div>
-                            <span style="margin-left:auto;color:var(--text-3);font-size:.8rem">02</span>
-                        </div>
-                        <div style="display:flex;align-items:center;gap:.85rem;padding:.85rem 1rem;background:var(--surface-2);border:1px solid var(--border);border-radius:10px">
-                            <span style="font-size:1.3rem">🔧</span>
-                            <div>
-                                <div style="font-size:.875rem;font-weight:600">Invite a technician</div>
-                                <div style="font-size:.78rem;color:var(--text-3)">Share the technician portal link</div>
-                            </div>
-                            <span style="margin-left:auto;color:var(--text-3);font-size:.8rem">03</span>
-                        </div>
-                        <div style="display:flex;align-items:center;gap:.85rem;padding:.85rem 1rem;background:var(--surface-2);border:1px solid var(--border);border-radius:10px">
-                            <span style="font-size:1.3rem">👤</span>
-                            <div>
-                                <div style="font-size:.875rem;font-weight:600">Complete your profile</div>
-                                <div style="font-size:.78rem;color:var(--text-3)">Add your phone and company name</div>
-                            </div>
-                            <span style="margin-left:auto;color:var(--text-3);font-size:.8rem">04</span>
-                        </div>
-                        <div style="display:flex;align-items:center;gap:.85rem;padding:.85rem 1rem;background:var(--surface-2);border:1px solid var(--border);border-radius:10px">
-                            <span style="font-size:1.3rem">📱</span>
-                            <div>
-                                <div style="font-size:.875rem;font-weight:600">Install the app</div>
-                                <div style="font-size:.78rem;color:var(--text-3)">Add to your home screen for quick access</div>
-                            </div>
-                            <span style="margin-left:auto;color:var(--text-3);font-size:.8rem">05</span>
-                        </div>
-                    </div>
-                    <button onclick="obNext()" class="btn btn-primary btn-full" style="font-size:.95rem;padding:.8rem">
-                        Let's get started →
-                    </button>
-                    <button onclick="obSkip()" style="display:block;width:100%;text-align:center;margin-top:.75rem;background:none;border:none;color:var(--text-3);font-size:.8rem;cursor:pointer;padding:.4rem">
-                        Skip for now
-                    </button>
-                </div>
-            </div>
-
-            <!-- Step 2: Primera propiedad -->
-            <div class="ob-step" data-step="2" style="display:none">
-                <div style="padding:2.5rem 2.5rem 0">
-                    <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem">
-                        <div style="width:48px;height:48px;background:var(--accent-soft);border-radius:14px;display:grid;place-items:center;font-size:1.5rem;flex-shrink:0">🏠</div>
-                        <div>
-                            <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);font-weight:600;margin-bottom:.2rem">Step 1 of 5</div>
-                            <h2 style="font-size:1.2rem;font-weight:700;letter-spacing:-.3px">Add your first property</h2>
-                        </div>
-                    </div>
-                    <p style="color:var(--text-2);font-size:.9rem;line-height:1.7;margin-bottom:1.5rem">
-                        Properties are the foundation of PropertyPulse. Add the addresses you manage so you can attach maintenance tickets to each one.
-                    </p>
-                    <div style="background:var(--accent-soft);border:1px solid rgba(108,99,255,.2);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem">
-                        <p style="font-size:.83rem;color:var(--accent);line-height:1.6">
-                            💡 <strong>Tip:</strong> Your Starter plan includes 3 properties. You can always upgrade later for more.
-                        </p>
-                    </div>
-                </div>
-                <div style="padding:0 2.5rem 2.5rem;display:flex;gap:.75rem">
-                    <button onclick="obBack()" class="btn btn-secondary" style="flex:1">← Back</button>
-                    <button onclick="obNext(); obOpenPropModal()" class="btn btn-primary" style="flex:2">
-                        Add property →
-                    </button>
-                </div>
-            </div>
-
-            <!-- Step 3: Primer ticket -->
-            <div class="ob-step" data-step="3" style="display:none">
-                <div style="padding:2.5rem 2.5rem 0">
-                    <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem">
-                        <div style="width:48px;height:48px;background:#fef3c7;border-radius:14px;display:grid;place-items:center;font-size:1.5rem;flex-shrink:0">🎫</div>
-                        <div>
-                            <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);font-weight:600;margin-bottom:.2rem">Step 2 of 5</div>
-                            <h2 style="font-size:1.2rem;font-weight:700;letter-spacing:-.3px">Create your first ticket</h2>
-                        </div>
-                    </div>
-                    <p style="color:var(--text-2);font-size:.9rem;line-height:1.7;margin-bottom:1.5rem">
-                        Tickets are maintenance requests. Each one is tied to a property and can be assigned to a technician. Add photos, descriptions, and priority levels.
-                    </p>
-                    <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem">
-                        <p style="font-size:.83rem;color:#92400e;line-height:1.6">
-                            💡 <strong>Tip:</strong> Be specific with the description — it helps your technician diagnose the issue faster.
-                        </p>
-                    </div>
-                </div>
-                <div style="padding:0 2.5rem 2.5rem;display:flex;gap:.75rem">
-                    <button onclick="obBack()" class="btn btn-secondary" style="flex:1">← Back</button>
-                    <button onclick="obNext()" class="btn btn-primary" style="flex:2">Got it →</button>
-                </div>
-            </div>
-
-            <!-- Step 4: Invitar técnico -->
-            <div class="ob-step" data-step="4" style="display:none">
-                <div style="padding:2.5rem 2.5rem 0">
-                    <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem">
-                        <div style="width:48px;height:48px;background:#d1fae5;border-radius:14px;display:grid;place-items:center;font-size:1.5rem;flex-shrink:0">🔧</div>
-                        <div>
-                            <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);font-weight:600;margin-bottom:.2rem">Step 3 of 5</div>
-                            <h2 style="font-size:1.2rem;font-weight:700;letter-spacing:-.3px">Invite a technician</h2>
-                        </div>
-                    </div>
-                    <p style="color:var(--text-2);font-size:.9rem;line-height:1.7;margin-bottom:1.25rem">
-                        Share the technician registration link with your maintenance team. They'll create their own account and start receiving job assignments.
-                    </p>
-
-                    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;margin-bottom:.75rem">
-                        <div style="font-size:.72rem;color:var(--text-3);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.06em">Technician registration link</div>
-                        <div style="display:flex;align-items:center;gap:.5rem">
-                            <code id="ob-tech-link" style="font-size:.8rem;color:var(--text-1);flex:1;word-break:break-all"></code>
-                            <button onclick="copyTechLink()" style="background:var(--accent);color:#fff;border:none;border-radius:6px;padding:.3rem .75rem;font-size:.75rem;cursor:pointer;white-space:nowrap;flex-shrink:0">Copy</button>
-                        </div>
-                    </div>
-                    <div style="background:#d1fae5;border:1px solid #6ee7b7;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem">
-                        <p style="font-size:.83rem;color:#065f46;line-height:1.6">
-                            💡 <strong>Tip:</strong> Your Starter plan includes 1 technician. Upgrade to Pro to add up to 5.
-                        </p>
-                    </div>
-                </div>
-                <div style="padding:0 2.5rem 2.5rem;display:flex;gap:.75rem">
-                    <button onclick="obBack()" class="btn btn-secondary" style="flex:1">← Back</button>
-                    <button onclick="obNext()" class="btn btn-primary" style="flex:2">Next →</button>
-                </div>
-            </div>
-
-            <!-- Step 5: Completar perfil -->
-            <div class="ob-step" data-step="5" style="display:none">
-                <div style="padding:2.5rem 2.5rem 0">
-                    <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem">
-                        <div style="width:48px;height:48px;background:#dbeafe;border-radius:14px;display:grid;place-items:center;font-size:1.5rem;flex-shrink:0">👤</div>
-                        <div>
-                            <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);font-weight:600;margin-bottom:.2rem">Step 4 of 5</div>
-                            <h2 style="font-size:1.2rem;font-weight:700;letter-spacing:-.3px">Complete your profile</h2>
-                        </div>
-                    </div>
-                    <p style="color:var(--text-2);font-size:.9rem;line-height:1.7;margin-bottom:1.5rem">
-                        Add your phone number and company name so your technicians know who they're working with. You can update this anytime from the Profile section.
-                    </p>
-                    <div style="background:#dbeafe;border:1px solid #93c5fd;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem">
-                        <p style="font-size:.83rem;color:#1e40af;line-height:1.6">
-                            💡 <strong>Tip:</strong> Scroll down to the Profile section at the bottom of your dashboard to edit your details.
-                        </p>
-                    </div>
-                </div>
-                <div style="padding:0 2.5rem 2.5rem;display:flex;gap:.75rem">
-                    <button onclick="obBack()" class="btn btn-secondary" style="flex:1">← Back</button>
-                    <button onclick="obNext()" class="btn btn-primary" style="flex:2">Next →</button>
-                </div>
-            </div>
-
-            <!-- Step 6: Instalar PWA -->
-            <div class="ob-step" data-step="6" style="display:none">
-                <div style="padding:2.5rem 2.5rem 0">
-                    <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem">
-                        <div style="width:48px;height:48px;background:#ede9ff;border-radius:14px;display:grid;place-items:center;font-size:1.5rem;flex-shrink:0">📱</div>
-                        <div>
-                            <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);font-weight:600;margin-bottom:.2rem">Step 5 of 5</div>
-                            <h2 style="font-size:1.2rem;font-weight:700;letter-spacing:-.3px">Install the app</h2>
-                        </div>
-                    </div>
-                    <p style="color:var(--text-2);font-size:.9rem;line-height:1.7;margin-bottom:1.25rem">
-                        Add PropertyPulse to your home screen for instant access — no App Store required.
-                    </p>
-                    <div style="display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.5rem">
-                        <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:.85rem 1rem;font-size:.85rem;color:var(--text-2)">
-                            <strong style="color:var(--text-1)">📱 iPhone (Safari):</strong> Tap the Share button → "Add to Home Screen"
-                        </div>
-                        <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:.85rem 1rem;font-size:.85rem;color:var(--text-2)">
-                            <strong style="color:var(--text-1)">🤖 Android (Chrome):</strong> Tap the menu (⋮) → "Add to Home Screen"
-                        </div>
-                    </div>
-                </div>
-                <div style="padding:0 2.5rem 2.5rem;display:flex;gap:.75rem">
-                    <button onclick="obBack()" class="btn btn-secondary" style="flex:1">← Back</button>
-                    <button onclick="obDone()" class="btn btn-primary" style="flex:2;background:var(--green)">
-                        🎉 Done — Let's go!
-                    </button>
-                </div>
-            </div>
-
-        </div>
-    </div>
-</div>
-
+<script src="/js/imageOptimizer.js"></script>
 <script src="/js/notifications.js"></script>
 </body>
 </html>

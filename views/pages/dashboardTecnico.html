@@ -1,599 +1,518 @@
 <%- include('../layouts/mainLayout.html') %>
 
-<div class="dashboard-layout">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
 
-    <aside class="sidebar">
-        <div class="sidebar-logo">
-            <div class="logo-mark">🔧</div>
-            <div class="logo-text">Property<span>Pulse</span></div>
-        </div>
-        <nav class="sidebar-nav">
-            <div class="nav-section" data-i18n="nav.dashboard">Panel</div>
-            <a class="nav-item active" href="/tecnico/dashboard">
-                <span class="icon">🔧</span> <span data-i18n="nav.myJobs">Mis trabajos</span>
-            </a>
-            <a class="nav-item" href="#perfil" onclick="scrollToPerfil()">
-                <span class="icon">👤</span> <span data-i18n="nav.profile">Mi Perfil</span>
-            </a>
-        </nav>
-        <div class="sidebar-footer">
-            <div class="user-pill">
-                <div class="avatar" style="background:var(--green-soft);color:var(--green)">
-                    <%= tecnico.username.charAt(0).toUpperCase() %>
-                </div>
-                <div class="user-info">
-                    <div class="name"><%= tecnico.username %></div>
-                    <div class="role">Técnico</div>
-                </div>
-            </div>
-            <a href="/auth/logout" class="nav-item" style="color:var(--red)">
-                <span class="icon">🚪</span> <span data-i18n="nav.logout">Cerrar sesión</span>
-            </a>
-        </div>
-    </aside>
+.tec-dash * { font-family: 'Outfit', system-ui, sans-serif; }
 
-    <main class="main-content">
+/* Topbar */
+.tec-topbar {
+    position: sticky; top: 0; z-index: 200;
+    height: 54px; display: flex; align-items: center;
+    padding: 0 1.5rem; gap: 1rem;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+}
+.tec-logo {
+    display: flex; align-items: center; gap: .5rem;
+    font-weight: 800; font-size: 1rem; letter-spacing: -.4px;
+    color: var(--text-1); text-decoration: none; flex-shrink: 0;
+}
+.tec-logo span { color: var(--green); }
+.tec-logo-role {
+    font-size: .62rem; font-weight: 700;
+    background: var(--green-soft); color: var(--green);
+    padding: .15rem .5rem; border-radius: 99px;
+    text-transform: uppercase; letter-spacing: .08em;
+}
+.tec-nav { display: flex; align-items: center; gap: .15rem; flex: 1; overflow-x: auto; }
+.tec-nav a {
+    display: flex; align-items: center; gap: .4rem;
+    padding: .38rem .7rem; border-radius: 7px;
+    font-size: .82rem; font-weight: 500;
+    color: var(--text-2); text-decoration: none;
+    white-space: nowrap; transition: all .15s;
+}
+.tec-nav a:hover  { background: var(--surface-2); color: var(--text-1); }
+.tec-nav a.active { background: var(--green-soft); color: var(--green); font-weight: 600; }
+.tec-nav-right { display: flex; align-items: center; gap: .6rem; margin-left: auto; flex-shrink: 0; }
+.tec-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--green), #34d399);
+    color: #fff; font-weight: 700; font-size: .8rem;
+    border: none; display: grid; place-items: center; flex-shrink: 0;
+}
+.tec-logout {
+    font-size: .78rem; color: var(--text-3); text-decoration: none;
+    padding: .3rem .6rem; border-radius: 6px; transition: all .15s;
+}
+.tec-logout:hover { color: var(--red); background: var(--red-soft); }
 
-        <div class="page-header">
-            <h1><span data-i18n="tech.hello">Hola</span>, <%= tecnico.username %> 👋</h1>
-            <p data-i18n="tech.sub">Aquí están los trabajos disponibles y tus servicios en curso.</p>
-        </div>
+/* Estado banner */
+.tec-status-bar {
+    padding: .7rem 1.5rem;
+    display: flex; align-items: center; gap: .75rem;
+    font-size: .83rem; font-weight: 600;
+    border-bottom: 1px solid var(--border);
+}
+.tec-status-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
 
-        <!-- Stats -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">⏳</div>
-                <div class="stat-label" data-i18n="tech.pending">Pendientes</div>
-                <div class="stat-value"><%= tickets.filter(t => t.estado === 'pendiente').length %></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">🔄</div>
-                <div class="stat-label" data-i18n="tech.inProgress">En proceso</div>
-                <div class="stat-value"><%= tickets.filter(t => t.estado === 'en_proceso').length %></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">✅</div>
-                <div class="stat-label" data-i18n="tech.completed">Completados</div>
-                <div class="stat-value"><%= tickets.filter(t => t.estado === 'completado').length %></div>
-            </div>
-            <div class="stat-card" style="border-left:3px solid #f59e0b">
-                <div class="stat-icon">⭐</div>
-                <div class="stat-label" data-i18n="tech.myRating">Mi calificación</div>
-                <div class="stat-value">
-                    <% if (promedio) { %>
-                        <%= promedio %> <span class="text-small text-muted fw-400">/ 5</span>
-                    <% } else { %>
-                        <span class="text-muted text-small" style="font-size:1rem" data-i18n="tech.noRatings">Sin calificaciones</span>
-                    <% } %>
-                </div>
-                <% if (totalCalif > 0) { %>
-                    <div class="text-small text-muted"><%= totalCalif %> reseña<%= totalCalif > 1 ? 's' : '' %></div>
-                <% } %>
-            </div>
-        </div>
+/* Body */
+.tec-body {
+    display: grid; grid-template-columns: 1fr 300px; gap: 2rem;
+    max-width: 1280px; width: 100%; margin: 0 auto;
+    padding: 1.75rem 1.5rem;
+}
+.tec-main { min-width: 0; display: flex; flex-direction: column; gap: 2rem; }
+.tec-side  { display: flex; flex-direction: column; gap: 1.25rem; }
 
-        <!-- Banner estado técnico -->
-        <% if (tecnico.ocupado) { %>
-        <div style="background:var(--yellow-soft);border:1px solid var(--yellow);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:.75rem">
-            <span style="font-size:1.5rem">🔨</span>
-            <div>
-                <div style="font-weight:600;font-size:.9rem">Estás actualmente ocupado</div>
-                <div class="text-small text-muted">Completa o cancela tu trabajo en curso para recibir nuevos tickets.</div>
-            </div>
-        </div>
-        <% } else { %>
-        <div style="background:var(--green-soft);border:1px solid var(--green);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:.75rem">
-            <span style="font-size:1.5rem">✅</span>
-            <div>
-                <div style="font-weight:600;font-size:.9rem">Estás disponible</div>
-                <div class="text-small text-muted">Puedes aceptar nuevos trabajos.</div>
-            </div>
-        </div>
-        <% } %>
+/* Stats */
+.tec-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: .75rem; }
+.tec-stat {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1rem 1.1rem;
+    position: relative; overflow: hidden;
+    transition: transform .15s, box-shadow .15s;
+}
+.tec-stat:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.08); }
+.tec-stat-stripe { position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0; }
+.tec-stat-icon { font-size: 1rem; opacity: .6; margin-bottom: .4rem; }
+.tec-stat-num  { font-size: 2.2rem; font-weight: 800; letter-spacing:-2px; line-height:1; color:var(--text-1); margin-bottom:.2rem; }
+.tec-stat-lbl  { font-size: .68rem; font-weight: 700; text-transform:uppercase; letter-spacing:.08em; color:var(--text-3); }
 
-        <!-- Tickets -->
-        <div class="section-header mb-3">
-            <h2 data-i18n="tech.availableJobs">Tickets disponibles y activos</h2>
+/* Section head */
+.tec-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:.9rem; }
+.tec-head h2 { font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--text-3); }
+
+/* Ticket cards */
+.tec-tickets { display: flex; flex-direction: column; gap: .5rem; }
+.tec-ticket {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: .9rem 1rem;
+    display: grid; grid-template-columns: 10px 1fr;
+    gap: .7rem; align-items: start;
+    transition: border-color .15s, box-shadow .15s;
+}
+.tec-ticket.disponible:hover { border-color: rgba(16,185,129,.35); box-shadow: 0 2px 12px rgba(16,185,129,.08); }
+.tec-ticket.mio:hover        { border-color: rgba(59,130,246,.35); box-shadow: 0 2px 12px rgba(59,130,246,.08); }
+.tec-tdot { width:10px; height:10px; border-radius:50%; margin-top:5px; flex-shrink:0; }
+.tec-tdot.pendiente  { background:var(--yellow); box-shadow:0 0 0 3px rgba(245,158,11,.18); }
+.tec-tdot.en_proceso { background:var(--blue);   box-shadow:0 0 0 3px rgba(59,130,246,.18); }
+.tec-tdot.completado { background:var(--green);  box-shadow:0 0 0 3px rgba(16,185,129,.18); }
+.tec-t-header { display:flex; align-items:center; gap:.45rem; flex-wrap:wrap; margin-bottom:.25rem; }
+.tec-t-title  { font-weight:600; font-size:.88rem; color:var(--text-1); }
+.tec-t-cat    { font-size:.67rem; font-weight:700; background:var(--green-soft); color:var(--green); padding:.1rem .45rem; border-radius:99px; }
+.tec-t-mine   { font-size:.67rem; font-weight:700; background:var(--blue-soft);  color:var(--blue);  padding:.1rem .45rem; border-radius:99px; }
+.tec-t-meta   { font-size:.75rem; color:var(--text-3); display:flex; gap:.6rem; flex-wrap:wrap; margin-bottom:.45rem; }
+.tec-t-desc   { font-size:.78rem; color:var(--text-3); margin-bottom:.45rem; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; }
+.tec-t-actions { display:flex; gap:.35rem; flex-wrap:wrap; }
+
+/* Badge */
+.tec-badge { display:inline-flex; align-items:center; gap:.3rem; padding:.18rem .55rem; border-radius:99px; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; }
+.tec-badge::before { content:''; width:5px; height:5px; border-radius:50%; background:currentColor; }
+.tec-b-pendiente  { background:var(--yellow-soft); color:#92400e; }
+.tec-b-en_proceso { background:var(--blue-soft);   color:#1e40af; }
+.tec-b-completado { background:var(--green-soft);  color:#065f46; }
+[data-theme="dark"] .tec-b-pendiente  { color:#fbbf24; }
+[data-theme="dark"] .tec-b-en_proceso { color:#60a5fa; }
+[data-theme="dark"] .tec-b-completado { color:#34d399; }
+
+/* Btns */
+.tb { display:inline-flex; align-items:center; justify-content:center; gap:.3rem; padding:.35rem .8rem; border-radius:8px; font-size:.76rem; font-weight:600; border:none; cursor:pointer; transition:all .15s; white-space:nowrap; text-decoration:none; font-family:'Outfit',sans-serif; }
+.tb-green  { background:var(--green);      color:#fff; }
+.tb-green:hover  { opacity:.9; transform:translateY(-1px); }
+.tb-blue   { background:var(--blue-soft);  color:var(--blue); }
+.tb-blue:hover   { background:#bfdbfe; }
+.tb-ghost  { background:var(--surface-2);  color:var(--text-2); border:1px solid var(--border); }
+.tb-ghost:hover  { border-color:var(--green); color:var(--green); }
+.tb-danger { background:var(--red-soft);   color:var(--red); }
+.tb-danger:hover { background:#fecaca; }
+.tb-full   { width:100%; }
+.tb-sm     { padding:.25rem .55rem; font-size:.72rem; }
+.tb[disabled] { opacity:.4; cursor:not-allowed; }
+
+/* Ratings */
+.tec-review {
+    padding: .75rem; background: var(--surface-2);
+    border-radius: 10px; border: 1px solid var(--border);
+}
+.tec-review-stars { color: var(--yellow); font-size: .9rem; margin-bottom: .2rem; }
+.tec-review-text  { font-size: .78rem; color: var(--text-2); line-height: 1.5; }
+.tec-review-meta  { font-size: .7rem; color: var(--text-3); margin-top: .25rem; }
+
+/* Widget */
+.tec-widget { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.2rem; }
+.tec-widget-lbl { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--text-3); margin-bottom:.9rem; }
+
+/* Earnings */
+.tec-earn-row { display:flex; justify-content:space-between; align-items:center; padding:.5rem 0; border-bottom:1px solid var(--border); }
+.tec-earn-row:last-child { border-bottom:none; }
+.tec-earn-label { font-size:.8rem; color:var(--text-2); }
+.tec-earn-value { font-size:.9rem; font-weight:700; font-family:'JetBrains Mono',monospace; color:var(--text-1); }
+
+/* Profile */
+.tec-field { margin-bottom:.65rem; }
+.tec-field label { display:block; font-size:.67rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--text-3); margin-bottom:.25rem; }
+.tec-field input, .tec-field select {
+    width:100%; padding:.46rem .7rem; background:var(--surface-2);
+    border:1px solid var(--border); border-radius:8px; color:var(--text-1);
+    font-size:.83rem; font-family:'Outfit',sans-serif; outline:none; transition:border-color .15s;
+}
+.tec-field input:focus, .tec-field select:focus { border-color:var(--green); box-shadow:0 0 0 3px var(--green-soft); }
+
+/* Empty */
+.tec-empty { text-align:center; padding:2.5rem 1.5rem; border:1.5px dashed var(--border); border-radius:14px; color:var(--text-3); }
+
+/* Chat */
+.tec-chat-box { height:240px; overflow-y:auto; display:flex; flex-direction:column; gap:.4rem; padding:.25rem 0; margin-bottom:.6rem; }
+.tec-chat-msg { max-width:76%; padding:.43rem .78rem; border-radius:10px; font-size:.83rem; line-height:1.5; }
+.tec-chat-msg.me    { background:var(--green); color:#fff; align-self:flex-end; border-bottom-right-radius:3px; }
+.tec-chat-msg.other { background:var(--surface-2); color:var(--text-1); align-self:flex-start; border-bottom-left-radius:3px; }
+.tec-chat-msg .who  { font-size:.63rem; font-weight:700; opacity:.6; margin-bottom:.1rem; }
+.tec-chat-send { display:flex; gap:.4rem; }
+.tec-chat-send input { flex:1; padding:.43rem .68rem; border:1px solid var(--border); border-radius:8px; background:var(--surface-2); color:var(--text-1); font-size:.83rem; font-family:'Outfit',sans-serif; outline:none; }
+.tec-chat-send input:focus { border-color:var(--green); }
+
+.pp-div { height:1px; background:var(--border); margin:1rem 0; }
+
+/* Responsive */
+@media (max-width:960px)  { .tec-body { grid-template-columns:1fr; } .tec-side { display:none; } .tec-stats { grid-template-columns:1fr 1fr; } }
+@media (max-width:560px)  { .tec-nav { display:none; } }
+</style>
+
+<div class="tec-dash">
+
+<!-- Topbar -->
+<header class="tec-topbar">
+    <a href="/tecnico/dashboard" class="tec-logo">🔧 Property<span>Pulse</span> <span class="tec-logo-role">Técnico</span></a>
+    <nav class="tec-nav">
+        <a href="#trabajos" class="active">🎫 Trabajos</a>
+        <a href="#calificaciones">⭐ Calificaciones</a>
+        <a href="#perfil">👤 Perfil</a>
+    </nav>
+    <div class="tec-nav-right">
+        <div class="tec-avatar" title="<%= tecnico.username %>"><%= tecnico.username.charAt(0).toUpperCase() %></div>
+        <a href="/auth/logout" class="tec-logout">Salir →</a>
+    </div>
+</header>
+
+<!-- Banner estado ocupado/libre -->
+<% if (tecnico.ocupado) { %>
+<div class="tec-status-bar" style="background:var(--yellow-soft)">
+    <div class="tec-status-dot" style="background:var(--yellow)"></div>
+    <span style="color:#92400e">Estás ocupado — completa o cancela tu trabajo actual para recibir nuevos tickets</span>
+</div>
+<% } else { %>
+<div class="tec-status-bar" style="background:var(--green-soft)">
+    <div class="tec-status-dot" style="background:var(--green)"></div>
+    <span style="color:#065f46">Disponible — puedes aceptar nuevos trabajos</span>
+</div>
+<% } %>
+
+<div class="tec-body">
+
+<!-- Main -->
+<main class="tec-main">
+
+    <!-- Stats -->
+    <div class="tec-stats">
+        <div class="tec-stat">
+            <div class="tec-stat-stripe" style="background:var(--yellow)"></div>
+            <div class="tec-stat-icon">⏳</div>
+            <div class="tec-stat-num"><%= tickets.filter(t=>t.estado==='pendiente').length %></div>
+            <div class="tec-stat-lbl">Disponibles</div>
+        </div>
+        <div class="tec-stat">
+            <div class="tec-stat-stripe" style="background:var(--blue)"></div>
+            <div class="tec-stat-icon">🔄</div>
+            <div class="tec-stat-num"><%= tickets.filter(t=>t.estado==='en_proceso'&&t.tecnico_asignado===tecnico.id).length %></div>
+            <div class="tec-stat-lbl">En proceso</div>
+        </div>
+        <div class="tec-stat">
+            <div class="tec-stat-stripe" style="background:var(--green)"></div>
+            <div class="tec-stat-icon">✅</div>
+            <div class="tec-stat-num"><%= tickets.filter(t=>t.estado==='completado').length %></div>
+            <div class="tec-stat-lbl">Completados</div>
+        </div>
+        <div class="tec-stat">
+            <div class="tec-stat-stripe" style="background:var(--yellow)"></div>
+            <div class="tec-stat-icon">⭐</div>
+            <div class="tec-stat-num" style="font-size:1.8rem"><%= promedio || '—' %></div>
+            <div class="tec-stat-lbl">Calificación</div>
+        </div>
+    </div>
+
+    <!-- Trabajos -->
+    <section id="trabajos">
+        <div class="tec-head">
+            <h2>Tickets disponibles y activos</h2>
         </div>
 
         <% if (tickets.length === 0) { %>
-            <div class="card" style="text-align:center;padding:3rem;color:var(--text-2)">
-                <div style="font-size:2rem;margin-bottom:.75rem">🎉</div>
-                <p data-i18n="tech.noTickets">No hay tickets pendientes. ¡Buen trabajo!</p>
-            </div>
+        <div class="tec-empty">
+            <div style="font-size:2rem;opacity:.4;margin-bottom:.75rem">🎉</div>
+            <p style="font-size:.875rem">No hay tickets pendientes. ¡Buen trabajo!</p>
+        </div>
         <% } else { %>
-        <div class="cards-grid">
+        <div class="tec-tickets">
             <% tickets.forEach(function(ticket) { %>
-            <div class="ticket-card" id="ticket-<%= ticket.id %>">
-                <div class="ticket-header">
-                    <span class="badge badge-<%= ticket.estado %>">
-                        <% if (ticket.estado === 'pendiente') { %><span data-i18n="badge.pending">Pendiente</span>
-                        <% } else if (ticket.estado === 'en_proceso') { %><span data-i18n="badge.inProgress">En proceso</span>
-                        <% } else { %><span data-i18n="badge.completed">Completado</span><% } %>
-                    </span>
-                    <span class="text-small text-muted">
-                        <%= new Date(ticket.created_at).toLocaleDateString() %>
-                    </span>
-                </div>
-                <% if (ticket.categoria) { %>
-                <div class="text-small mb-1" style="color:var(--accent);font-weight:600">🏷️ <%= ticket.categoria %></div>
-                <% } %>
-                <div class="ticket-title"><%= ticket.motivo %></div>
-                <div class="ticket-meta">
-                    🏢 <%= ticket.companias ? ticket.companias.nombre_empresa || ticket.companias.nombre_contacto : 'Cliente' %>
-                </div>
-                <div class="ticket-meta">
-                    📍 <%= ticket.propiedades ? ticket.propiedades.direccion : 'N/A' %>
-                </div>
-                <div class="ticket-desc"><%= ticket.descripcion %></div>
-                <% if (ticket.foto_url) { %>
-                    <a href="<%= ticket.foto_url %>" target="_blank" class="text-small" style="color:var(--accent)">📸 Ver foto del problema</a>
-                <% } %>
-
-                <div id="actions-<%= ticket.id %>">
-                    <% if (ticket.estado === 'pendiente') { %>
-                        <div class="flex gap-1">
-                            <button class="btn btn-primary btn-sm" style="flex:2"
-                                onclick="cambiarEstado('<%= ticket.id %>', 'en_proceso')" data-i18n="tech.accept">
-                                ✋ Aceptar trabajo
-                            </button>
-                            <button class="btn btn-danger btn-sm" style="flex:1"
-                                onclick="cancelarTrabajo('<%= ticket.id %>')">
-                                ❌
-                            </button>
-                        </div>
-                    <% } else if (ticket.estado === 'en_proceso') { %>
-                        <div class="flex gap-1 mb-2">
-                            <button class="btn btn-success btn-sm" style="flex:2"
-                                onclick="cambiarEstado('<%= ticket.id %>', 'completado')" data-i18n="tech.markDone">
-                                ✅ Completado
-                            </button>
-                            <button class="btn btn-sm" style="flex:1;background:var(--blue-soft);color:var(--blue);border:none"
-                                data-ticket-id="<%= ticket.id %>"
-                                data-ticket-titulo="<%= ticket.motivo %>"
-                                onclick="abrirChatTec(this.dataset.ticketId, this.dataset.ticketTitulo)">
-                                💬
-                            </button>
-                            <button class="btn btn-danger btn-sm" style="flex:1"
-                                onclick="cancelarTrabajo('<%= ticket.id %>')">
-                                ❌
-                            </button>
-                        </div>
-                    <% } else { %>
-                        <button class="btn btn-full btn-sm" disabled
-                            style="background:var(--surface-2);color:var(--text-3);cursor:not-allowed" data-i18n="tech.finished">
-                            Trabajo finalizado
-                        </button>
-                    <% } %>
-                </div>
-            </div>
-            <% }); %>
-        </div>
-        <% } %>
-
-        <!-- Calificaciones recibidas -->
-        <% if (calificaciones.length > 0) { %>
-        <div class="section-header mb-3 mt-4">
-            <h2 data-i18n="tech.myRatings">⭐ Mis calificaciones</h2>
-            <span class="text-muted text-small">
-                <span data-i18n="tech.average">Promedio</span>:
-                <strong style="color:#f59e0b"><%= promedio %>/5</strong>
-            </span>
-        </div>
-        <div class="cards-grid">
-            <% calificaciones.forEach(function(c) { %>
-            <div class="card" style="padding:1.25rem">
-                <div class="flex-between mb-1">
-                    <div style="color:#f59e0b;font-size:1.2rem;letter-spacing:2px">
-                        <% for(var i=1; i<=5; i++) { %><%= i <= c.estrellas ? '★' : '☆' %><% } %>
+            <%
+              const esMio = ticket.tecnico_asignado === tecnico.id;
+              const claseTarjeta = esMio ? 'mio' : 'disponible';
+            %>
+            <div class="tec-ticket <%= claseTarjeta %>">
+                <div class="tec-tdot <%= ticket.estado %>"></div>
+                <div>
+                    <div class="tec-t-header">
+                        <span class="tec-t-title"><%= ticket.motivo %></span>
+                        <% if (ticket.categoria) { %><span class="tec-t-cat"><%= ticket.categoria %></span><% } %>
+                        <% if (esMio) { %><span class="tec-t-mine">Mi trabajo</span><% } %>
                     </div>
-                    <span class="text-small text-muted"><%= new Date(c.created_at).toLocaleDateString() %></span>
+                    <div class="tec-t-meta">
+                        <span>📍 <%= ticket.propiedades ? ticket.propiedades.direccion : '—' %></span>
+                        <span>👤 <%= ticket.companias ? (ticket.companias.nombre_empresa !== 'Individual' ? ticket.companias.nombre_empresa : ticket.companias.nombre_contacto) : '—' %></span>
+                        <span style="font-family:'JetBrains Mono',monospace;font-size:.7rem"><%= new Date(ticket.created_at).toLocaleDateString() %></span>
+                    </div>
+                    <% if (ticket.descripcion) { %><div class="tec-t-desc"><%= ticket.descripcion %></div><% } %>
+                    <div class="tec-t-actions">
+                        <span class="tec-badge tec-b-<%= ticket.estado %>">
+                            <%if(ticket.estado==='pendiente'){%>Pendiente<%}else if(ticket.estado==='en_proceso'){%>En proceso<%}else{%>Completado<%}%>
+                        </span>
+                        <% if (ticket.estado === 'pendiente' && !tecnico.ocupado) { %>
+                            <button class="tb tb-green tb-sm" onclick="cambiarEstado('<%= ticket.id %>','en_proceso')">✅ Aceptar trabajo</button>
+                        <% } else if (ticket.estado === 'pendiente' && tecnico.ocupado) { %>
+                            <span style="font-size:.72rem;color:var(--text-3)">Completa tu trabajo actual primero</span>
+                        <% } else if (ticket.estado === 'en_proceso' && esMio) { %>
+                            <button class="tb tb-green tb-sm" onclick="cambiarEstado('<%= ticket.id %>','completado')">🏁 Marcar completado</button>
+                            <button class="tb tb-blue tb-sm" data-id="<%= ticket.id %>" data-titulo="<%= ticket.motivo %>" onclick="abrirChatTec(this.dataset.id,this.dataset.titulo)">💬 Chat</button>
+                            <button class="tb tb-danger tb-sm" onclick="cancelarTrabajo('<%= ticket.id %>')">❌ Cancelar</button>
+                        <% } %>
+                        <% if (ticket.foto_url) { %>
+                            <a href="<%= ticket.foto_url %>" target="_blank" class="tb tb-ghost tb-sm">📸 Foto</a>
+                        <% } %>
+                    </div>
                 </div>
-                <div class="fw-600 text-small mb-1">
-                    <%= c.companias ? c.companias.nombre_empresa !== 'Individual' ? c.companias.nombre_empresa : c.companias.nombre_contacto : 'Cliente' %>
-                </div>
-                <% if (c.comentario) { %>
-                    <div class="text-small text-muted" style="font-style:italic">"<%= c.comentario %>"</div>
-                <% } %>
             </div>
             <% }); %>
         </div>
         <% } %>
+    </section>
 
-
-
-        <!-- ── Earnings & Rating ── -->
-        <div class="section-header mb-3 mt-4">
-            <h2>💰 <span data-i18n="tech.earnings">Mis Ganancias</span></h2>
+    <!-- Calificaciones -->
+    <section id="calificaciones">
+        <div class="tec-head">
+            <h2>Mis Calificaciones (<%= totalCalif %>)</h2>
         </div>
-
-        <div class="stats-grid mb-4" id="earningsGrid">
-            <div class="stat-card">
-                <div class="stat-icon">🔧</div>
-                <div class="stat-label">Trabajos completados</div>
-                <div class="stat-value" id="totalTrabajos"><%= fees ? fees.totalTrabajos : 0 %></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">💵</div>
-                <div class="stat-label">Fee pendiente</div>
-                <div class="stat-value" id="feePendiente">$<%= fees ? fees.feePendiente.toFixed(2) : '0.00' %></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">✅</div>
-                <div class="stat-label">Fee cobrado</div>
-                <div class="stat-value" id="feeCobrado">$<%= fees ? fees.feeCobrado.toFixed(2) : '0.00' %></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">⭐</div>
-                <div class="stat-label">Mi rating</div>
-                <div class="stat-value"><%= promedio ? promedio + ' ★' : 'Sin rating' %></div>
-            </div>
-        </div>
-
-        <!-- Próximo fee info -->
-        <% if (fees && fees.primerTrabajo) { %>
-        <div style="background:var(--green-soft);border:1px solid var(--green);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;font-size:.875rem;color:var(--green);font-weight:500">
-            🎁 Tu primer trabajo es <strong>gratuito</strong> — no se cobra fee. ¡Completa tu primer ticket para empezar!
+        <% if (calificaciones.length === 0) { %>
+        <div class="tec-empty">
+            <div style="font-size:2rem;opacity:.4;margin-bottom:.75rem">⭐</div>
+            <p style="font-size:.875rem">Aún no tienes calificaciones.</p>
         </div>
         <% } else { %>
-        <div style="background:var(--accent-soft);border:1px solid var(--accent);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;font-size:.875rem;color:var(--accent)">
-            💡 Se cobra <strong>$4.50</strong> por cada trabajo completado. El fee se acumula y PropertyPulse lo cobra mensualmente.
+        <div style="display:flex;flex-direction:column;gap:.5rem">
+            <% calificaciones.slice(0,6).forEach(function(c) { %>
+            <div class="tec-review">
+                <div class="tec-review-stars">
+                    <%= '★'.repeat(c.estrellas) %><%= '☆'.repeat(5 - c.estrellas) %>
+                    <strong style="color:var(--text-1);font-size:.82rem;margin-left:.3rem"><%= c.estrellas %>/5</strong>
+                </div>
+                <% if (c.comentario) { %><div class="tec-review-text">"<%= c.comentario %>"</div><% } %>
+                <div class="tec-review-meta">
+                    <%= c.companias ? (c.companias.nombre_empresa !== 'Individual' ? c.companias.nombre_empresa : c.companias.nombre_contacto) : '—' %>
+                    · <%= new Date(c.created_at).toLocaleDateString() %>
+                </div>
+            </div>
+            <% }); %>
         </div>
         <% } %>
+    </section>
 
-        <!-- Ranking -->
-        <div class="section-header mb-3">
-            <h2>🏆 Mi posición en el ranking</h2>
-            <button class="btn btn-secondary btn-sm" onclick="cargarRanking()">Actualizar</button>
+</main>
+
+<!-- Aside -->
+<aside class="tec-side">
+
+    <!-- Earnings -->
+    <div class="tec-widget">
+        <div class="tec-widget-lbl">Mis Ganancias</div>
+        <div class="tec-earn-row">
+            <span class="tec-earn-label">Total trabajos</span>
+            <span class="tec-earn-value"><%= fees.totalTrabajos %></span>
         </div>
-        <div id="rankingContainer" class="card mb-4">
-            <p class="text-muted text-small" style="text-align:center;padding:1rem">Cargando ranking...</p>
+        <div class="tec-earn-row">
+            <span class="tec-earn-label">Fee pendiente</span>
+            <span class="tec-earn-value" style="color:var(--accent)">$<%= fees.feePendiente.toFixed(2) %></span>
         </div>
-
-        <!-- ── Perfil ── -->
-        <div class="section-header mb-3 mt-4" id="perfil">
-            <h2>👤 <span data-i18n="profile.title">Mi Perfil</span></h2>
+        <div class="tec-earn-row">
+            <span class="tec-earn-label">Fee cobrado</span>
+            <span class="tec-earn-value" style="color:var(--green)">$<%= fees.feeCobrado.toFixed(2) %></span>
         </div>
-
-        <div class="card" style="max-width:600px">
-            <form id="perfilForm" onsubmit="guardarPerfil(event)">
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label" data-i18n="reg.firstName">Nombre completo</label>
-                        <input type="text" id="p_nombre" name="nombre" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" data-i18n="reg.phone">Teléfono</label>
-                        <input type="text" id="p_telefono" name="telefono" class="form-input" required>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input type="email" id="p_email" name="email" class="form-input" required>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" data-i18n="reg.specialty">Especialidad</label>
-                    <select id="p_especialidad" name="especialidad" class="form-select" required>
-                        <option value="Climatización (HVAC)">❄️ Climatización (HVAC)</option>
-                        <option value="Electricidad">⚡ Electricidad</option>
-                        <option value="Plomería">🔧 Plomería</option>
-                        <option value="Piscina">🏊 Piscina</option>
-                        <option value="Jardinería / Landscaping">🌿 Jardinería / Landscaping</option>
-                        <option value="Irrigation / Sistema de riego">💧 Irrigation / Sistema de riego</option>
-                        <option value="Pest Control">🐛 Pest Control</option>
-                        <option value="Limpieza / Pressure Washing">🧹 Limpieza / Pressure Washing</option>
-                        <option value="Electrodomésticos">🏠 Electrodomésticos</option>
-                        <option value="Estructura / Reparaciones">🏗️ Estructura / Reparaciones</option>
-                        <option value="Seguridad">🔒 Seguridad</option>
-                        <option value="Bajo voltaje / Cámaras">📹 Bajo voltaje / Cámaras</option>
-                        <option value="Handyman">🛠️ Handyman</option>
-                        <option value="General">🔨 Mantenimiento General</option>
-                    </select>
-                </div>
-
-                <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0">
-
-                <p class="text-small text-muted mb-2" data-i18n="profile.passwordHint">
-                    Deja en blanco si no quieres cambiar tu contraseña
-                </p>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label" data-i18n="profile.currentPassword">Contraseña actual</label>
-                        <input type="password" id="p_pass_actual" name="password" class="form-input" placeholder="••••••••">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" data-i18n="profile.newPassword">Nueva contraseña</label>
-                        <input type="password" id="p_pass_nueva" name="nueva_password" class="form-input" placeholder="••••••••">
-                    </div>
-                </div>
-
-                <div id="perfilMsg" style="display:none;margin-bottom:1rem"></div>
-
-                <button type="submit" class="btn btn-primary" id="btnPerfil" data-i18n="profile.save">
-                    Guardar cambios
-                </button>
-
-
-                <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border)">
-                    <p class="text-small text-muted mb-2">Danger zone</p>
-                    <button onclick="eliminarCuenta()" class="btn btn-danger btn-sm">
-                        🗑️ Delete my account
-                    </button>
-                </div>
-            </form>
+        <% if (fees.primerTrabajo) { %>
+        <div style="margin-top:.75rem;background:var(--green-soft);border:1px solid var(--green);border-radius:8px;padding:.6rem .75rem;font-size:.75rem;color:#065f46">
+            🎉 <strong>Tu primer trabajo es gratis</strong> — sin fee por el próximo trabajo
         </div>
+        <% } %>
+        <div style="margin-top:.75rem;font-size:.72rem;color:var(--text-3)">$4.50 por trabajo completado · primer trabajo gratis</div>
+    </div>
 
-    </main>
+    <!-- Ranking -->
+    <div class="tec-widget">
+        <div class="tec-widget-lbl">Ranking de Técnicos</div>
+        <div id="rankingContainer">
+            <div style="text-align:center;color:var(--text-3);font-size:.8rem;padding:1rem">Cargando...</div>
+        </div>
+    </div>
+
+    <!-- Perfil -->
+    <div class="tec-widget" id="perfil">
+        <div class="tec-widget-lbl">Mi Perfil</div>
+        <div class="tec-field"><label>Nombre</label><input type="text" id="p_nombre"></div>
+        <div class="tec-field"><label>Email</label><input type="email" id="p_email"></div>
+        <div class="tec-field"><label>Teléfono</label><input type="text" id="p_telefono"></div>
+        <div class="tec-field">
+            <label>Especialidad</label>
+            <select id="p_especialidad">
+                <option value="Climatización (HVAC)">❄️ Climatización (HVAC)</option>
+                <option value="Electricidad">⚡ Electricidad</option>
+                <option value="Plomería">🔧 Plomería</option>
+                <option value="Piscina">🏊 Piscina</option>
+                <option value="Jardinería / Landscaping">🌿 Jardinería / Landscaping</option>
+                <option value="Irrigation / Sistema de riego">💧 Irrigation / Sistema de riego</option>
+                <option value="Pest Control">🐛 Pest Control</option>
+                <option value="Limpieza / Pressure Washing">🧹 Limpieza / Pressure Washing</option>
+                <option value="Electrodomésticos">🏠 Electrodomésticos</option>
+                <option value="Estructura / Reparaciones">🏗️ Estructura / Reparaciones</option>
+                <option value="Seguridad">🔒 Seguridad</option>
+                <option value="General">🛠️ Mantenimiento General</option>
+            </select>
+        </div>
+        <div id="perfilMsg" style="display:none;font-size:.78rem;padding:.45rem .7rem;border-radius:8px;margin-bottom:.5rem"></div>
+        <button class="tb tb-green tb-full" onclick="guardarPerfil()">Guardar cambios</button>
+        <div class="pp-div"></div>
+        <div class="tec-field"><label>Contraseña actual</label><input type="password" id="p_pass_actual" placeholder="••••••••"></div>
+        <div class="tec-field"><label>Nueva contraseña</label><input type="password" id="p_pass_nueva" placeholder="Min. 6 caracteres"></div>
+        <button class="tb tb-ghost tb-full tb-sm" onclick="cambiarPassword()" style="margin-bottom:.5rem">🔑 Cambiar contraseña</button>
+        <button class="tb tb-danger tb-full tb-sm" onclick="eliminarCuenta()">🗑️ Eliminar mi cuenta</button>
+    </div>
+
+</aside>
+</div>
 </div>
 
-<!-- ── Modal: Cancelar trabajo (técnico) ─────────────────── -->
+<!-- MODALES -->
 <div id="cancelTecModal" class="modal-overlay">
     <div class="modal">
-        <div class="modal-header">
-            <h2>❌ Cancelar trabajo</h2>
-            <button class="modal-close" onclick="cerrarModal('cancelTecModal')">✕</button>
-        </div>
-        <p class="text-muted text-small mb-3">El cliente será notificado y el ticket volverá a estar disponible para otros técnicos.</p>
+        <div class="modal-header"><h2>❌ Cancelar trabajo</h2><button class="modal-close" onclick="document.getElementById('cancelTecModal').classList.remove('open')">✕</button></div>
+        <p class="text-muted mb-3" style="font-size:.875rem">El ticket volverá a estar disponible para otros técnicos. Debes ingresar el motivo.</p>
         <div class="form-group">
-            <label class="form-label">Motivo (opcional)</label>
-            <textarea id="cancelTecMotivo" class="form-textarea" placeholder="¿Por qué cancelas este trabajo?" rows="3"></textarea>
+            <label class="form-label">Motivo de cancelación</label>
+            <textarea id="cancelTecMotivo" class="form-textarea" placeholder="¿Por qué cancelas este trabajo?" rows="3" required></textarea>
         </div>
-        <div style="display:flex;gap:.75rem">
-            <button class="btn btn-secondary" style="flex:1" onclick="cerrarModal('cancelTecModal')">Volver</button>
-            <button class="btn btn-danger" style="flex:1" onclick="confirmarCancelacionTec()">Sí, cancelar</button>
+        <div style="display:flex;gap:.75rem;margin-top:1rem">
+            <button class="btn btn-secondary" style="flex:1" onclick="document.getElementById('cancelTecModal').classList.remove('open')">Volver</button>
+            <button class="btn btn-danger" style="flex:1" onclick="confirmarCancelacionTec()">Confirmar cancelación</button>
         </div>
     </div>
 </div>
 
-<!-- ── Modal: Chat (técnico) ──────────────────────────────── -->
 <div id="chatTecModal" class="modal-overlay">
-    <div class="modal" style="max-width:480px">
+    <div class="modal">
         <div class="modal-header">
-            <h2>💬 Chat — <span id="chatTecTitulo" style="color:var(--accent);font-size:.9rem"></span></h2>
+            <h2>💬 <span id="chatTecTitulo" style="font-size:.9rem;color:var(--green)"></span></h2>
             <button class="modal-close" onclick="cerrarChatTec()">✕</button>
         </div>
-        <div id="chatTecMensajes" style="height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:.6rem;padding:.5rem 0;margin-bottom:1rem">
-            <div style="text-align:center;color:var(--text-3);font-size:.82rem;padding:2rem 0">Cargando mensajes...</div>
+        <div id="chatTecMensajes" class="tec-chat-box"></div>
+        <div class="tec-chat-send">
+            <input type="text" id="chatTecInput" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter'){event.preventDefault();enviarMensajeTec()}">
+            <button class="tb tb-green" onclick="enviarMensajeTec()">Enviar</button>
         </div>
-        <div style="display:flex;gap:.5rem">
-            <input type="text" id="chatTecInput" class="form-input" placeholder="Escribe un mensaje..."
-                onkeydown="if(event.key==='Enter')enviarMensajeTec()" style="flex:1">
-            <button class="btn btn-primary" onclick="enviarMensajeTec()" style="padding:.65rem 1rem">→</button>
-        </div>
-        <p class="text-small text-muted mt-2" style="font-size:.75rem">Mensajes visibles para ti y el cliente. Se borran al cerrar.</p>
     </div>
 </div>
 
 <script>
-    // ── Perfil ────────────────────────────────────────────────
+// MODALES
+function abrirModal(id)  { document.getElementById(id).classList.add('open'); }
+function cerrarModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(el => el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');}));
 
-    async function eliminarCuenta() {
-        const ok = confirm('⚠️ Are you sure? This will permanently delete your account, all properties, and all tickets. This cannot be undone.');
-        if (!ok) return;
-        const ok2 = confirm('Last chance — delete everything?');
-        if (!ok2) return;
-        try {
-            const res = await fetch('/tecnico/cuenta', { method: 'DELETE' });
-            const data = await res.json();
-            if (data.success) window.location.href = '/landing';
-            else alert('Error: ' + data.error);
-        } catch (e) { alert('Connection error'); }
-    }
+// CAMBIAR ESTADO
+async function cambiarEstado(ticketId, nuevoEstado) {
+    try {
+        const res  = await fetch(`/tecnico/tickets/${ticketId}/estado`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({estado:nuevoEstado}) });
+        const data = await res.json();
+        if (data.success) location.reload();
+        else showToast('Error: ' + data.error, 'error');
+    } catch { showToast('Error de conexión','error'); }
+}
 
-    async function cargarPerfil() {
-        try {
-            const res  = await fetch('/tecnico/perfil');
-            const data = await res.json();
-            if (data.success) {
-                document.getElementById('p_nombre').value       = data.perfil.nombre      || '';
-                document.getElementById('p_telefono').value     = data.perfil.telefono    || '';
-                document.getElementById('p_email').value        = data.perfil.email       || '';
-                document.getElementById('p_especialidad').value = data.perfil.especialidad|| '';
-            }
-        } catch (err) { console.error('Error cargando perfil:', err); }
-    }
+// CANCELAR
+let tecTicketACancelar=null;
+function cancelarTrabajo(id){ tecTicketACancelar=id; document.getElementById('cancelTecMotivo').value=''; abrirModal('cancelTecModal'); }
+async function confirmarCancelacionTec(){
+    if(!tecTicketACancelar)return;
+    const motivo=document.getElementById('cancelTecMotivo').value;
+    if(!motivo?.trim()) return showToast('Debes ingresar un motivo','error');
+    try{ const res=await fetch(`/tecnico/tickets/${tecTicketACancelar}/cancelar`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({motivo})}); const data=await res.json(); if(data.success){cerrarModal('cancelTecModal');showToast('❌ Trabajo cancelado');setTimeout(()=>location.reload(),800);}else showToast('Error: '+data.error,'error'); }catch{showToast('Error de conexión','error');}
+    tecTicketACancelar=null;
+}
 
-    async function guardarPerfil(e) {
-        e.preventDefault();
-        const btn = document.getElementById('btnPerfil');
-        const passActual = document.getElementById('p_pass_actual').value;
-        const passNueva  = document.getElementById('p_pass_nueva').value;
+// CHAT
+let chatTecId=null, chatTecInt=null;
+function abrirChatTec(id,titulo){ chatTecId=id; document.getElementById('chatTecTitulo').textContent=titulo; document.getElementById('chatTecMensajes').innerHTML='<div style="text-align:center;color:var(--text-3);font-size:.8rem;padding:1.5rem">Cargando...</div>'; document.getElementById('chatTecInput').value=''; abrirModal('chatTecModal'); cargarMensajesTec(); chatTecInt=setInterval(cargarMensajesTec,5000); }
+function cerrarChatTec(){ clearInterval(chatTecInt);chatTecInt=null;cerrarModal('chatTecModal');chatTecId=null; }
+async function cargarMensajesTec(){
+    if(!chatTecId)return;
+    try{ const res=await fetch(`/tecnico/tickets/${chatTecId}/mensajes`); const data=await res.json(); const box=document.getElementById('chatTecMensajes');
+    box.innerHTML=(data.mensajes||[]).map(m=>`<div class="tec-chat-msg ${m.autor_rol==='tecnico'?'me':'other'}"><div class="who">${m.autor_nombre} · ${new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>${m.mensaje}</div>`).join('')||'<div style="text-align:center;color:var(--text-3);font-size:.8rem;padding:1.5rem">Sin mensajes aún</div>';
+    box.scrollTop=box.scrollHeight; }catch{}
+}
+async function enviarMensajeTec(){ const i=document.getElementById('chatTecInput'),m=i.value.trim(); if(!m||!chatTecId)return; i.value=''; try{await fetch(`/tecnico/tickets/${chatTecId}/mensajes`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mensaje:m})});cargarMensajesTec();}catch{} }
 
-        if (passNueva && !passActual) {
-            mostrarMsg('error', 'Debes ingresar tu contraseña actual para cambiarla');
-            return;
-        }
+// RANKING
+async function cargarRanking(){
+    try{const res=await fetch('/tecnico/ranking');const data=await res.json();if(!data.success)return;
+    const c=document.getElementById('rankingContainer'),miId=document.body.getAttribute('data-user-id');
+    if(!data.ranking?.length){c.innerHTML='<p style="text-align:center;color:var(--text-3);font-size:.8rem;padding:1rem">No hay datos aún.</p>';return;}
+    c.innerHTML=`<p style="font-size:.75rem;color:var(--text-3);margin-bottom:.75rem">Tu posición: <strong style="color:var(--text-1)">#${data.miPosicion}</strong> de ${data.ranking.length}</p><div style="display:flex;flex-direction:column;gap:.35rem">${data.ranking.slice(0,5).map((t,i)=>`<div style="display:flex;align-items:center;gap:.6rem;padding:.5rem .65rem;border-radius:8px;background:${t.id===miId?'var(--green-soft)':'var(--surface-2)'}"><span style="font-size:.9rem;width:20px;text-align:center">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</span><span style="font-size:.8rem;font-weight:${t.id===miId?'700':'400'};flex:1;color:${t.id===miId?'var(--green)':'var(--text-1)'}">${t.nombre}</span><span style="font-size:.8rem;color:var(--yellow);font-weight:600">${t.promedio.toFixed(1)}★</span></div>`).join('')}</div>`;}catch{document.getElementById('rankingContainer').innerHTML='<p style="text-align:center;color:var(--text-3);font-size:.8rem;padding:1rem">Error cargando.</p>';}
+}
 
-        btn.disabled = true; btn.textContent = 'Enviando...';
+// PERFIL
+async function cargarPerfil(){ try{const res=await fetch('/tecnico/perfil');const data=await res.json();if(data.success){document.getElementById('p_nombre').value=data.perfil.nombre||'';document.getElementById('p_email').value=data.perfil.email||'';document.getElementById('p_telefono').value=data.perfil.telefono||'';document.getElementById('p_especialidad').value=data.perfil.especialidad||'';}}catch{} }
 
-        try {
-            const body = {
-                nombre:       document.getElementById('p_nombre').value,
-                email:        document.getElementById('p_email').value,
-                telefono:     document.getElementById('p_telefono').value,
-                especialidad: document.getElementById('p_especialidad').value,
-            };
-            if (passNueva) { body.password = passActual; body.nueva_password = passNueva; }
+function mostrarMsgPerfil(tipo,texto){ const m=document.getElementById('perfilMsg'); m.style.display='block'; m.style.background=tipo==='success'?'var(--green-soft)':'var(--red-soft)'; m.style.color=tipo==='success'?'var(--green)':'var(--red)'; m.textContent=texto; setTimeout(()=>{m.style.display='none';},3500); }
 
-            const res  = await fetch('/tecnico/perfil', {
-                method:  'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify(body)
-            });
-            const data = await res.json();
+async function guardarPerfil(){
+    try{
+        const body={nombre:document.getElementById('p_nombre').value,email:document.getElementById('p_email').value,telefono:document.getElementById('p_telefono').value,especialidad:document.getElementById('p_especialidad').value};
+        const res=await fetch('/tecnico/perfil',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+        const data=await res.json();
+        if(data.success)mostrarMsgPerfil('success','✅ Perfil actualizado');
+        else mostrarMsgPerfil('error',data.error||'Error');
+    }catch{mostrarMsgPerfil('error','Error de conexión');}
+}
 
-            if (data.success) {
-                showToast('✅ Perfil actualizado' || '✅ Perfil actualizado');
-                document.getElementById('p_pass_actual').value = '';
-                document.getElementById('p_pass_nueva').value  = '';
-            } else {
-                mostrarMsg('error', data.error);
-            }
-        } catch (err) { mostrarMsg('error', 'Error de conexión'); }
-        finally { btn.disabled = false; btn.textContent = 'Guardar cambios'; }
-    }
+async function cambiarPassword(){
+    const a=document.getElementById('p_pass_actual').value,n=document.getElementById('p_pass_nueva').value;
+    if(!a||!n)return showToast('Completa ambos campos','error');
+    if(n.length<6)return showToast('Mínimo 6 caracteres','error');
+    try{
+        const body={nombre:document.getElementById('p_nombre').value,email:document.getElementById('p_email').value,telefono:document.getElementById('p_telefono').value,especialidad:document.getElementById('p_especialidad').value,password:a,nueva_password:n};
+        const res=await fetch('/tecnico/perfil',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+        const data=await res.json();
+        if(data.success){showToast('✅ Contraseña actualizada');document.getElementById('p_pass_actual').value='';document.getElementById('p_pass_nueva').value='';}
+        else showToast(data.error,'error');
+    }catch{showToast('Error','error');}
+}
 
-    function mostrarMsg(tipo, texto) {
-        const msg = document.getElementById('perfilMsg');
-        msg.style.cssText = `display:block;padding:.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1rem;font-size:.875rem;font-weight:500;${
-            tipo === 'success'
-            ? 'background:var(--green-soft);color:var(--green);border-left:3px solid var(--green)'
-            : 'background:var(--red-soft);color:var(--red);border-left:3px solid var(--red)'
-        }`;
-        msg.textContent = texto;
-        setTimeout(() => { msg.style.display = 'none'; }, 4000);
-    }
+async function eliminarCuenta(){
+    if(!confirm('¿Eliminar tu cuenta? Esta acción es irreversible.'))return;
+    if(!confirm('¿Estás seguro? Se borrarán todos tus datos.'))return;
+    try{const res=await fetch('/tecnico/cuenta',{method:'DELETE'});const data=await res.json();if(data.success)window.location.href='/landing';}catch{showToast('Error','error');}
+}
 
-    function scrollToPerfil() {
-        document.getElementById('perfil').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    cargarPerfil();
-
-    // ── Cancelar trabajo (técnico) ────────────────────────────
-    let tecTicketACancelar = null;
-
-    function cancelarTrabajo(id) {
-        tecTicketACancelar = id;
-        document.getElementById('cancelTecMotivo').value = '';
-        document.getElementById('cancelTecModal').classList.add('open');
-    }
-
-    async function confirmarCancelacionTec() {
-        if (!tecTicketACancelar) return;
-        const motivo = document.getElementById('cancelTecMotivo').value;
-        try {
-            const res  = await fetch(`/tecnico/tickets/${tecTicketACancelar}/cancelar`, {
-                method:  'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({ motivo })
-            });
-            const data = await res.json();
-            if (data.success) {
-                document.getElementById('cancelTecModal').classList.remove('open');
-                showToast('❌ Trabajo cancelado');
-                setTimeout(() => location.reload(), 1000);
-            } else {
-                showToast('Error: ' + data.error);
-            }
-        } catch (e) { showToast('Error de conexión'); }
-    }
-
-    // ── Chat (técnico) ────────────────────────────────────────
-    let chatTecTicketId  = null;
-    let chatTecPollTimer = null;
-
-    function abrirChatTec(ticketId, titulo) {
-        chatTecTicketId = ticketId;
-        document.getElementById('chatTecTitulo').textContent = titulo;
-        document.getElementById('chatTecMensajes').innerHTML =
-            '<div style="text-align:center;color:var(--text-3);font-size:.82rem;padding:2rem 0">Cargando...</div>';
-        document.getElementById('chatTecModal').classList.add('open');
-        cargarMensajesTec();
-        chatTecPollTimer = setInterval(cargarMensajesTec, 5000);
-    }
-
-    function cerrarChatTec() {
-        document.getElementById('chatTecModal').classList.remove('open');
-        clearInterval(chatTecPollTimer);
-        chatTecTicketId = null;
-    }
-
-    async function cargarMensajesTec() {
-        if (!chatTecTicketId) return;
-        try {
-            const res  = await fetch(`/tecnico/tickets/${chatTecTicketId}/mensajes`);
-            const data = await res.json();
-            const box  = document.getElementById('chatTecMensajes');
-            if (!data.mensajes?.length) {
-                box.innerHTML = '<div style="text-align:center;color:var(--text-3);font-size:.82rem;padding:2rem 0">No hay mensajes aún.</div>';
-                return;
-            }
-            box.innerHTML = data.mensajes.map(m => {
-                const esTec = m.autor_rol === 'tecnico';
-                return `<div style="display:flex;flex-direction:column;align-items:${esTec ? 'flex-end' : 'flex-start'}">
-                    <div style="max-width:75%;background:${esTec ? 'var(--accent)' : 'var(--surface-2)'};color:${esTec ? '#fff' : 'var(--text-1)'};padding:.55rem .9rem;border-radius:${esTec ? '14px 14px 4px 14px' : '14px 14px 14px 4px'};font-size:.875rem;line-height:1.5">${m.mensaje}</div>
-                    <div style="font-size:.68rem;color:var(--text-3);margin-top:.2rem">${m.autor_nombre} · ${new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>
-                </div>`;
-            }).join('');
-            box.scrollTop = box.scrollHeight;
-        } catch (e) {}
-    }
-
-    async function enviarMensajeTec() {
-        const input   = document.getElementById('chatTecInput');
-        const mensaje = input.value.trim();
-        if (!mensaje || !chatTecTicketId) return;
-        input.value = '';
-        try {
-            await fetch(`/tecnico/tickets/${chatTecTicketId}/mensajes`, {
-                method:  'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({ mensaje })
-            });
-            cargarMensajesTec();
-        } catch (e) {}
-    }
-
-
-    // ── Earnings & Ranking ───────────────────────────────────
-    async function cargarRanking() {
-        try {
-            const res  = await fetch('/tecnico/ranking');
-            const data = await res.json();
-            if (!data.success) return;
-
-            const container = document.getElementById('rankingContainer');
-            const miId = document.body.getAttribute('data-user-id');
-
-            if (!data.ranking?.length) {
-                container.innerHTML = '<p class="text-muted text-small" style="text-align:center;padding:1rem">No hay datos de ranking aún.</p>';
-                return;
-            }
-
-            container.innerHTML = `
-                <p class="text-small text-muted mb-2">Tu posición: <strong>#${data.miPosicion}</strong> de ${data.ranking.length} técnicos</p>
-                <div style="display:flex;flex-direction:column;gap:.4rem">
-                    ${data.ranking.slice(0, 5).map((t, i) => `
-                        <div style="display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:8px;background:${t.id === miId ? 'var(--accent-soft)' : 'var(--surface-2)'}">
-                            <span style="font-size:1rem;width:24px;text-align:center">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i+1)}</span>
-                            <span style="font-size:.875rem;font-weight:${t.id === miId ? '700' : '400'};flex:1;color:${t.id === miId ? 'var(--accent)' : 'var(--text-1)'}">${t.nombre}</span>
-                            <span style="font-size:.8rem;color:var(--text-2)">${t.especialidad}</span>
-                            <span style="font-size:.85rem;font-weight:600;color:#f59e0b">${t.promedio.toFixed(1)} ★</span>
-                            <span style="font-size:.75rem;color:var(--text-3)">(${t.totalCalif} reseñas)</span>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        } catch (e) {
-            document.getElementById('rankingContainer').innerHTML =
-                '<p class="text-muted text-small" style="text-align:center;padding:1rem">Error cargando ranking.</p>';
-        }
-    }
-
-    cargarRanking();
-
-    // Actualizar earnings cuando se completa un ticket
-    const originalCambiarEstado = window.cambiarEstado;
-
-    async function cambiarEstado(ticketId, nuevoEstado) {
-        try {
-            const res  = await fetch(`/tecnico/tickets/${ticketId}/estado`, {
-                method:  'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({ estado: nuevoEstado })
-            });
-            const data = await res.json();
-            if (data.success) location.reload();
-            else alert('Error: ' + data.error);
-        } catch (err) {
-            alert('Error de conexión');
-        }
-    }
+cargarPerfil();
+cargarRanking();
 </script>
 
 <script src="/js/notifications.js"></script>

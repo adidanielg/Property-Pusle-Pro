@@ -1,127 +1,243 @@
 <%- include('../layouts/mainLayout.html') %>
 
-<div class="dashboard-layout">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
 
-    <aside class="sidebar" style="background:#0d0f14;border-color:#1a1d2e">
-        <div class="sidebar-logo">
-            <div class="logo-mark" style="background:#3b82f6">🛡️</div>
-            <div class="logo-text" style="color:#fff">Property<span>Pulse</span></div>
-        </div>
-        <nav class="sidebar-nav">
-            <div class="nav-section" style="color:#5c6370" data-i18n="nav.dashboard">Panel</div>
-            <a class="nav-item active" href="/admin/dashboard" style="color:#e2e8f0">
-                <span class="icon">📊</span> <span data-i18n="admin.title">Centro de Control</span>
-            </a>
-        </nav>
-        <div class="sidebar-footer" style="border-color:#1a1d2e">
-            <div class="user-pill">
-                <div class="avatar" style="background:#1e3a5f;color:#3b82f6">A</div>
-                <div class="user-info">
-                    <div class="name" style="color:#e2e8f0">Administrador</div>
-                    <div class="role">Admin</div>
-                </div>
-            </div>
-            <a href="/auth/logout" class="nav-item" style="color:#ef4444">
-                <span class="icon">🚪</span> <span data-i18n="nav.logout">Cerrar sesión</span>
-            </a>
-        </div>
-    </aside>
+.adm-dash * { font-family: 'Outfit', system-ui, sans-serif; }
+.adm-mono   { font-family: 'JetBrains Mono', monospace !important; }
 
-    <main class="main-content" id="adminMain" data-total-tickets="<%= totalTickets %>" data-page-size="<%= pageSize %>">
+/* Topbar */
+.adm-topbar {
+    position: sticky; top: 0; z-index: 200;
+    height: 54px; display: flex; align-items: center;
+    padding: 0 1.5rem; gap: 1rem;
+    background: #0d0f14; border-bottom: 1px solid #1a1d2e;
+}
+.adm-logo {
+    display: flex; align-items: center; gap: .5rem;
+    font-weight: 800; font-size: 1rem; letter-spacing: -.4px;
+    color: #e2e8f0; text-decoration: none; flex-shrink: 0;
+}
+.adm-logo span { color: #3b82f6; }
+.adm-logo-role {
+    font-size: .62rem; font-weight: 700;
+    background: rgba(59,130,246,.15); color: #3b82f6;
+    padding: .15rem .5rem; border-radius: 99px;
+    text-transform: uppercase; letter-spacing: .08em;
+}
+.adm-nav { display: flex; align-items: center; gap: .15rem; flex: 1; overflow-x: auto; }
+.adm-nav a {
+    display: flex; align-items: center; gap: .4rem;
+    padding: .38rem .7rem; border-radius: 7px;
+    font-size: .82rem; font-weight: 500;
+    color: #8892a4; text-decoration: none;
+    white-space: nowrap; transition: all .15s;
+}
+.adm-nav a:hover  { background: #1a1d2e; color: #e2e8f0; }
+.adm-nav a.active { background: rgba(59,130,246,.15); color: #3b82f6; font-weight: 600; }
+.adm-logout { font-size:.78rem; color:#4a5568; text-decoration:none; padding:.3rem .6rem; border-radius:6px; margin-left:auto; flex-shrink:0; transition:all .15s; }
+.adm-logout:hover { color:#ef4444; background:rgba(239,68,68,.1); }
 
-        <div class="page-header">
-            <h1 data-i18n="admin.title">Centro de Control</h1>
-            <p data-i18n="admin.subtitle">Métricas globales, gestión de clientes y técnicos.</p>
-        </div>
+/* Body */
+.adm-body { max-width:1280px; width:100%; margin:0 auto; padding:1.75rem 1.5rem; display:flex; flex-direction:column; gap:2rem; }
 
-        <!-- Stats -->
-        <div class="stats-grid">
-            <div class="stat-card" style="border-left:3px solid var(--accent)">
-                <div class="stat-icon">👥</div>
-                <div class="stat-label" data-i18n="admin.clients">Total Clientes</div>
-                <div class="stat-value"><%= metricas.totalClientes %></div>
-            </div>
-            <div class="stat-card" style="border-left:3px solid #3b82f6">
-                <div class="stat-icon">🔧</div>
-                <div class="stat-label" data-i18n="admin.technicians">Técnicos</div>
-                <div class="stat-value"><%= metricas.totalTecnicos %></div>
-            </div>
-            <div class="stat-card" style="border-left:3px solid var(--yellow)">
-                <div class="stat-icon">⏳</div>
-                <div class="stat-label" data-i18n="admin.openTickets">Tickets Abiertos</div>
-                <div class="stat-value"><%= metricas.ticketsAbiertos %></div>
-            </div>
-            <div class="stat-card" style="border-left:3px solid var(--green)">
-                <div class="stat-icon">✅</div>
-                <div class="stat-label" data-i18n="admin.resolved">Tickets Resueltos</div>
-                <div class="stat-value"><%= metricas.ticketsResueltos %></div>
-            </div>
-        </div>
+/* Stats */
+.adm-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:.75rem; }
+.adm-stat {
+    background: #141720; border: 1px solid #1e2235;
+    border-radius: 14px; padding: 1.1rem 1.2rem;
+    position: relative; overflow: hidden;
+    transition: transform .15s, box-shadow .15s;
+}
+.adm-stat:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+.adm-stat-stripe { position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0; }
+.adm-stat-icon { font-size:1.1rem; opacity:.6; margin-bottom:.45rem; }
+.adm-stat-num  { font-size:2.4rem; font-weight:800; letter-spacing:-2.5px; line-height:1; color:#e2e8f0; margin-bottom:.2rem; }
+.adm-stat-lbl  { font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#4a5568; }
 
-        <!-- Técnicos -->
-        <div class="section-header mb-3 mt-4">
-            <h2>🔧 <span data-i18n="admin.technicians">Técnicos</span> <span class="text-muted text-small">(<%= tecnicos.length %>)</span></h2>
+/* Section */
+.adm-section { background:#141720; border:1px solid #1e2235; border-radius:16px; overflow:hidden; }
+.adm-section-head {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:1.1rem 1.25rem; border-bottom:1px solid #1e2235;
+}
+.adm-section-head h2 { font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:#4a5568; }
+
+/* Table */
+.adm-table-wrap { overflow-x:auto; }
+.adm-table { width:100%; border-collapse:collapse; font-size:.83rem; }
+.adm-table thead { background:#0d0f14; }
+.adm-table th { padding:.75rem 1rem; text-align:left; font-size:.67rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#4a5568; border-bottom:1px solid #1e2235; white-space:nowrap; }
+.adm-table td { padding:.85rem 1rem; border-bottom:1px solid #1a1d2e; color:#c9d1e0; vertical-align:middle; }
+.adm-table tr:last-child td { border-bottom:none; }
+.adm-table tbody tr:hover td { background:#1a1d2e; }
+
+/* Badges */
+.adm-badge { display:inline-flex; align-items:center; gap:.3rem; padding:.2rem .6rem; border-radius:99px; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+.adm-badge::before { content:''; width:5px; height:5px; border-radius:50%; background:currentColor; }
+.adm-b-pendiente  { background:rgba(245,158,11,.15); color:#f59e0b; }
+.adm-b-en_proceso { background:rgba(59,130,246,.15);  color:#60a5fa; }
+.adm-b-completado { background:rgba(16,185,129,.15);  color:#34d399; }
+.adm-b-cancelado  { background:rgba(239,68,68,.15);   color:#f87171; }
+.adm-b-active   { background:rgba(16,185,129,.15); color:#34d399; }
+.adm-b-inactive { background:rgba(245,158,11,.15); color:#f59e0b; }
+.adm-b-libre    { background:rgba(16,185,129,.15); color:#34d399; }
+.adm-b-ocupado  { background:rgba(245,158,11,.15); color:#f59e0b; }
+.adm-b-cat      { background:rgba(124,116,255,.15);color:#a78bfa; }
+
+/* Btns */
+.ab { display:inline-flex; align-items:center; justify-content:center; gap:.3rem; padding:.3rem .7rem; border-radius:7px; font-size:.75rem; font-weight:600; border:none; cursor:pointer; transition:all .15s; white-space:nowrap; font-family:'Outfit',sans-serif; }
+.ab-blue   { background:rgba(59,130,246,.15); color:#60a5fa; }
+.ab-blue:hover   { background:rgba(59,130,246,.25); }
+.ab-red    { background:rgba(239,68,68,.12);  color:#f87171; }
+.ab-red:hover    { background:rgba(239,68,68,.22); }
+.ab-ghost  { background:#1a1d2e; color:#8892a4; border:1px solid #252836; }
+.ab-ghost:hover  { border-color:#3b82f6; color:#60a5fa; }
+.ab-green  { background:rgba(16,185,129,.15); color:#34d399; }
+.ab-green:hover  { background:rgba(16,185,129,.25); }
+.ab-full   { width:100%; }
+.ab-sm     { padding:.22rem .5rem; font-size:.7rem; }
+
+/* Filters */
+.adm-filters { display:flex; gap:.5rem; flex-wrap:wrap; align-items:center; }
+.adm-select, .adm-input {
+    padding:.35rem .7rem; border-radius:7px; font-size:.78rem;
+    background:#0d0f14; border:1px solid #252836; color:#c9d1e0;
+    font-family:'Outfit',sans-serif; outline:none; transition:border-color .15s;
+}
+.adm-select:focus, .adm-input:focus { border-color:#3b82f6; }
+.adm-input { width:160px; }
+
+/* Paginación */
+.adm-pagination { display:flex; align-items:center; justify-content:space-between; padding:.85rem 1.25rem; border-top:1px solid #1e2235; }
+.adm-pag-info { font-size:.75rem; color:#4a5568; }
+.adm-pag-btns { display:flex; gap:.4rem; align-items:center; }
+.adm-pag-page { font-size:.78rem; color:#8892a4; padding:0 .5rem; font-family:'JetBrains Mono',monospace; }
+
+/* Empty */
+.adm-empty { text-align:center; padding:2.5rem; color:#4a5568; font-size:.875rem; }
+
+/* Fees */
+.adm-fee-row { display:flex; align-items:center; gap:.75rem; padding:.7rem 1rem; border-bottom:1px solid #1a1d2e; }
+.adm-fee-row:last-child { border-bottom:none; }
+.adm-fee-name  { font-size:.875rem; font-weight:600; color:#c9d1e0; flex:1; }
+.adm-fee-spec  { font-size:.75rem; color:#4a5568; }
+.adm-fee-val   { font-size:.88rem; font-weight:700; font-family:'JetBrains Mono',monospace; }
+.adm-fee-pending { color:#7c74ff; }
+.adm-fee-done    { color:#34d399; }
+
+/* Modal override para dark */
+.adm-modal { background:#141720; border:1px solid #252836; border-radius:20px; padding:2rem; width:100%; max-width:520px; box-shadow:0 20px 60px rgba(0,0,0,.6); animation:modalIn .2s cubic-bezier(.34,1.56,.64,1); }
+.adm-modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; }
+.adm-modal-header h2 { font-size:1.05rem; font-weight:700; color:#e2e8f0; }
+.adm-modal-close { background:none; border:none; cursor:pointer; font-size:1.2rem; color:#4a5568; transition:color .15s; }
+.adm-modal-close:hover { color:#e2e8f0; }
+.adm-form-label { display:block; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:#4a5568; margin-bottom:.25rem; }
+.adm-form-input, .adm-form-select {
+    width:100%; padding:.5rem .75rem; background:#0d0f14; border:1px solid #252836;
+    border-radius:8px; color:#c9d1e0; font-size:.85rem; font-family:'Outfit',sans-serif; outline:none; transition:border-color .15s;
+}
+.adm-form-input:focus, .adm-form-select:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.12); }
+.adm-form-row { display:flex; gap:.75rem; }
+.adm-form-row > div { flex:1; }
+.adm-form-group { margin-bottom:.9rem; }
+
+@media (max-width:960px) { .adm-stats { grid-template-columns:1fr 1fr; } }
+@media (max-width:560px) { .adm-nav { display:none; } .adm-stats { grid-template-columns:1fr 1fr; } }
+</style>
+
+<div class="adm-dash">
+
+<!-- Topbar -->
+<header class="adm-topbar">
+    <a href="/admin/dashboard" class="adm-logo">🛡️ Property<span>Pulse</span> <span class="adm-logo-role">Admin</span></a>
+    <nav class="adm-nav">
+        <a href="#tecnicos"    class="active">🔧 Técnicos</a>
+        <a href="#clientes">👥 Clientes</a>
+        <a href="#tickets">🎫 Tickets</a>
+        <a href="#cancelaciones">❌ Cancelaciones</a>
+        <a href="#fees">💰 Fees</a>
+    </nav>
+    <a href="/auth/logout" class="adm-logout">Salir →</a>
+</header>
+
+<div class="adm-body">
+
+    <!-- Stats -->
+    <div class="adm-stats">
+        <div class="adm-stat">
+            <div class="adm-stat-stripe" style="background:#7c74ff"></div>
+            <div class="adm-stat-icon">👥</div>
+            <div class="adm-stat-num"><%= metricas.totalClientes %></div>
+            <div class="adm-stat-lbl">Clientes</div>
         </div>
-        <div class="table-wrapper mb-4">
-            <table>
-                <thead>
-                    <tr>
-                        <th data-i18n="admin.col.name">Nombre</th>
-                        <th data-i18n="admin.col.specialty">Especialidad</th>
-                        <th>Email</th>
-                        <th data-i18n="admin.col.phone">Teléfono</th>
-                        <th data-i18n="admin.col.rating">Calificación</th>
-                        <th data-i18n="admin.col.status">Estado</th>
-                        <th>Disponibilidad</th>
-                        <th data-i18n="admin.col.actions">Acciones</th>
-                    </tr>
-                </thead>
+        <div class="adm-stat">
+            <div class="adm-stat-stripe" style="background:#3b82f6"></div>
+            <div class="adm-stat-icon">🔧</div>
+            <div class="adm-stat-num"><%= metricas.totalTecnicos %></div>
+            <div class="adm-stat-lbl">Técnicos</div>
+        </div>
+        <div class="adm-stat">
+            <div class="adm-stat-stripe" style="background:#f59e0b"></div>
+            <div class="adm-stat-icon">⏳</div>
+            <div class="adm-stat-num"><%= metricas.ticketsAbiertos %></div>
+            <div class="adm-stat-lbl">Tickets abiertos</div>
+        </div>
+        <div class="adm-stat">
+            <div class="adm-stat-stripe" style="background:#10b981"></div>
+            <div class="adm-stat-icon">✅</div>
+            <div class="adm-stat-num"><%= metricas.ticketsResueltos %></div>
+            <div class="adm-stat-lbl">Resueltos</div>
+        </div>
+    </div>
+
+    <!-- Técnicos -->
+    <div class="adm-section" id="tecnicos">
+        <div class="adm-section-head">
+            <h2>🔧 Técnicos (<%= tecnicos.length %>)</h2>
+        </div>
+        <div class="adm-table-wrap">
+            <table class="adm-table">
+                <thead><tr>
+                    <th>Nombre</th><th>Especialidad</th><th>Email</th>
+                    <th>Calificación</th><th>Estado</th><th>Disponibilidad</th><th>Acciones</th>
+                </tr></thead>
                 <tbody>
                     <% if (tecnicos.length === 0) { %>
-                        <tr><td colspan="7" style="text-align:center;color:var(--text-2);padding:1.5rem" data-i18n="admin.noTecnicos">No hay técnicos registrados.</td></tr>
+                    <tr><td colspan="7" class="adm-empty">No hay técnicos registrados.</td></tr>
                     <% } %>
                     <% tecnicos.forEach(function(t) { %>
                     <tr>
-                        <td class="fw-600"><%= t.nombre %></td>
-                        <td><span class="badge" style="background:var(--accent-soft);color:var(--accent)"><%= t.especialidad %></span></td>
-                        <td class="text-muted text-small"><%= t.email %></td>
-                        <td class="text-muted text-small"><%= t.telefono %></td>
+                        <td style="font-weight:600;color:#e2e8f0"><%= t.nombre %></td>
+                        <td><span class="adm-badge adm-b-cat"><%= t.especialidad %></span></td>
+                        <td class="adm-mono" style="font-size:.75rem;color:#8892a4"><%= t.email %></td>
                         <td>
                             <% if (t.promedio) { %>
                                 <span style="color:#f59e0b;font-weight:700"><%= t.promedio %> ★</span>
-                                <span class="text-small text-muted">(<%= t.totalCalif %>)</span>
+                                <span style="font-size:.72rem;color:#4a5568">(<%= t.totalCalif %>)</span>
                             <% } else { %>
-                                <span class="text-muted text-small" data-i18n="admin.noReviews">Sin reseñas</span>
+                                <span style="color:#4a5568;font-size:.75rem">Sin reseñas</span>
                             <% } %>
                         </td>
                         <td>
-                            <% if (t.activo) { %>
-                                <span class="badge badge-completado" data-i18n="admin.active">Activo</span>
-                            <% } else { %>
-                                <span class="badge badge-pendiente" data-i18n="admin.inactive">Inactivo</span>
-                            <% } %>
+                            <span class="adm-badge <%= t.activo ? 'adm-b-active' : 'adm-b-inactive' %>">
+                                <%= t.activo ? 'Activo' : 'Inactivo' %>
+                            </span>
                         </td>
                         <td>
-                            <% if (t.ocupado) { %>
-                                <span class="badge" style="background:var(--yellow-soft);color:#92400e">🔨 Ocupado</span>
-                            <% } else { %>
-                                <span class="badge badge-completado">✅ Libre</span>
-                            <% } %>
+                            <span class="adm-badge <%= t.ocupado ? 'adm-b-ocupado' : 'adm-b-libre' %>">
+                                <%= t.ocupado ? '🔨 Ocupado' : '✅ Libre' %>
+                            </span>
                         </td>
                         <td>
-                            <div class="flex gap-1">
-                                <button class="btn btn-secondary btn-sm"
-                                    data-id="<%= t.id %>"
-                                    data-nombre="<%= t.nombre %>"
-                                    data-email="<%= t.email %>"
-                                    data-telefono="<%= t.telefono %>"
-                                    data-especialidad="<%= t.especialidad %>"
+                            <div style="display:flex;gap:.35rem">
+                                <button class="ab ab-blue ab-sm"
+                                    data-id="<%= t.id %>" data-nombre="<%= t.nombre %>" data-email="<%= t.email %>"
+                                    data-telefono="<%= t.telefono %>" data-especialidad="<%= t.especialidad %>"
                                     data-activo="<%= t.activo %>"
-                                    onclick="abrirEditarTecnico(this)">✏️ <span data-i18n="dash.edit">Editar</span></button>
-                                <button class="btn btn-danger btn-sm"
-                                    data-id="<%= t.id %>"
-                                    data-nombre="<%= t.nombre %>"
-                                    data-tipo="tecnico"
+                                    onclick="abrirEditarTecnico(this)">✏️ Editar</button>
+                                <button class="ab ab-red ab-sm"
+                                    data-id="<%= t.id %>" data-nombre="<%= t.nombre %>" data-tipo="tecnico"
                                     onclick="confirmarEliminar(this)">🗑️</button>
                             </div>
                         </td>
@@ -130,48 +246,38 @@
                 </tbody>
             </table>
         </div>
+    </div>
 
-        <!-- Clientes Individuales -->
-        <div class="section-header mb-3">
-            <h2>👤 <span data-i18n="admin.individuals">Clientes Individuales</span> <span class="text-muted text-small">(<%= individuales.length %>)</span></h2>
+    <!-- Clientes Individuales -->
+    <div class="adm-section" id="clientes">
+        <div class="adm-section-head">
+            <h2>👤 Clientes Individuales (<%= individuales.length %>)</h2>
         </div>
-        <div class="table-wrapper mb-4">
-            <table>
-                <thead>
-                    <tr>
-                        <th data-i18n="admin.col.name">Nombre</th>
-                        <th data-i18n="admin.col.user">Usuario</th>
-                        <th>Email</th>
-                        <th data-i18n="admin.col.phone">Teléfono</th>
-                        <th data-i18n="admin.col.registered">Registro</th>
-                        <th data-i18n="admin.col.actions">Acciones</th>
-                    </tr>
-                </thead>
+        <div class="adm-table-wrap">
+            <table class="adm-table">
+                <thead><tr>
+                    <th>Nombre</th><th>Usuario</th><th>Email</th><th>Teléfono</th><th>Registro</th><th>Acciones</th>
+                </tr></thead>
                 <tbody>
                     <% if (individuales.length === 0) { %>
-                        <tr><td colspan="6" style="text-align:center;color:var(--text-2);padding:1.5rem" data-i18n="admin.noIndividuals">No hay clientes individuales.</td></tr>
+                    <tr><td colspan="6" class="adm-empty">No hay clientes individuales.</td></tr>
                     <% } %>
                     <% individuales.forEach(function(c) { %>
                     <tr>
-                        <td class="fw-600"><%= c.nombre_contacto %></td>
-                        <td class="text-mono text-small"><%= c.username %></td>
-                        <td class="text-muted text-small"><%= c.email %></td>
-                        <td class="text-muted text-small"><%= c.telefono %></td>
-                        <td class="text-muted text-small"><%= new Date(c.created_at).toLocaleDateString() %></td>
+                        <td style="font-weight:600;color:#e2e8f0"><%= c.nombre_contacto %></td>
+                        <td class="adm-mono" style="font-size:.75rem;color:#7c74ff"><%= c.username %></td>
+                        <td style="font-size:.8rem;color:#8892a4"><%= c.email %></td>
+                        <td style="font-size:.8rem;color:#8892a4"><%= c.telefono %></td>
+                        <td class="adm-mono" style="font-size:.73rem;color:#4a5568"><%= new Date(c.created_at).toLocaleDateString() %></td>
                         <td>
-                            <div class="flex gap-1">
-                                <button class="btn btn-secondary btn-sm"
-                                    data-id="<%= c.id %>"
-                                    data-nombre="<%= c.nombre_contacto %>"
-                                    data-empresa="<%= c.nombre_empresa %>"
-                                    data-email="<%= c.email %>"
-                                    data-telefono="<%= c.telefono %>"
-                                    data-tipo="<%= c.tipo_cliente %>"
-                                    onclick="abrirEditarCliente(this)">✏️ <span data-i18n="dash.edit">Editar</span></button>
-                                <button class="btn btn-danger btn-sm"
-                                    data-id="<%= c.id %>"
-                                    data-nombre="<%= c.nombre_contacto %>"
-                                    data-tipo="cliente"
+                            <div style="display:flex;gap:.35rem">
+                                <button class="ab ab-blue ab-sm"
+                                    data-id="<%= c.id %>" data-nombre="<%= c.nombre_contacto %>"
+                                    data-empresa="<%= c.nombre_empresa %>" data-email="<%= c.email %>"
+                                    data-telefono="<%= c.telefono %>" data-tipo="<%= c.tipo_cliente %>"
+                                    onclick="abrirEditarCliente(this)">✏️ Editar</button>
+                                <button class="ab ab-red ab-sm"
+                                    data-id="<%= c.id %>" data-nombre="<%= c.nombre_contacto %>" data-tipo="cliente"
                                     onclick="confirmarEliminar(this)">🗑️</button>
                             </div>
                         </td>
@@ -180,50 +286,38 @@
                 </tbody>
             </table>
         </div>
+    </div>
 
-        <!-- Compañías -->
-        <div class="section-header mb-3">
-            <h2>🏢 <span data-i18n="admin.companies">Compañías</span> <span class="text-muted text-small">(<%= companias.length %>)</span></h2>
+    <!-- Compañías -->
+    <div class="adm-section">
+        <div class="adm-section-head">
+            <h2>🏢 Compañías (<%= companias.length %>)</h2>
         </div>
-        <div class="table-wrapper mb-4">
-            <table>
-                <thead>
-                    <tr>
-                        <th data-i18n="admin.col.company">Empresa</th>
-                        <th data-i18n="admin.col.contact">Contacto</th>
-                        <th data-i18n="admin.col.user">Usuario</th>
-                        <th>Email</th>
-                        <th data-i18n="admin.col.phone">Teléfono</th>
-                        <th data-i18n="admin.col.registered">Registro</th>
-                        <th data-i18n="admin.col.actions">Acciones</th>
-                    </tr>
-                </thead>
+        <div class="adm-table-wrap">
+            <table class="adm-table">
+                <thead><tr>
+                    <th>Empresa</th><th>Contacto</th><th>Usuario</th><th>Email</th><th>Registro</th><th>Acciones</th>
+                </tr></thead>
                 <tbody>
                     <% if (companias.length === 0) { %>
-                        <tr><td colspan="7" style="text-align:center;color:var(--text-2);padding:1.5rem" data-i18n="admin.noCompanies">No hay compañías registradas.</td></tr>
+                    <tr><td colspan="6" class="adm-empty">No hay compañías registradas.</td></tr>
                     <% } %>
                     <% companias.forEach(function(c) { %>
                     <tr>
-                        <td class="fw-600"><%= c.nombre_empresa %></td>
-                        <td><%= c.nombre_contacto %></td>
-                        <td class="text-mono text-small"><%= c.username %></td>
-                        <td class="text-muted text-small"><%= c.email %></td>
-                        <td class="text-muted text-small"><%= c.telefono %></td>
-                        <td class="text-muted text-small"><%= new Date(c.created_at).toLocaleDateString() %></td>
+                        <td style="font-weight:600;color:#e2e8f0"><%= c.nombre_empresa %></td>
+                        <td style="color:#8892a4;font-size:.82rem"><%= c.nombre_contacto %></td>
+                        <td class="adm-mono" style="font-size:.75rem;color:#7c74ff"><%= c.username %></td>
+                        <td style="font-size:.8rem;color:#8892a4"><%= c.email %></td>
+                        <td class="adm-mono" style="font-size:.73rem;color:#4a5568"><%= new Date(c.created_at).toLocaleDateString() %></td>
                         <td>
-                            <div class="flex gap-1">
-                                <button class="btn btn-secondary btn-sm"
-                                    data-id="<%= c.id %>"
-                                    data-nombre="<%= c.nombre_contacto %>"
-                                    data-empresa="<%= c.nombre_empresa %>"
-                                    data-email="<%= c.email %>"
-                                    data-telefono="<%= c.telefono %>"
-                                    data-tipo="<%= c.tipo_cliente %>"
-                                    onclick="abrirEditarCliente(this)">✏️ <span data-i18n="dash.edit">Editar</span></button>
-                                <button class="btn btn-danger btn-sm"
-                                    data-id="<%= c.id %>"
-                                    data-nombre="<%= c.nombre_empresa %>"
-                                    data-tipo="cliente"
+                            <div style="display:flex;gap:.35rem">
+                                <button class="ab ab-blue ab-sm"
+                                    data-id="<%= c.id %>" data-nombre="<%= c.nombre_contacto %>"
+                                    data-empresa="<%= c.nombre_empresa %>" data-email="<%= c.email %>"
+                                    data-telefono="<%= c.telefono %>" data-tipo="<%= c.tipo_cliente %>"
+                                    onclick="abrirEditarCliente(this)">✏️ Editar</button>
+                                <button class="ab ab-red ab-sm"
+                                    data-id="<%= c.id %>" data-nombre="<%= c.nombre_empresa %>" data-tipo="cliente"
                                     onclick="confirmarEliminar(this)">🗑️</button>
                             </div>
                         </td>
@@ -232,541 +326,365 @@
                 </tbody>
             </table>
         </div>
+    </div>
 
-        <!-- Tickets -->
-        <div class="section-header mb-3">
-            <h2>🎫 <span data-i18n="admin.ticketsSystem">Tickets del Sistema</span> <span class="text-muted text-small" id="ticketCount"></span></h2>
-            <div class="flex gap-1 flex-wrap">
-                <input id="buscarTicket" class="form-input" style="font-size:.8rem;padding:.35rem .75rem;width:160px" placeholder="Buscar..." oninput="filtrarTickets()">
-                <select id="filtroCategoria" class="form-select" style="font-size:.8rem;padding:.35rem .75rem" onchange="filtrarTickets()">
-                    <option value="" data-i18n="admin.allCategories">Todas las categorías</option>
-                    <option>Climatización (HVAC)</option>
-                    <option>Electricidad</option>
-                    <option>Plomería</option>
-                    <option>Piscina</option>
-                    <option>Jardinería / Landscaping</option>
-                    <option>Irrigation / Sistema de riego</option>
-                    <option>Pest Control</option>
-                    <option>Limpieza / Pressure Washing</option>
-                    <option>Electrodomésticos</option>
-                    <option>Estructura / Reparaciones</option>
-                    <option>Seguridad</option>
-                    <option>General</option>
+    <!-- Tickets -->
+    <div class="adm-section" id="tickets" data-total-tickets="<%= totalTickets %>" data-page-size="<%= pageSize %>">
+        <div class="adm-section-head">
+            <h2>🎫 Tickets <span id="ticketCount" style="color:#4a5568"></span></h2>
+            <div class="adm-filters">
+                <input id="buscarTicket" class="adm-input" placeholder="Buscar..." oninput="filtrarTickets()">
+                <select id="filtroCategoria" class="adm-select" onchange="filtrarTickets()">
+                    <option value="">Todas las categorías</option>
+                    <option>Climatización (HVAC)</option><option>Electricidad</option>
+                    <option>Plomería</option><option>Piscina</option>
+                    <option>Jardinería / Landscaping</option><option>Irrigation / Sistema de riego</option>
+                    <option>Pest Control</option><option>Limpieza / Pressure Washing</option>
+                    <option>Electrodomésticos</option><option>Estructura / Reparaciones</option>
+                    <option>Seguridad</option><option>General</option>
                 </select>
-                <select id="filtroEstado" class="form-select" style="font-size:.8rem;padding:.35rem .75rem" onchange="filtrarTickets()">
-                    <option value="" data-i18n="admin.allStatuses">Todos los estados</option>
-                    <option value="pendiente" data-i18n="badge.pending">Pendiente</option>
-                    <option value="en_proceso" data-i18n="badge.inProgress">En proceso</option>
-                    <option value="completado" data-i18n="badge.completed">Completado</option>
+                <select id="filtroEstado" class="adm-select" onchange="filtrarTickets()">
+                    <option value="">Todos los estados</option>
+                    <option value="pendiente">Pendiente</option>
+                    <option value="en_proceso">En proceso</option>
+                    <option value="completado">Completado</option>
                     <option value="cancelado">Cancelado</option>
                 </select>
             </div>
         </div>
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th data-i18n="tech.client">Cliente</th>
-                        <th data-i18n="dash.address">Dirección</th>
-                        <th data-i18n="dash.category">Categoría</th>
-                        <th data-i18n="dash.reason">Motivo</th>
-                        <th data-i18n="dash.status">Estado</th>
-                        <th data-i18n="dash.tech">Técnico</th>
-                        <th data-i18n="dash.date">Fecha</th>
-                    </tr>
-                </thead>
+        <div class="adm-table-wrap">
+            <table class="adm-table">
+                <thead><tr>
+                    <th>ID</th><th>Motivo / Categoría</th><th>Dirección</th>
+                    <th>Cliente</th><th>Técnico</th><th>Estado</th><th>Fecha</th>
+                </tr></thead>
                 <tbody id="ticketsBody">
                     <% if (tickets.length === 0) { %>
-                        <tr><td colspan="7" style="text-align:center;color:var(--text-2);padding:1.5rem" data-i18n="admin.noTickets">No hay tickets registrados.</td></tr>
+                    <tr><td colspan="7" class="adm-empty">No hay tickets registrados.</td></tr>
                     <% } %>
                     <% tickets.forEach(function(ticket) { %>
-                    <tr class="ticket-row"
-                        data-categoria="<%= ticket.categoria || '' %>"
-                        data-estado="<%= ticket.estado %>">
-                        <td class="fw-600"><%= ticket.companias ? ticket.companias.nombre_empresa || ticket.companias.nombre_contacto : '—' %></td>
-                        <td class="text-muted text-small"><%= ticket.propiedades ? ticket.propiedades.direccion : '—' %></td>
-                        <td><% if (ticket.categoria) { %><span class="badge" style="background:var(--accent-soft);color:var(--accent);font-size:.7rem"><%= ticket.categoria %></span><% } else { %><span class="text-muted text-small">—</span><% } %></td>
-                        <td><%= ticket.motivo %></td>
+                    <tr>
+                        <td class="adm-mono" style="font-size:.7rem;color:#4a5568"><%= ticket.id.slice(0,8) %>…</td>
                         <td>
-                            <span class="badge badge-<%= ticket.estado %>">
-                                <% if (ticket.estado === 'pendiente') { %><span data-i18n="badge.pending">Pendiente</span>
-                                <% } else if (ticket.estado === 'en_proceso') { %><span data-i18n="badge.inProgress">En proceso</span>
-                                <% } else { %><span data-i18n="badge.completed">Completado</span><% } %>
+                            <div style="font-weight:500;font-size:.83rem;color:#c9d1e0"><%= ticket.motivo %></div>
+                            <% if (ticket.categoria) { %><span class="adm-badge adm-b-cat" style="margin-top:.2rem"><%= ticket.categoria %></span><% } %>
+                        </td>
+                        <td style="font-size:.78rem;color:#8892a4"><%= ticket.propiedades ? ticket.propiedades.direccion : '—' %></td>
+                        <td style="font-size:.78rem;color:#8892a4"><%= ticket.companias ? (ticket.companias.nombre_empresa || ticket.companias.nombre_contacto) : '—' %></td>
+                        <td style="font-size:.78rem;color:#8892a4"><%= ticket.tecnicos ? ticket.tecnicos.nombre : '<span style="color:#252836">Sin asignar</span>' %></td>
+                        <td>
+                            <span class="adm-badge adm-b-<%= ticket.estado %>">
+                                <%if(ticket.estado==='pendiente'){%>Pendiente<%}else if(ticket.estado==='en_proceso'){%>En proceso<%}else if(ticket.estado==='completado'){%>Completado<%}else{%>Cancelado<%}%>
                             </span>
                         </td>
-                        <td class="text-muted text-small"><%= ticket.tecnicos ? ticket.tecnicos.nombre : '<span data-i18n="admin.unassigned">Sin asignar</span>' %></td>
-                        <td class="text-muted text-small"><%= new Date(ticket.created_at).toLocaleDateString() %></td>
+                        <td class="adm-mono" style="font-size:.73rem;color:#4a5568"><%= new Date(ticket.created_at).toLocaleDateString() %></td>
                     </tr>
                     <% }); %>
                 </tbody>
             </table>
         </div>
-
-
-        <!-- Paginación tickets -->
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:1rem;flex-wrap:wrap;gap:.5rem">
-            <span id="paginacionInfo" class="text-small text-muted"></span>
-            <div class="flex gap-1" style="align-items:center">
-                <button id="btnPrev" class="btn btn-secondary btn-sm" onclick="cambiarPagina(-1)">← Anterior</button>
-                <span id="paginacionPages" class="text-small" style="padding:0 .5rem"></span>
-                <button id="btnNext" class="btn btn-secondary btn-sm" onclick="cambiarPagina(1)">Siguiente →</button>
+        <div class="adm-pagination">
+            <span id="paginacionInfo" class="adm-pag-info"></span>
+            <div class="adm-pag-btns">
+                <button id="btnPrev" class="ab ab-ghost ab-sm" onclick="cambiarPagina(-1)">← Anterior</button>
+                <span id="paginacionPages" class="adm-pag-page"></span>
+                <button id="btnNext" class="ab ab-ghost ab-sm" onclick="cambiarPagina(1)">Siguiente →</button>
             </div>
         </div>
+    </div>
 
-
-        <!-- ── Log de Cancelaciones ── -->
-        <div class="section-header mb-3 mt-4">
-            <h2>❌ Log de Cancelaciones</h2>
-            <span id="cancel-count" class="badge" style="background:var(--red-soft);color:var(--red)">Cargando...</span>
+    <!-- Cancelaciones -->
+    <div class="adm-section" id="cancelaciones">
+        <div class="adm-section-head">
+            <h2>❌ Cancelaciones <span id="cancel-count" style="color:#4a5568"></span></h2>
         </div>
-
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Cancelado por</th>
-                        <th>Usuario</th>
-                        <th>Ticket</th>
-                        <th>Categoría</th>
-                        <th>Motivo</th>
-                    </tr>
-                </thead>
+        <div class="adm-table-wrap">
+            <table class="adm-table">
+                <thead><tr>
+                    <th>Fecha</th><th>Por</th><th>Usuario</th><th>Ticket</th><th>Categoría</th><th>Motivo</th>
+                </tr></thead>
                 <tbody id="cancelaciones-tbody">
-                    <tr><td colspan="6" style="text-align:center;color:var(--text-3);padding:2rem">Cargando...</td></tr>
+                    <tr><td colspan="6" class="adm-empty">Cargando...</td></tr>
                 </tbody>
             </table>
         </div>
+    </div>
 
+    <!-- Fees -->
+    <div class="adm-section" id="fees">
+        <div class="adm-section-head">
+            <h2>💰 Fees de Técnicos</h2>
+            <button class="ab ab-ghost ab-sm" onclick="cargarFees()">↻ Actualizar</button>
+        </div>
+        <div id="feesBody">
+            <div class="adm-empty">Cargando...</div>
+        </div>
+    </div>
 
-            <!-- ── Fees de Técnicos ── -->
-            <div class="section-header mb-3 mt-4">
-                <h2>💰 Fees pendientes de técnicos</h2>
-                <button class="btn btn-secondary btn-sm" onclick="cargarFees()">Actualizar</button>
-            </div>
-            <div class="table-wrapper mb-4" id="feesContainer">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Técnico</th>
-                            <th>Especialidad</th>
-                            <th>Trabajos</th>
-                            <th>Rating</th>
-                            <th>Fee pendiente</th>
-                            <th>Fee cobrado</th>
-                            <th>Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody id="feesBody">
-                        <tr><td colspan="7" style="text-align:center;padding:1.5rem;color:var(--text-3)">Cargando...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-    </main>
+</div>
 </div>
 
-<!-- Modal: Editar Técnico -->
-<div id="editarTecnicoModal" class="modal-overlay">
-    <div class="modal">
-        <div class="modal-header">
-            <h2 data-i18n="admin.editTech">Editar Técnico</h2>
-            <button class="modal-close" onclick="cerrarModal('editarTecnicoModal')">✕</button>
+<!-- ═══ MODALES ═══════════════════════════════════════════════ -->
+
+<!-- Modal overlay personalizado para dark theme -->
+<style>
+.adm-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); backdrop-filter:blur(6px); z-index:1000; align-items:center; justify-content:center; padding:1rem; }
+.adm-overlay.open { display:flex; }
+@keyframes modalIn { from{opacity:0;transform:scale(.94) translateY(10px)} to{opacity:1;transform:scale(1) translateY(0)} }
+</style>
+
+<!-- Editar Técnico -->
+<div id="editarTecnicoModal" class="adm-overlay">
+    <div class="adm-modal">
+        <div class="adm-modal-header">
+            <h2>✏️ Editar Técnico</h2>
+            <button class="adm-modal-close" onclick="cerrarModal('editarTecnicoModal')">✕</button>
         </div>
-        <form onsubmit="guardarTecnico(event)">
-            <input type="hidden" id="tec_id">
-            <div class="form-group">
-                <label class="form-label" data-i18n="admin.col.name">Nombre completo</label>
-                <input type="text" id="tec_nombre" class="form-input" required>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input type="email" id="tec_email" class="form-input" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" data-i18n="admin.col.phone">Teléfono</label>
-                    <input type="text" id="tec_telefono" class="form-input" required>
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="form-label" data-i18n="admin.col.specialty">Especialidad</label>
-                <select id="tec_especialidad" class="form-select" required>
-                    <option value="Climatización (HVAC)">❄️ Climatización (HVAC)</option>
-                    <option value="Electricidad">⚡ Electricidad</option>
-                    <option value="Plomería">🔧 Plomería</option>
-                    <option value="Piscina">🏊 Piscina</option>
-                    <option value="Jardinería / Landscaping">🌿 Jardinería / Landscaping</option>
-                    <option value="Irrigation / Sistema de riego">💧 Irrigation / Sistema de riego</option>
-                    <option value="Pest Control">🐛 Pest Control</option>
-                    <option value="Limpieza / Pressure Washing">🧹 Limpieza / Pressure Washing</option>
-                    <option value="Electrodomésticos">🏠 Electrodomésticos</option>
-                    <option value="Estructura / Reparaciones">🏗️ Estructura / Reparaciones</option>
-                    <option value="Seguridad">🔒 Seguridad</option>
-                    <option value="General">🛠️ Mantenimiento General</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label" data-i18n="admin.col.status">Estado</label>
-                <select id="tec_activo" class="form-select">
-                    <option value="true" data-i18n="admin.active">Activo</option>
-                    <option value="false" data-i18n="admin.inactive">Inactivo</option>
-                </select>
-            </div>
-            <button type="submit" class="btn btn-primary btn-full" id="btnGuardarTec" data-i18n="admin.saveChanges">Guardar cambios</button>
-        </form>
+        <input type="hidden" id="tec_id">
+        <div class="adm-form-group"><label class="adm-form-label">Nombre completo</label><input type="text" id="tec_nombre" class="adm-form-input"></div>
+        <div class="adm-form-row">
+            <div class="adm-form-group"><label class="adm-form-label">Email</label><input type="email" id="tec_email" class="adm-form-input"></div>
+            <div class="adm-form-group"><label class="adm-form-label">Teléfono</label><input type="text" id="tec_telefono" class="adm-form-input"></div>
+        </div>
+        <div class="adm-form-group">
+            <label class="adm-form-label">Especialidad</label>
+            <select id="tec_especialidad" class="adm-form-select">
+                <option value="Climatización (HVAC)">❄️ Climatización (HVAC)</option>
+                <option value="Electricidad">⚡ Electricidad</option>
+                <option value="Plomería">🔧 Plomería</option>
+                <option value="Piscina">🏊 Piscina</option>
+                <option value="Jardinería / Landscaping">🌿 Jardinería / Landscaping</option>
+                <option value="Irrigation / Sistema de riego">💧 Irrigation / Sistema de riego</option>
+                <option value="Pest Control">🐛 Pest Control</option>
+                <option value="Limpieza / Pressure Washing">🧹 Limpieza / Pressure Washing</option>
+                <option value="Electrodomésticos">🏠 Electrodomésticos</option>
+                <option value="Estructura / Reparaciones">🏗️ Estructura / Reparaciones</option>
+                <option value="Seguridad">🔒 Seguridad</option>
+                <option value="General">🛠️ Mantenimiento General</option>
+            </select>
+        </div>
+        <div class="adm-form-group">
+            <label class="adm-form-label">Estado</label>
+            <select id="tec_activo" class="adm-form-select">
+                <option value="true">✅ Activo</option>
+                <option value="false">⏸️ Inactivo</option>
+            </select>
+        </div>
+        <button class="ab ab-blue ab-full" id="btnGuardarTec" onclick="guardarTecnico()" style="padding:.55rem;font-size:.85rem">Guardar cambios</button>
     </div>
 </div>
 
-<!-- Modal: Editar Cliente -->
-<div id="editarClienteModal" class="modal-overlay">
-    <div class="modal">
-        <div class="modal-header">
-            <h2 data-i18n="admin.editClient">Editar Cliente</h2>
-            <button class="modal-close" onclick="cerrarModal('editarClienteModal')">✕</button>
+<!-- Editar Cliente -->
+<div id="editarClienteModal" class="adm-overlay">
+    <div class="adm-modal">
+        <div class="adm-modal-header">
+            <h2>✏️ Editar Cliente</h2>
+            <button class="adm-modal-close" onclick="cerrarModal('editarClienteModal')">✕</button>
         </div>
-        <form onsubmit="guardarCliente(event)">
-            <input type="hidden" id="cli_id">
-            <div class="form-group">
-                <label class="form-label" data-i18n="reg.accountType">Tipo de cliente</label>
-                <select id="cli_tipo" class="form-select">
-                    <option value="Individual" data-i18n="reg.individual">Individual</option>
-                    <option value="Compania" data-i18n="reg.company">Compañía</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label" data-i18n="reg.companyName">Nombre de empresa</label>
-                <input type="text" id="cli_empresa" class="form-input" placeholder="Solo para compañías">
-            </div>
-            <div class="form-group">
-                <label class="form-label" data-i18n="admin.col.contact">Nombre de contacto</label>
-                <input type="text" id="cli_nombre" class="form-input" required>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input type="email" id="cli_email" class="form-input" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" data-i18n="admin.col.phone">Teléfono</label>
-                    <input type="text" id="cli_telefono" class="form-input" required>
-                </div>
-            </div>
-            <button type="submit" class="btn btn-primary btn-full" id="btnGuardarCli" data-i18n="admin.saveChanges">Guardar cambios</button>
-        </form>
+        <input type="hidden" id="cli_id">
+        <div class="adm-form-group">
+            <label class="adm-form-label">Tipo</label>
+            <select id="cli_tipo" class="adm-form-select"><option value="Individual">👤 Individual</option><option value="Compania">🏢 Compañía</option></select>
+        </div>
+        <div class="adm-form-group"><label class="adm-form-label">Empresa (solo compañías)</label><input type="text" id="cli_empresa" class="adm-form-input" placeholder="Nombre de empresa"></div>
+        <div class="adm-form-group"><label class="adm-form-label">Nombre contacto</label><input type="text" id="cli_nombre" class="adm-form-input"></div>
+        <div class="adm-form-row">
+            <div class="adm-form-group"><label class="adm-form-label">Email</label><input type="email" id="cli_email" class="adm-form-input"></div>
+            <div class="adm-form-group"><label class="adm-form-label">Teléfono</label><input type="text" id="cli_telefono" class="adm-form-input"></div>
+        </div>
+        <button class="ab ab-blue ab-full" id="btnGuardarCli" onclick="guardarCliente()" style="padding:.55rem;font-size:.85rem">Guardar cambios</button>
     </div>
 </div>
 
-<!-- Modal: Confirmar Eliminar -->
-<div id="eliminarModal" class="modal-overlay">
-    <div class="modal" style="max-width:400px;text-align:center">
+<!-- Confirmar Eliminar -->
+<div id="eliminarModal" class="adm-overlay">
+    <div class="adm-modal" style="max-width:400px;text-align:center">
         <div style="font-size:2.5rem;margin-bottom:1rem">⚠️</div>
-        <h2 style="margin-bottom:.5rem" data-i18n="admin.deleteConfirm">¿Eliminar registro?</h2>
-        <p class="text-muted mb-2 fw-600" id="eliminarNombre"></p>
-        <p class="text-small mb-4" style="color:var(--red)" data-i18n="admin.deleteWarning">
-            Esta acción no se puede deshacer. Se eliminarán todos los datos asociados.
-        </p>
-        <div class="flex gap-2">
-            <button class="btn btn-secondary btn-full" onclick="cerrarModal('eliminarModal')" data-i18n="dash.cancel">Cancelar</button>
-            <button class="btn btn-full" id="btnEliminar"
-                style="background:var(--red);color:#fff"
-                onclick="ejecutarEliminar()" data-i18n="admin.deleteConfirmBtn">Sí, eliminar</button>
+        <h2 style="color:#e2e8f0;margin-bottom:.5rem">¿Eliminar registro?</h2>
+        <p style="color:#f87171;font-weight:600;font-size:1rem;margin-bottom:.5rem" id="eliminarNombre"></p>
+        <p style="font-size:.83rem;color:#8892a4;margin-bottom:2rem">Esta acción no se puede deshacer.</p>
+        <div style="display:flex;gap:.75rem">
+            <button class="ab ab-ghost ab-full" style="padding:.6rem" onclick="cerrarModal('eliminarModal')">Cancelar</button>
+            <button class="ab ab-red ab-full" id="btnEliminar" style="padding:.6rem" onclick="ejecutarEliminar()">Sí, eliminar</button>
         </div>
     </div>
 </div>
 
 <script>
-    const TICKETS_POR_PAGINA = 15;
-    let paginaActual = 1;
+const ticketsSection = document.getElementById('tickets');
+let totalTickets = parseInt(ticketsSection?.dataset.totalTickets) || 0;
+const PAGE_SIZE   = parseInt(ticketsSection?.dataset.pageSize) || 20;
+let currentPage   = 1;
+let totalPages    = Math.ceil(totalTickets / PAGE_SIZE) || 1;
 
+updatePaginacionUI(1, totalPages, totalTickets);
 
-    // ── Paginación de tickets ─────────────────────────────────
-    let currentPage    = 1;
-    let totalPages     = 1;
-    const adminMain  = document.getElementById('adminMain');
-    let totalTickets = parseInt(adminMain.dataset.totalTickets) || 0;
-    const PAGE_SIZE  = parseInt(adminMain.dataset.pageSize) || 20;
+function cerrarModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('open');
+}
+document.querySelectorAll('.adm-overlay').forEach(el => el.addEventListener('click', e => { if (e.target===el) el.classList.remove('open'); }));
 
-    // Inicializar con los tickets del servidor (primera página)
-    updatePaginacionUI(1, Math.ceil(totalTickets / PAGE_SIZE), totalTickets);
+// TICKETS
+function updatePaginacionUI(page, pages, total) {
+    const pI = document.getElementById('paginacionInfo');
+    const pP = document.getElementById('paginacionPages');
+    const bP = document.getElementById('btnPrev');
+    const bN = document.getElementById('btnNext');
+    const tC = document.getElementById('ticketCount');
+    if (pI) pI.textContent = total + ' tickets en total';
+    if (pP) pP.textContent = `Pág ${page} / ${pages||1}`;
+    if (bP) bP.disabled = page <= 1;
+    if (bN) bN.disabled = page >= pages;
+    if (tC) tC.textContent = '(' + total + ')';
+}
 
-    async function filtrarTickets() {
-        currentPage = 1;
-        await cargarTickets();
-    }
+async function filtrarTickets() { currentPage=1; await cargarTickets(); }
+async function cambiarPagina(dir) { const n=currentPage+dir; if(n<1||n>totalPages)return; currentPage=n; await cargarTickets(); }
 
-    async function cambiarPagina(dir) {
-        const nueva = currentPage + dir;
-        if (nueva < 1 || nueva > totalPages) return;
-        currentPage = nueva;
-        await cargarTickets();
-    }
+async function cargarTickets() {
+    const cat    = document.getElementById('filtroCategoria').value;
+    const estado = document.getElementById('filtroEstado').value;
+    const search = document.getElementById('buscarTicket')?.value || '';
+    const params = new URLSearchParams({ page: currentPage });
+    if (cat)    params.append('categoria', cat);
+    if (estado) params.append('estado', estado);
+    if (search) params.append('search', search);
+    const tbody = document.getElementById('ticketsBody');
+    tbody.innerHTML = '<tr><td colspan="7" class="adm-empty">Cargando...</td></tr>';
+    try {
+        const res  = await fetch(`/admin/tickets?${params}`);
+        const data = await res.json();
+        totalPages   = data.totalPages;
+        totalTickets = data.total;
+        updatePaginacionUI(data.page, data.totalPages, data.total);
+        renderTickets(data.tickets);
+    } catch { tbody.innerHTML = '<tr><td colspan="7" class="adm-empty" style="color:#f87171">Error cargando tickets</td></tr>'; }
+}
 
-    async function cargarTickets() {
-        const cat    = document.getElementById('filtroCategoria').value;
-        const estado = document.getElementById('filtroEstado').value;
-        const search = document.getElementById('buscarTicket')?.value || '';
+function renderTickets(tickets) {
+    const tbody = document.getElementById('ticketsBody');
+    if (!tickets.length) { tbody.innerHTML='<tr><td colspan="7" class="adm-empty">No hay tickets.</td></tr>'; return; }
+    const badges = { pendiente:'<span class="adm-badge adm-b-pendiente">Pendiente</span>', en_proceso:'<span class="adm-badge adm-b-en_proceso">En proceso</span>', completado:'<span class="adm-badge adm-b-completado">Completado</span>', cancelado:'<span class="adm-badge adm-b-cancelado">Cancelado</span>' };
+    tbody.innerHTML = tickets.map(t => `
+        <tr>
+            <td class="adm-mono" style="font-size:.7rem;color:#4a5568">${t.id.slice(0,8)}…</td>
+            <td><div style="font-weight:500;font-size:.83rem;color:#c9d1e0">${t.motivo||''}</div>${t.categoria?`<span class="adm-badge adm-b-cat" style="margin-top:.2rem">${t.categoria}</span>`:''}</td>
+            <td style="font-size:.78rem;color:#8892a4">${t.propiedades?.direccion||'—'}</td>
+            <td style="font-size:.78rem;color:#8892a4">${t.companias?.nombre_contacto||t.companias?.nombre_empresa||'—'}</td>
+            <td style="font-size:.78rem;color:#8892a4">${t.tecnicos?.nombre||'<span style="color:#252836">Sin asignar</span>'}</td>
+            <td>${badges[t.estado]||t.estado}</td>
+            <td class="adm-mono" style="font-size:.73rem;color:#4a5568">${new Date(t.created_at).toLocaleDateString()}</td>
+        </tr>
+    `).join('');
+}
 
-        const params = new URLSearchParams({ page: currentPage });
-        if (cat)    params.append('categoria', cat);
-        if (estado) params.append('estado', estado);
-        if (search) params.append('search', search);
+// TÉCNICOS
+function abrirEditarTecnico(btn) {
+    document.getElementById('tec_id').value           = btn.dataset.id;
+    document.getElementById('tec_nombre').value       = btn.dataset.nombre;
+    document.getElementById('tec_email').value        = btn.dataset.email;
+    document.getElementById('tec_telefono').value     = btn.dataset.telefono;
+    document.getElementById('tec_especialidad').value = btn.dataset.especialidad;
+    document.getElementById('tec_activo').value       = btn.dataset.activo;
+    document.getElementById('editarTecnicoModal').classList.add('open');
+}
+async function guardarTecnico() {
+    const id=document.getElementById('tec_id').value, btn=document.getElementById('btnGuardarTec');
+    btn.disabled=true; btn.textContent='Guardando...';
+    try {
+        const res=await fetch(`/admin/tecnicos/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre:document.getElementById('tec_nombre').value,email:document.getElementById('tec_email').value,telefono:document.getElementById('tec_telefono').value,especialidad:document.getElementById('tec_especialidad').value,activo:document.getElementById('tec_activo').value==='true'})});
+        const data=await res.json();
+        if(data.success){cerrarModal('editarTecnicoModal');showToast('✅ Técnico actualizado');setTimeout(()=>location.reload(),800);}
+        else showToast(data.error||'Error','error');
+    }catch{showToast('Error de conexión','error');}
+    btn.disabled=false; btn.textContent='Guardar cambios';
+}
 
-        const tbody = document.getElementById('ticketsBody');
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-3)">Cargando...</td></tr>`;
+// CLIENTES
+function abrirEditarCliente(btn) {
+    document.getElementById('cli_id').value       = btn.dataset.id;
+    document.getElementById('cli_nombre').value   = btn.dataset.nombre;
+    document.getElementById('cli_empresa').value  = btn.dataset.empresa!=='Individual' ? btn.dataset.empresa : '';
+    document.getElementById('cli_email').value    = btn.dataset.email;
+    document.getElementById('cli_telefono').value = btn.dataset.telefono;
+    document.getElementById('cli_tipo').value     = btn.dataset.tipo;
+    document.getElementById('editarClienteModal').classList.add('open');
+}
+async function guardarCliente() {
+    const id=document.getElementById('cli_id').value, btn=document.getElementById('btnGuardarCli');
+    btn.disabled=true; btn.textContent='Guardando...';
+    try {
+        const res=await fetch(`/admin/clientes/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre_contacto:document.getElementById('cli_nombre').value,nombre_empresa:document.getElementById('cli_empresa').value||'Individual',email:document.getElementById('cli_email').value,telefono:document.getElementById('cli_telefono').value,tipo_cliente:document.getElementById('cli_tipo').value})});
+        const data=await res.json();
+        if(data.success){cerrarModal('editarClienteModal');showToast('✅ Cliente actualizado');setTimeout(()=>location.reload(),800);}
+        else showToast(data.error||'Error','error');
+    }catch{showToast('Error de conexión','error');}
+    btn.disabled=false; btn.textContent='Guardar cambios';
+}
 
-        try {
-            const res  = await fetch(`/admin/tickets?${params}`);
-            const data = await res.json();
+// ELIMINAR
+let idAEliminar=null, tipoAEliminar=null;
+function confirmarEliminar(btn) { idAEliminar=btn.dataset.id; tipoAEliminar=btn.dataset.tipo; document.getElementById('eliminarNombre').textContent=btn.dataset.nombre; document.getElementById('eliminarModal').classList.add('open'); }
+async function ejecutarEliminar() {
+    if(!idAEliminar)return;
+    const btn=document.getElementById('btnEliminar'); btn.disabled=true; btn.textContent='Eliminando...';
+    const url=tipoAEliminar==='tecnico'?`/admin/tecnicos/${idAEliminar}`:`/admin/clientes/${idAEliminar}`;
+    try{const res=await fetch(url,{method:'DELETE'});const data=await res.json();if(data.success){cerrarModal('eliminarModal');showToast('✅ Eliminado');setTimeout(()=>location.reload(),800);}else showToast(data.error,'error');}catch{showToast('Error','error');}
+    btn.disabled=false; btn.textContent='Sí, eliminar'; idAEliminar=null; tipoAEliminar=null;
+}
 
-            totalPages   = data.totalPages;
-            totalTickets = data.total;
-            updatePaginacionUI(data.page, data.totalPages, data.total);
-            renderTickets(data.tickets);
-        } catch (e) {
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--red)">Error cargando tickets</td></tr>`;
-        }
-    }
-
-    function updatePaginacionUI(page, pages, total) {
-        document.getElementById('paginacionInfo').textContent  = `${total} tickets en total`;
-        document.getElementById('paginacionPages').textContent = `Página ${page} de ${pages || 1}`;
-        document.getElementById('btnPrev').disabled = page <= 1;
-        document.getElementById('btnNext').disabled = page >= pages;
-        document.getElementById('ticketCount').textContent = `(${total})`;
-    }
-
-    function renderTickets(tickets) {
-        const tbody = document.getElementById('ticketsBody');
-        if (!tickets.length) {
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-2);padding:1.5rem">No hay tickets.</td></tr>`;
-            return;
-        }
-
-        const estadoBadge = {
-            pendiente:  '<span class="badge badge-pendiente">Pendiente</span>',
-            en_proceso: '<span class="badge badge-en_proceso">En proceso</span>',
-            completado: '<span class="badge badge-completado">Completado</span>',
-            cancelado:  '<span class="badge" style="background:var(--red-soft);color:var(--red)">Cancelado</span>',
-        };
-
-        tbody.innerHTML = tickets.map(t => `
+// CANCELACIONES
+async function cargarCancelaciones() {
+    try {
+        const res=await fetch('/admin/cancelaciones'); const data=await res.json();
+        const tbody=document.getElementById('cancelaciones-tbody');
+        const count=document.getElementById('cancel-count');
+        if(count) count.textContent='('+( data.cancelaciones?.length||0)+')';
+        if(!data.cancelaciones?.length){tbody.innerHTML='<tr><td colspan="6" class="adm-empty">No hay cancelaciones registradas.</td></tr>';return;}
+        tbody.innerHTML=data.cancelaciones.map(c=>`
             <tr>
-                <td><span class="text-mono text-small">${t.id.slice(0,8)}…</span></td>
-                <td>
-                    <div style="font-weight:500;font-size:.875rem">${t.motivo || ''}</div>
-                    <div class="text-small text-muted">${t.categoria || ''}</div>
-                </td>
-                <td class="text-small">${t.propiedades?.direccion || '—'}</td>
-                <td class="text-small">${t.companias?.nombre_contacto || t.companias?.nombre_empresa || '—'}</td>
-                <td class="text-small">${t.tecnicos?.nombre || '<span style="color:var(--text-3)">Sin asignar</span>'}</td>
-                <td>${estadoBadge[t.estado] || t.estado}</td>
-                <td class="text-small text-muted">${new Date(t.created_at).toLocaleDateString()}</td>
+                <td class="adm-mono" style="font-size:.73rem;color:#4a5568">${new Date(c.created_at).toLocaleDateString()}</td>
+                <td><span class="adm-badge ${c.cancelado_por==='cliente'?'adm-b-en_proceso':'adm-b-inactive'}">${c.cancelado_por}</span></td>
+                <td style="font-size:.8rem;color:#8892a4">${c.usuario_nombre||'—'}</td>
+                <td style="font-size:.8rem;color:#c9d1e0">${c.titulo||'—'}</td>
+                <td style="font-size:.78rem">${c.categoria?`<span class="adm-badge adm-b-cat">${c.categoria}</span>`:'—'}</td>
+                <td style="font-size:.78rem;color:#8892a4">${c.motivo||'—'}</td>
             </tr>
         `).join('');
-    }
+    }catch{console.error('Error cancelaciones');}
+}
 
+// FEES
+async function cargarFees() {
+    const container=document.getElementById('feesBody');
+    container.innerHTML='<div class="adm-empty">Cargando...</div>';
+    try {
+        const res=await fetch('/admin/fees'); const data=await res.json();
+        if(!data.fees?.length){container.innerHTML='<div class="adm-empty">No hay fees registrados aún.</div>';return;}
+        container.innerHTML=`<div style="padding:.5rem 0">${data.fees.map(f=>`
+            <div class="adm-fee-row">
+                <div>
+                    <div class="adm-fee-name">${f.nombre}</div>
+                    <div class="adm-fee-spec">${f.especialidad||'—'} · ${f.total_trabajos||0} trabajos · ${f.promedio_estrellas?parseFloat(f.promedio_estrellas).toFixed(1)+' ★':'sin rating'}</div>
+                </div>
+                <div style="text-align:right;margin-left:auto">
+                    <div class="adm-fee-val adm-fee-pending">$${parseFloat(f.fee_pendiente||0).toFixed(2)} <span style="font-size:.7rem;color:#4a5568;font-family:Outfit">pendiente</span></div>
+                    <div class="adm-fee-val adm-fee-done" style="font-size:.78rem">$${parseFloat(f.fee_cobrado||0).toFixed(2)} cobrado</div>
+                </div>
+                ${parseFloat(f.fee_pendiente||0)>0?`<button class="ab ab-green ab-sm" onclick="cobrarFee('${f.tecnico_id}','${f.nombre}',${parseFloat(f.fee_pendiente||0).toFixed(2)})">✅ Cobrar</button>`:'<span style="font-size:.72rem;color:#4a5568">Sin pendiente</span>'}
+            </div>
+        `).join('')}</div>`;
+    }catch{container.innerHTML='<div class="adm-empty" style="color:#f87171">Error cargando fees</div>';}
+}
 
-    function renderPaginacion(total) {
-        const totalPags = Math.ceil(total / TICKETS_POR_PAGINA);
-        let el = document.getElementById('paginacion');
-        if (!el) {
-            el = document.createElement('div');
-            el.id = 'paginacion';
-            el.style.cssText = 'display:flex;justify-content:center;gap:.5rem;margin-top:1rem;flex-wrap:wrap';
-            document.querySelector('.table-wrapper:last-of-type').after(el);
-        }
-        if (totalPags <= 1) { el.innerHTML = ''; return; }
-        let html = '';
-        for (let i = 1; i <= totalPags; i++) {
-            const activo = i === paginaActual
-                ? 'background:var(--accent);color:#fff;border-color:var(--accent)'
-                : 'background:var(--surface);color:var(--text-1)';
-            html += `<button onclick="irPagina(${i})" class="btn btn-sm" style="${activo};min-width:2.2rem;padding:.3rem .6rem">${i}</button>`;
-        }
-        el.innerHTML = html;
-    }
+async function cobrarFee(id, nombre, monto) {
+    if(!await confirmAction(`Marcar $${monto} de ${nombre} como cobrado. Esta acción no se puede deshacer.`,'Sí, cobrado','Cancelar'))return;
+    try{const res=await fetch(`/admin/fees/${id}/cobrar`,{method:'POST'});const data=await res.json();if(data.success){showToast(`✅ Fee de ${nombre} cobrado`);cargarFees();}else showToast(data.error,'error');}catch{showToast('Error','error');}
+}
 
-    function irPagina(n) { paginaActual = n; renderTickets(); }
-
-    // Cargar cancelaciones al inicio
-    async function cargarCancelaciones() {
-        try {
-            const res  = await fetch('/admin/cancelaciones');
-            const data = await res.json();
-            const tbody = document.getElementById('cancelaciones-tbody');
-            const count = document.getElementById('cancel-count');
-            if (count) count.textContent = (data.cancelaciones?.length || 0) + ' registros';
-            if (!data.cancelaciones?.length) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-3);padding:1.5rem">No hay cancelaciones registradas.</td></tr>';
-                return;
-            }
-            tbody.innerHTML = data.cancelaciones.map(c => `
-                <tr>
-                    <td class="text-small text-muted">${new Date(c.created_at).toLocaleDateString()}</td>
-                    <td><span class="badge ${c.cancelado_por === 'cliente' ? 'badge-en_proceso' : 'badge-pendiente'}">${c.cancelado_por}</span></td>
-                    <td class="text-small">${c.usuario_nombre || '—'}</td>
-                    <td class="text-small">${c.titulo || '—'}</td>
-                    <td class="text-small">${c.categoria || '—'}</td>
-                    <td class="text-small text-muted">${c.motivo || '—'}</td>
-                </tr>
-            `).join('');
-        } catch(e) {
-            console.error('Error cancelaciones:', e);
-        }
-    }
-
-    cargarCancelaciones();
-
-    let idAEliminar = null, tipoAEliminar = null;
-
-    function cerrarModal(id) { document.getElementById(id).classList.remove('open'); }
-
-    document.querySelectorAll('.modal-overlay').forEach(el => {
-        el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
-    });
-
-    function abrirEditarTecnico(btn) {
-        document.getElementById('tec_id').value           = btn.dataset.id;
-        document.getElementById('tec_nombre').value       = btn.dataset.nombre;
-        document.getElementById('tec_email').value        = btn.dataset.email;
-        document.getElementById('tec_telefono').value     = btn.dataset.telefono;
-        document.getElementById('tec_especialidad').value = btn.dataset.especialidad;
-        document.getElementById('tec_activo').value       = btn.dataset.activo;
-        document.getElementById('editarTecnicoModal').classList.add('open');
-    }
-
-    async function guardarTecnico(e) {
-        e.preventDefault();
-        const id  = document.getElementById('tec_id').value;
-        const btn = document.getElementById('btnGuardarTec');
-        btn.disabled = true; btn.textContent = 'Enviando...';
-        try {
-            const res  = await fetch(`/admin/tecnicos/${id}`, {
-                method: 'PUT', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    nombre:       document.getElementById('tec_nombre').value,
-                    email:        document.getElementById('tec_email').value,
-                    telefono:     document.getElementById('tec_telefono').value,
-                    especialidad: document.getElementById('tec_especialidad').value,
-                    activo:       document.getElementById('tec_activo').value === 'true'
-                })
-            });
-            const data = await res.json();
-            if (data.success) location.reload();
-            else alert('Error: ' + data.error);
-        } catch (err) { alert('Error de conexión'); }
-        finally { btn.disabled = false; btn.textContent = 'Guardar cambios'; }
-    }
-
-    function abrirEditarCliente(btn) {
-        document.getElementById('cli_id').value       = btn.dataset.id;
-        document.getElementById('cli_nombre').value   = btn.dataset.nombre;
-        document.getElementById('cli_empresa').value  = btn.dataset.empresa !== 'Individual' ? btn.dataset.empresa : '';
-        document.getElementById('cli_email').value    = btn.dataset.email;
-        document.getElementById('cli_telefono').value = btn.dataset.telefono;
-        document.getElementById('cli_tipo').value     = btn.dataset.tipo;
-        document.getElementById('editarClienteModal').classList.add('open');
-    }
-
-    async function guardarCliente(e) {
-        e.preventDefault();
-        const id  = document.getElementById('cli_id').value;
-        const btn = document.getElementById('btnGuardarCli');
-        btn.disabled = true; btn.textContent = 'Enviando...';
-        try {
-            const res  = await fetch(`/admin/clientes/${id}`, {
-                method: 'PUT', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    nombre_contacto: document.getElementById('cli_nombre').value,
-                    nombre_empresa:  document.getElementById('cli_empresa').value || 'Individual',
-                    email:           document.getElementById('cli_email').value,
-                    telefono:        document.getElementById('cli_telefono').value,
-                    tipo_cliente:    document.getElementById('cli_tipo').value
-                })
-            });
-            const data = await res.json();
-            if (data.success) location.reload();
-            else alert('Error: ' + data.error);
-        } catch (err) { alert('Error de conexión'); }
-        finally { btn.disabled = false; btn.textContent = 'Guardar cambios'; }
-    }
-
-    function confirmarEliminar(btn) {
-        idAEliminar   = btn.dataset.id;
-        tipoAEliminar = btn.dataset.tipo;
-        document.getElementById('eliminarNombre').textContent = btn.dataset.nombre;
-        document.getElementById('eliminarModal').classList.add('open');
-    }
-
-    async function ejecutarEliminar() {
-        if (!idAEliminar) return;
-        const btn = document.getElementById('btnEliminar');
-        btn.disabled = true; btn.textContent = 'Enviando...';
-        const url = tipoAEliminar === 'tecnico'
-            ? `/admin/tecnicos/${idAEliminar}`
-            : `/admin/clientes/${idAEliminar}`;
-        try {
-            const res  = await fetch(url, { method: 'DELETE' });
-            const data = await res.json();
-            if (data.success) location.reload();
-            else alert('Error: ' + data.error);
-        } catch (err) { alert('Error de conexión'); }
-        finally { btn.disabled = false; btn.textContent = 'Sí, eliminar'; idAEliminar = null; tipoAEliminar = null; }
-    }
-    // ── Fees de técnicos ──────────────────────────────────────
-    async function cargarFees() {
-        try {
-            const res  = await fetch('/admin/fees');
-            const data = await res.json();
-            const tbody = document.getElementById('feesBody');
-
-            if (!data.fees?.length) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:1.5rem;color:var(--text-3)">No hay fees registrados aún.</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = data.fees.map(f => `
-                <tr>
-                    <td style="font-weight:600">${f.nombre}</td>
-                    <td class="text-small text-muted">${f.especialidad || '—'}</td>
-                    <td>${f.total_trabajos || 0}</td>
-                    <td>${f.promedio_estrellas ? parseFloat(f.promedio_estrellas).toFixed(1) + ' ★' : '—'}</td>
-                    <td style="font-weight:600;color:var(--accent)">$${parseFloat(f.fee_pendiente || 0).toFixed(2)}</td>
-                    <td class="text-small text-muted">$${parseFloat(f.fee_cobrado || 0).toFixed(2)}</td>
-                    <td>
-                        ${parseFloat(f.fee_pendiente || 0) > 0 ? `
-                            <button class="btn btn-success btn-sm"
-                                onclick="cobrarFee('${f.tecnico_id}', '${f.nombre}', ${parseFloat(f.fee_pendiente || 0).toFixed(2)})">
-                                ✅ Marcar cobrado
-                            </button>
-                        ` : '<span class="text-small text-muted">Sin pendiente</span>'}
-                    </td>
-                </tr>
-            `).join('');
-        } catch (e) {
-            console.error('Error cargando fees:', e);
-        }
-    }
-
-    async function cobrarFee(tecnicoId, nombre, monto) {
-        const ok = await confirmAction(
-            `Marcar $${monto} de ${nombre} como cobrado. Esta acción no se puede deshacer.`,
-            'Sí, cobrado', 'Cancelar'
-        );
-        if (!ok) return;
-        try {
-            const res  = await fetch(`/admin/fees/${tecnicoId}/cobrar`, { method: 'POST' });
-            const data = await res.json();
-            if (data.success) {
-                showToast(`✅ Fee de ${nombre} marcado como cobrado`);
-                cargarFees();
-            }
-        } catch (e) { showToast('Error de conexión', 'error'); }
-    }
-
-    cargarFees();
-
+cargarCancelaciones();
+cargarFees();
 </script>
 
 </body>
