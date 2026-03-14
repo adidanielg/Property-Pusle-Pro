@@ -9,10 +9,17 @@ const authService = {
 
         // Admin vive en variables de entorno, no en Supabase
         if (role === 'admin') {
-            if (username !== process.env.ADMIN_USERNAME ||
-                password !== process.env.ADMIN_PASSWORD) {
+            if (username !== process.env.ADMIN_USERNAME) {
                 throw new Error('Credenciales de administrador inválidas');
             }
+            // Comparar con bcrypt si el password está hasheado, o directo si no
+            const adminPass = process.env.ADMIN_PASSWORD || '';
+            const isHashed  = adminPass.startsWith('$2');
+            const valid = isHashed
+                ? await bcrypt.compare(password, adminPass)
+                : password === adminPass;
+            if (!valid) throw new Error('Credenciales de administrador inválidas');
+
             const payload = { id: 'admin', username: 'Administrador', role: 'admin' };
             const token   = jwt.sign(payload, process.env.SESSION_SECRET, { expiresIn: '12h' });
             return { user: payload, token };

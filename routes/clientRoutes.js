@@ -7,7 +7,22 @@ const notificationService = require('../services/notificationService');
 const { validate, schemas }   = require('../middleware/validate');
 const { checkPropiedadLimit, checkTicketLimit, getSiguientePlan } = require('../services/planLimits');
 
-const upload = multer({ storage: multer.memoryStorage() });
+// Multer con validación de tipo y tamaño
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+        fileSize: 5 * 1024 * 1024, // máx 5MB
+        files: 1
+    },
+    fileFilter: (req, file, cb) => {
+        const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        if (allowed.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Solo se permiten imágenes (JPEG, PNG, WebP, GIF)'), false);
+        }
+    }
+});
 
 router.use(requireAuth(['cliente']));
 
