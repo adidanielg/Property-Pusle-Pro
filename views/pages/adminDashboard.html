@@ -228,7 +228,8 @@
         <!-- Tickets -->
         <div class="section-header mb-3">
             <h2>🎫 <span data-i18n="admin.ticketsSystem">Tickets del Sistema</span> <span class="text-muted text-small" id="ticketCount"></span></h2>
-            <div class="flex gap-1">
+            <div class="flex gap-1 flex-wrap">
+                <input id="buscarTicket" class="form-input" style="font-size:.8rem;padding:.35rem .75rem;width:160px" placeholder="Buscar..." oninput="filtrarTickets()">
                 <select id="filtroCategoria" class="form-select" style="font-size:.8rem;padding:.35rem .75rem" onchange="filtrarTickets()">
                     <option value="" data-i18n="admin.allCategories">Todas las categorías</option>
                     <option>Climatización (HVAC)</option>
@@ -249,6 +250,7 @@
                     <option value="pendiente" data-i18n="badge.pending">Pendiente</option>
                     <option value="en_proceso" data-i18n="badge.inProgress">En proceso</option>
                     <option value="completado" data-i18n="badge.completed">Completado</option>
+                    <option value="cancelado">Cancelado</option>
                 </select>
             </div>
         </div>
@@ -290,6 +292,17 @@
                     <% }); %>
                 </tbody>
             </table>
+        </div>
+
+
+        <!-- Paginación tickets -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:1rem;flex-wrap:wrap;gap:.5rem">
+            <span id="paginacionInfo" class="text-small text-muted"></span>
+            <div class="flex gap-1" style="align-items:center">
+                <button id="btnPrev" class="btn btn-secondary btn-sm" onclick="cambiarPagina(-1)">← Anterior</button>
+                <span id="paginacionPages" class="text-small" style="padding:0 .5rem"></span>
+                <button id="btnNext" class="btn btn-secondary btn-sm" onclick="cambiarPagina(1)">Siguiente →</button>
+            </div>
         </div>
 
 
@@ -568,7 +581,34 @@
 
     function irPagina(n) { paginaActual = n; renderTickets(); }
 
-    document.addEventListener('DOMContentLoaded', renderTickets);
+    // Cargar cancelaciones al inicio
+    async function cargarCancelaciones() {
+        try {
+            const res  = await fetch('/admin/cancelaciones');
+            const data = await res.json();
+            const tbody = document.getElementById('cancelaciones-tbody');
+            const count = document.getElementById('cancel-count');
+            if (count) count.textContent = (data.cancelaciones?.length || 0) + ' registros';
+            if (!data.cancelaciones?.length) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-3);padding:1.5rem">No hay cancelaciones registradas.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = data.cancelaciones.map(c => `
+                <tr>
+                    <td class="text-small text-muted">${new Date(c.created_at).toLocaleDateString()}</td>
+                    <td><span class="badge ${c.cancelado_por === 'cliente' ? 'badge-en_proceso' : 'badge-pendiente'}">${c.cancelado_por}</span></td>
+                    <td class="text-small">${c.usuario_nombre || '—'}</td>
+                    <td class="text-small">${c.titulo || '—'}</td>
+                    <td class="text-small">${c.categoria || '—'}</td>
+                    <td class="text-small text-muted">${c.motivo || '—'}</td>
+                </tr>
+            `).join('');
+        } catch(e) {
+            console.error('Error cancelaciones:', e);
+        }
+    }
+
+    cargarCancelaciones();
 
     let idAEliminar = null, tipoAEliminar = null;
 
