@@ -408,7 +408,7 @@
             return;
         }
 
-        btn.disabled = true; btn.textContent = i18n.t('dash.sending');
+        btn.disabled = true; btn.textContent = 'Enviando...';
 
         try {
             const body = {
@@ -427,14 +427,14 @@
             const data = await res.json();
 
             if (data.success) {
-                showToast(i18n.t('profile.saved') || '✅ Perfil actualizado');
+                showToast('✅ Perfil actualizado' || '✅ Perfil actualizado');
                 document.getElementById('p_pass_actual').value = '';
                 document.getElementById('p_pass_nueva').value  = '';
             } else {
                 mostrarMsg('error', data.error);
             }
         } catch (err) { mostrarMsg('error', 'Error de conexión'); }
-        finally { btn.disabled = false; btn.textContent = i18n.t('profile.save'); }
+        finally { btn.disabled = false; btn.textContent = 'Guardar cambios'; }
     }
 
     function mostrarMsg(tipo, texto) {

@@ -640,7 +640,7 @@
         e.preventDefault();
         const id  = document.getElementById('tec_id').value;
         const btn = document.getElementById('btnGuardarTec');
-        btn.disabled = true; btn.textContent = i18n.t('dash.sending');
+        btn.disabled = true; btn.textContent = 'Enviando...';
         try {
             const res  = await fetch(`/admin/tecnicos/${id}`, {
                 method: 'PUT', headers: { 'Content-Type': 'application/json' },
@@ -656,7 +656,7 @@
             if (data.success) location.reload();
             else alert('Error: ' + data.error);
         } catch (err) { alert('Error de conexión'); }
-        finally { btn.disabled = false; btn.textContent = i18n.t('admin.saveChanges'); }
+        finally { btn.disabled = false; btn.textContent = 'Guardar cambios'; }
     }
 
     function abrirEditarCliente(btn) {
@@ -673,7 +673,7 @@
         e.preventDefault();
         const id  = document.getElementById('cli_id').value;
         const btn = document.getElementById('btnGuardarCli');
-        btn.disabled = true; btn.textContent = i18n.t('dash.sending');
+        btn.disabled = true; btn.textContent = 'Enviando...';
         try {
             const res  = await fetch(`/admin/clientes/${id}`, {
                 method: 'PUT', headers: { 'Content-Type': 'application/json' },
@@ -689,7 +689,7 @@
             if (data.success) location.reload();
             else alert('Error: ' + data.error);
         } catch (err) { alert('Error de conexión'); }
-        finally { btn.disabled = false; btn.textContent = i18n.t('admin.saveChanges'); }
+        finally { btn.disabled = false; btn.textContent = 'Guardar cambios'; }
     }
 
     function confirmarEliminar(btn) {
@@ -702,7 +702,7 @@
     async function ejecutarEliminar() {
         if (!idAEliminar) return;
         const btn = document.getElementById('btnEliminar');
-        btn.disabled = true; btn.textContent = i18n.t('dash.sending');
+        btn.disabled = true; btn.textContent = 'Enviando...';
         const url = tipoAEliminar === 'tecnico'
             ? `/admin/tecnicos/${idAEliminar}`
             : `/admin/clientes/${idAEliminar}`;
@@ -712,7 +712,7 @@
             if (data.success) location.reload();
             else alert('Error: ' + data.error);
         } catch (err) { alert('Error de conexión'); }
-        finally { btn.disabled = false; btn.textContent = i18n.t('admin.deleteConfirmBtn'); idAEliminar = null; tipoAEliminar = null; }
+        finally { btn.disabled = false; btn.textContent = 'Sí, eliminar'; idAEliminar = null; tipoAEliminar = null; }
     }
     // ── Fees de técnicos ──────────────────────────────────────
     async function cargarFees() {

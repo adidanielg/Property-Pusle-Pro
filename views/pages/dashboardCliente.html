@@ -104,7 +104,13 @@
         <!-- Tickets -->
         <div class="section-header mb-3">
             <h2 data-i18n="dash.myTickets">Historial de Reportes</h2>
-            <button class="btn btn-primary btn-sm" onclick="abrirModal('ticketModal')" data-i18n="dash.newTicket">+ Nuevo reporte</button>
+            <% if (propiedades.length === 0) { %>
+                <button class="btn btn-secondary btn-sm" disabled title="Primero añade una propiedad" style="opacity:.5;cursor:not-allowed">
+                    🔒 Necesitas una propiedad
+                </button>
+            <% } else { %>
+                <button class="btn btn-primary btn-sm" onclick="abrirModal('ticketModal')" data-i18n="dash.newTicket">+ Nuevo reporte</button>
+            <% } %>
         </div>
 
         <% if (tickets.length === 0) { %>
@@ -345,7 +351,11 @@
             </div>
             <div class="form-group">
                 <label class="form-label" data-i18n="dash.photo">Foto (opcional)</label>
-                <input type="file" name="foto" accept="image/*" class="form-input">
+                <input type="file" name="foto" id="fotoTicket" accept="image/*" class="form-input" onchange="previewFoto(this)">
+                <div id="fotoPreviewWrap" style="display:none;margin-top:.5rem">
+                    <img id="fotoPreview" style="max-width:100%;border-radius:8px;max-height:180px;object-fit:cover">
+                    <p id="fotoInfo" class="text-small text-muted mt-1"></p>
+                </div>
             </div>
             <button type="submit" class="btn btn-primary btn-full" id="btnTicket" data-i18n="dash.submit">Enviar reporte</button>
         </form>
@@ -481,7 +491,7 @@
     async function enviarCalificacion() {
         if (estrellasSeleccionadas === 0) { alert('Selecciona al menos una estrella'); return; }
         const btn = document.getElementById('btnCalificar');
-        btn.disabled = true; btn.textContent = i18n.t('dash.sending');
+        btn.disabled = true; btn.textContent = 'Enviando...';
         try {
             const res  = await fetch('/cliente/calificar', {
                 method:  'POST',
@@ -500,7 +510,7 @@
     }
 
     function editarPropiedad(btn) {
-        document.getElementById('propModalTitle').textContent = i18n.t('dash.edit') + ' Propiedad';
+        document.getElementById('propModalTitle').textContent = 'Editar' + ' Propiedad';
         document.getElementById('prop_id').value  = btn.dataset.id;
         document.getElementById('prop_dir').value = btn.dataset.dir;
         document.getElementById('prop_srv').value = btn.dataset.srv !== 'null' ? btn.dataset.srv : '';
@@ -511,7 +521,7 @@
         e.preventDefault();
         const id  = document.getElementById('prop_id').value;
         const btn = document.getElementById('btnProp');
-        btn.disabled = true; btn.textContent = i18n.t('dash.sending');
+        btn.disabled = true; btn.textContent = 'Enviando...';
         try {
             const res = await fetch(id ? `/cliente/propiedades/${id}` : '/cliente/propiedades', {
                 method:  id ? 'PUT' : 'POST',
@@ -531,7 +541,7 @@
                 showToast('Error: ' + data.message || data.error);
             }
         } catch (err) { showToast('Error de conexión'); }
-        finally { btn.disabled = false; btn.textContent = i18n.t('dash.save'); }
+        finally { btn.disabled = false; btn.textContent = 'Guardar'; }
     }
 
     async function eliminarPropiedad(id) {
@@ -582,7 +592,7 @@
             return;
         }
 
-        btn.disabled = true; btn.textContent = i18n.t('dash.sending');
+        btn.disabled = true; btn.textContent = 'Enviando...';
 
         try {
             const body = {
@@ -601,14 +611,14 @@
             const data = await res.json();
 
             if (data.success) {
-                showToast(i18n.t('profile.saved') || '✅ Perfil actualizado');
+                showToast('✅ Perfil actualizado');
                 document.getElementById('p_pass_actual').value = '';
                 document.getElementById('p_pass_nueva').value  = '';
             } else {
                 mostrarMsg('error', data.error);
             }
         } catch (err) { mostrarMsg('error', 'Error de conexión'); }
-        finally { btn.disabled = false; btn.textContent = i18n.t('profile.save'); }
+        finally { btn.disabled = false; btn.textContent = 'Guardar cambios'; }
     }
 
 
@@ -738,7 +748,7 @@
     async function enviarTicket(e) {
         e.preventDefault();
         const btn  = document.getElementById('btnTicket');
-        const done = btnLoading(btn, i18n.t('dash.sending'));
+        const done = btnLoading(btn, 'Enviando...');
 
         try {
             const form     = e.target;
@@ -763,8 +773,8 @@
             const data = await res.json();
 
             if (data.success) {
-                showToast(i18n.t('dash.ticketCreated') || '✅ Ticket creado');
-                document.getElementById('modalNuevoTicket').classList.remove('open');
+                showToast('✅ Ticket creado');
+                document.getElementById('ticketModal').classList.remove('open');
                 form.reset();
                 document.getElementById('fotoPreviewWrap').style.display = 'none';
                 setTimeout(() => location.reload(), 1000);
