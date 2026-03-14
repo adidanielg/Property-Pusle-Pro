@@ -92,17 +92,47 @@
 
 <!-- Modal éxito -->
 <div id="successModal" class="modal-overlay">
-    <div class="modal" style="text-align:center">
-        <div style="font-size:2.5rem;margin-bottom:1rem">🎉</div>
-        <h2 style="margin-bottom:.5rem" data-i18n="reg.successTitle">¡Cuenta creada!</h2>
-        <p class="text-muted mb-3" data-i18n="reg.successMsg">Guarda tu nombre de usuario para iniciar sesión:</p>
-        <div style="background:#ede9ff;border:2px solid #6c63ff;padding:1rem 1.5rem;border-radius:10px;font-size:1.35rem;font-weight:700;color:#6c63ff;margin-bottom:.75rem" id="usernameDisplay"></div>
-        <p class="text-small text-muted mb-3" data-i18n="reg.successHint">📋 Cópialo — lo necesitarás para iniciar sesión</p>
-        <a href="/auth/login" class="btn btn-primary btn-full" data-i18n="reg.goLogin">Ir a iniciar sesión →</a>
+    <div class="modal" style="max-width:400px;text-align:center">
+        <div style="font-size:3rem;margin-bottom:1rem">🎉</div>
+        <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:.5rem" data-i18n="reg.successTitle">¡Cuenta creada!</h2>
+        <p class="text-muted mb-3" style="font-size:.9rem" data-i18n="reg.successMsg">Este es tu nombre de usuario para iniciar sesión:</p>
+
+        <div style="background:var(--accent-soft);border:2px solid var(--accent);padding:1.25rem 1.5rem;border-radius:12px;margin-bottom:.75rem;position:relative">
+            <div id="usernameDisplay" style="font-size:1.6rem;font-weight:700;color:var(--accent);letter-spacing:.5px;font-family:var(--font-mono)"></div>
+        </div>
+
+        <button onclick="copiarUsername()" class="btn btn-secondary btn-sm mb-3" style="width:100%">
+            📋 Copiar nombre de usuario
+        </button>
+
+        <p class="text-small text-muted mb-3" style="background:var(--yellow-soft);padding:.6rem .75rem;border-radius:8px;color:#92400e">
+            ⚠️ Guárdalo — lo necesitas para iniciar sesión
+        </p>
+
+        <a id="goLoginBtn" href="/auth/login" class="btn btn-primary btn-full" data-i18n="reg.goLogin">
+            Ir a iniciar sesión →
+        </a>
     </div>
 </div>
 
 <script>
+
+    function copiarUsername() {
+        const username = document.getElementById('usernameDisplay').textContent;
+        navigator.clipboard.writeText(username).then(() => {
+            showToast('✅ Nombre de usuario copiado');
+        }).catch(() => {
+            // fallback
+            const el = document.createElement('textarea');
+            el.value = username;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showToast('✅ Copiado');
+        });
+    }
+
     function toggleEmpresa() {
         const select = document.getElementById('tipo_cliente');
         const tipo   = select.value;
