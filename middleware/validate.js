@@ -70,11 +70,12 @@ const schemas = {
 
     // Auth
     register: {
-        nombre_contacto: { required: true,  type: 'string', minLength: 2, maxLength: 100 },
-        email:           { required: true,  email: true },
-        telefono:        { required: true,  type: 'string', minLength: 7, maxLength: 20 },
-        password:        { required: true,  type: 'string', minLength: 6, maxLength: 100 },
-        role:            { required: true,  enum: ['cliente', 'tecnico'] },
+        nombre:   { required: true,  type: 'string', minLength: 2, maxLength: 100 },
+        apellido: { required: true,  type: 'string', minLength: 2, maxLength: 100 },
+        email:    { required: true,  email: true },
+        telefono: { required: true,  type: 'string', minLength: 7, maxLength: 20 },
+        password: { required: true,  type: 'string', minLength: 6, maxLength: 100 },
+        role:     { required: true,  enum: ['cliente', 'tecnico'] },
     },
 
     login: {

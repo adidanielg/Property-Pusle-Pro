@@ -91,7 +91,7 @@
 </div>
 
 <!-- Modal éxito -->
-<div id="successModal" class="modal-overlay">
+<div id="successModal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
     <div class="modal" style="max-width:400px;text-align:center">
         <div style="font-size:3rem;margin-bottom:1rem">🎉</div>
         <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:.5rem" data-i18n="reg.successTitle">¡Cuenta creada!</h2>
@@ -114,6 +114,10 @@
         </a>
     </div>
 </div>
+
+<script src="/js/app.js"></script>
+<script src="/js/theme.js"></script>
+<script src="/js/i18n.js"></script>
 
 <script>
 
@@ -181,8 +185,5 @@
     }
 </script>
 
-<script src="/js/app.js"></script>
-<script src="/js/theme.js"></script>
-<script src="/js/i18n.js"></script>
 </body>
 </html>
