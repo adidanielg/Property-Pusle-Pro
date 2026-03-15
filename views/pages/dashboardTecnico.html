@@ -154,7 +154,7 @@
 .tec-widget { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.2rem; }
 .tec-widget-lbl { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--text-3); margin-bottom:.9rem; }
 
-/* Stats */
+/* Earnings */
 .tec-earn-row { display:flex; justify-content:space-between; align-items:center; padding:.5rem 0; border-bottom:1px solid var(--border); }
 .tec-earn-row:last-child { border-bottom:none; }
 .tec-earn-label { font-size:.8rem; color:var(--text-2); }
@@ -283,7 +283,17 @@
                         <% if (esMio) { %><span class="tec-t-mine">Mi trabajo</span><% } %>
                     </div>
                     <div class="tec-t-meta">
-                        <span>📍 <%= ticket.propiedades ? ticket.propiedades.direccion : '—' %></span>
+                        <% const suscrito = tecnico.suscripcion_activa || tecnico.invitado; %>
+                        <span>📍 
+                            <% if (suscrito || ticket.estado === 'en_proceso') { %>
+                                <%= ticket.propiedades ? ticket.propiedades.direccion : '—' %>
+                            <% } else { %>
+                                <span style="filter:blur(4px);user-select:none;pointer-events:none;color:var(--text-2)">
+                                    <%= ticket.propiedades ? ticket.propiedades.direccion.replace(/./g, '●') : '••••••••••' %>
+                                </span>
+                                <span style="font-size:.7rem;color:var(--accent);cursor:pointer" onclick="abrirModal('modalSuscripcionTec')">🔒 Suscríbete para ver</span>
+                            <% } %>
+                        </span>
                         <span>👤 <%= ticket.companias ? (ticket.companias.nombre_empresa !== 'Individual' ? ticket.companias.nombre_empresa : ticket.companias.nombre_contacto) : '—' %></span>
                         <span style="font-family:'JetBrains Mono',monospace;font-size:.7rem"><%= new Date(ticket.created_at).toLocaleDateString() %></span>
                     </div>
@@ -305,6 +315,7 @@
                             <a href="<%= ticket.foto_url %>" target="_blank" class="tb tb-ghost tb-sm">📸 Foto</a>
                         <% } %>
                         <% if (ticket.propiedades && ticket.propiedades.direccion) { %>
+                            <% if (suscrito || ticket.estado === 'en_proceso') { %>
                             <a href="https://maps.google.com/?daddr=<%= encodeURIComponent(ticket.propiedades.direccion) %>"
                                target="_blank"
                                rel="noopener noreferrer"
@@ -312,6 +323,12 @@
                                title="Abrir en GPS">
                                 🧭 Cómo llegar
                             </a>
+                            <% } else { %>
+                            <button class="tb tb-ghost tb-sm" onclick="abrirModal('modalSuscripcionTec')"
+                                style="opacity:.6">
+                                🔒 Cómo llegar
+                            </button>
+                            <% } %>
                         <% } %>
                     </div>
                 </div>
@@ -357,19 +374,25 @@
 
     <!-- Earnings -->
     <div class="tec-widget">
-        <div class="tec-widget-lbl">Mis Estadísticas</div>
+        <div class="tec-widget-lbl">Mis Ganancias</div>
         <div class="tec-earn-row">
             <span class="tec-earn-label">Total trabajos</span>
-            <span class="tec-earn-value" id="statTotalTrabajos">—</span>
+            <span class="tec-earn-value"><%= fees.totalTrabajos %></span>
         </div>
         <div class="tec-earn-row">
-            <span class="tec-earn-label">Completados</span>
-            <span class="tec-earn-value" style="color:var(--green)" id="statCompletados">—</span>
+            <span class="tec-earn-label">Fee pendiente</span>
+            <span class="tec-earn-value" style="color:var(--accent)">$<%= fees.feePendiente.toFixed(2) %></span>
         </div>
         <div class="tec-earn-row">
-            <span class="tec-earn-label">En proceso</span>
-            <span class="tec-earn-value" style="color:var(--accent)" id="statEnProceso">—</span>
+            <span class="tec-earn-label">Fee cobrado</span>
+            <span class="tec-earn-value" style="color:var(--green)">$<%= fees.feeCobrado.toFixed(2) %></span>
         </div>
+        <% if (fees.primerTrabajo) { %>
+        <div style="margin-top:.75rem;background:var(--green-soft);border:1px solid var(--green);border-radius:8px;padding:.6rem .75rem;font-size:.75rem;color:#065f46">
+            🎉 <strong>Tu primer trabajo es gratis</strong> — sin fee por el próximo trabajo
+        </div>
+        <% } %>
+        <div style="margin-top:.75rem;font-size:.72rem;color:var(--text-3)">$4.50 por trabajo completado · primer trabajo gratis</div>
     </div>
 
     <!-- Ranking -->
@@ -501,34 +524,10 @@ async function cambiarEstado(ticketId, nuevoEstado) {
     try {
         const res  = await fetch(`/tecnico/tickets/${ticketId}/estado`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({estado:nuevoEstado}) });
         const data = await res.json();
-        if (data.success) {
-            location.reload();
-        } else if (data.error === 'sin_suscripcion') {
-            // Mostrar modal de suscripción
-            abrirModal('modalSuscripcionTec');
-        } else {
-            showToast('Error: ' + data.error, 'error');
-        }
+        if (data.success) location.reload();
+        else showToast('Error: ' + data.error, 'error');
     } catch { showToast('Error de conexión','error'); }
 }
-
-// Llenar estadísticas dinámicamente desde los tickets
-document.addEventListener('DOMContentLoaded', () => {
-    const tickets = document.querySelectorAll('[data-estado]');
-    let completados = 0, enProceso = 0;
-    tickets.forEach(t => {
-        const estado = t.getAttribute('data-estado');
-        if (estado === 'completado') completados++;
-        if (estado === 'en_proceso') enProceso++;
-    });
-    const total = completados + enProceso;
-    const el1 = document.getElementById('statTotalTrabajos');
-    const el2 = document.getElementById('statCompletados');
-    const el3 = document.getElementById('statEnProceso');
-    if (el1) el1.textContent = total;
-    if (el2) el2.textContent = completados;
-    if (el3) el3.textContent = enProceso;
-});
 
 // CANCELAR
 let tecTicketACancelar=null;
@@ -636,64 +635,5 @@ cargarRanking();
 <script src="/js/app.js"></script>
 <script src="/js/i18n.js"></script>
 <script src="/js/notifications.js"></script>
-
-<!-- Modal: Suscripción Técnico -->
-<div id="modalSuscripcionTec" class="modal-overlay">
-    <div class="modal" style="max-width:460px">
-        <div class="modal-header">
-            <h2>🔒 Suscripción requerida</h2>
-            <button class="modal-close" onclick="cerrarModal('modalSuscripcionTec')">✕</button>
-        </div>
-        <div style="text-align:center;padding:1rem 0">
-            <div style="font-size:2.5rem;margin-bottom:.75rem">🛠️</div>
-            <p style="color:var(--text-2);font-size:.9rem;line-height:1.6;margin-bottom:1.5rem">
-                Para aceptar trabajos necesitas una suscripción activa.<br>
-                Accede a todos los trabajos de la plataforma por solo
-                <strong style="color:var(--accent)">$19.99/mes</strong>.
-            </p>
-            <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1.5rem;text-align:left">
-                <div style="font-size:.82rem;color:var(--text-2);display:flex;flex-direction:column;gap:.4rem">
-                    <div>✅ Acceso a todos los trabajos disponibles</div>
-                    <div>✅ Chat con clientes</div>
-                    <div>✅ Construye tu reputación y ranking</div>
-                    <div>✅ Cancela cuando quieras</div>
-                </div>
-            </div>
-            <button onclick="suscribirseTecnico()" style="width:100%;padding:14px 20px;background:linear-gradient(135deg,#7c6dfa,#a78bfa);color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:.01em;box-shadow:0 4px 24px rgba(124,109,250,.4);transition:all .2s ease" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 32px rgba(124,109,250,.5)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 24px rgba(124,109,250,.4)'">
-                🚀 Suscribirme por $19.99/mes →
-            </button>
-            <p style="font-size:.72rem;color:var(--text-3);margin-top:.75rem">
-                Pago seguro con Stripe · Sin contratos
-            </p>
-        </div>
-    </div>
-</div>
-
-<script>
-async function suscribirseTecnico() {
-    try {
-        const btn = event.target;
-        btn.disabled = true;
-        btn.textContent = 'Redirigiendo...';
-        const res  = await fetch('/stripe/checkout-tecnico', { method: 'POST' });
-        const data = await res.json();
-        if (data.success && data.url) {
-            window.location.href = data.url;
-        } else {
-            showToast(data.error || 'Error al iniciar el pago', 'error');
-            btn.disabled = false;
-            btn.textContent = 'Suscribirme por $19.99/mes →';
-        }
-    } catch { showToast('Error de conexión', 'error'); }
-}
-
-// Mostrar mensaje de suscripción exitosa
-const tecParams = new URLSearchParams(window.location.search);
-if (tecParams.get('suscrito') === '1') {
-    showToast('🎉 ¡Suscripción activada! Ya puedes aceptar trabajos.');
-    history.replaceState({}, '', '/tecnico/dashboard');
-}
-</script>
-
 </body>
 </html>

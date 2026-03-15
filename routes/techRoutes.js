@@ -16,7 +16,7 @@ router.get('/dashboard', async (req, res) => {
                 .select('estrellas, comentario, created_at, companias:cliente_id(nombre_contacto, nombre_empresa)')
                 .eq('tecnico_id', req.user.id)
                 .order('created_at', { ascending: false }),
-            supabase.from('tecnicos').select('ocupado').eq('id', req.user.id).single()
+            supabase.from('tecnicos').select('ocupado, suscripcion_activa, invitado').eq('id', req.user.id).single()
         ]);
 
         const totalCalif = calificaciones?.length || 0;
@@ -26,7 +26,12 @@ router.get('/dashboard', async (req, res) => {
 
         res.render('dashboardTecnico.html', {
             title:          'Panel Técnico | PropertyPulse',
-            tecnico:        { ...req.user, ocupado: tecnicoData?.ocupado || false },
+            tecnico:        { 
+                ...req.user, 
+                ocupado:            tecnicoData?.ocupado            || false,
+                suscripcion_activa: tecnicoData?.suscripcion_activa || false,
+                invitado:           tecnicoData?.invitado           || false,
+            },
             tickets:        tickets        || [],
             calificaciones: calificaciones || [],
             promedio,
