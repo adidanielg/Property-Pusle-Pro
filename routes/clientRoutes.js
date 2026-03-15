@@ -4,6 +4,7 @@ const multer     = require('multer');
 const { requireAuth }     = require('../middleware/authMiddleware');
 const supabase            = require('../services/supabaseClient');
 const notificationService = require('../services/notificationService');
+const ticketService        = require('../services/ticketService');
 const { validate, schemas }   = require('../middleware/validate');
 const { checkPropiedadLimit, checkTicketLimit, getSiguientePlan } = require('../services/planLimits');
 
@@ -89,6 +90,13 @@ router.post('/tickets', upload.single('foto'), validate(schemas.crearTicket), as
 
         notificationService.notificarTecnicos(ticket)
             .catch(err => console.error('[PUSH técnicos]', err.message));
+
+        // Notificar técnicos disponibles por email
+        ticketService.notificarTecnicosNuevoTicket(
+            ticket,
+            ticket.propiedades?.direccion || '',
+            ticket.companias?.nombre_contacto || ticket.companias?.nombre_empresa || ''
+        ).catch(err => console.error('[EMAIL técnicos]', err.message));
 
         res.status(201).json({ success: true, ticket });
 

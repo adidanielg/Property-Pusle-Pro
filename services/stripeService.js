@@ -157,6 +157,26 @@ const stripeService = {
                     .eq('id', clienteId);
 
                 console.log(`[STRIPE] ✅ Checkout completado: cliente=${clienteId} plan=${plan}`);
+
+                // Enviar email de confirmación de plan
+                try {
+                    const emailService = require('./emailService');
+                    const { data: cliente } = await supabase
+                        .from('companias')
+                        .select('email, nombre_contacto')
+                        .eq('id', clienteId)
+                        .single();
+                    if (cliente) {
+                        emailService.enviarConfirmacionPlan({
+                            nombre: cliente.nombre_contacto,
+                            email:  cliente.email,
+                            plan,
+                            proximaFactura: plan === 'starter' ? 'en 10 días (después del trial)' : null
+                        });
+                    }
+                } catch (emailErr) {
+                    console.error('[EMAIL] Error confirmación plan:', emailErr.message);
+                }
                 break;
             }
 

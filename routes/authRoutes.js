@@ -162,6 +162,50 @@ router.post('/set-lang', async (req, res) => {
     }
 });
 
+// ── GET /auth/recuperar-usuario ──────────────────────────────
+router.get('/recuperar-usuario', (req, res) => {
+    res.render('recuperarUsuario.html', { error: null, success: null });
+});
+
+// ── POST /auth/recuperar-usuario ─────────────────────────────
+router.post('/recuperar-usuario', async (req, res) => {
+    const { email } = req.body;
+    if (!email) return res.render('recuperarUsuario.html', { error: 'Ingresa tu email', success: null });
+
+    try {
+        const supabase = require('../services/supabaseClient');
+        const emailService = require('../services/emailService');
+
+        // Buscar en clientes
+        let { data: user } = await supabase.from('companias').select('nombre_contacto, email, username').eq('email', email).single();
+        let role = 'cliente';
+
+        // Si no está en clientes, buscar en técnicos
+        if (!user) {
+            const { data: tec } = await supabase.from('tecnicos').select('nombre, email, username').eq('email', email).single();
+            if (tec) { user = { nombre_contacto: tec.nombre, email: tec.email, username: tec.username }; role = 'tecnico'; }
+        }
+
+        // Siempre mostrar el mismo mensaje por seguridad
+        if (user) {
+            emailService.enviarRecuperacionUsername({
+                nombre:   user.nombre_contacto,
+                email:    user.email,
+                username: user.username,
+                role
+            });
+        }
+
+        res.render('recuperarUsuario.html', {
+            error: null,
+            success: 'Si ese email está registrado, recibirás tu usuario en los próximos minutos.'
+        });
+    } catch (err) {
+        console.error('[RECUPERAR]', err.message);
+        res.render('recuperarUsuario.html', { error: 'Error procesando solicitud', success: null });
+    }
+});
+
 // ── GET /auth/logout ──────────────────────────────────────────
 router.get('/logout', (req, res) => {
     res.clearCookie('jwt');

@@ -66,7 +66,7 @@ const ticketService = {
                 .eq('id', tecnicoId);
         }
 
-        // Notificar al cliente
+        // Notificar al cliente por push
         notificationService.notificarCliente(
             ticketActual.cliente_id,
             nuevoEstado,
@@ -74,6 +74,36 @@ const ticketService = {
         ).catch(err => console.error('[PUSH]', err.message));
 
         return ticket;
+    }
+};
+
+// Notificar a técnicos disponibles por email cuando hay nuevo ticket
+ticketService.notificarTecnicosNuevoTicket = async function(ticket, propiedadDireccion, clienteNombre) {
+    try {
+        const emailService = require('./emailService');
+        // Obtener técnicos activos y disponibles
+        const { data: tecnicos } = await supabase
+            .from('tecnicos')
+            .select('nombre, email')
+            .eq('activo', true)
+            .eq('ocupado', false);
+
+        if (!tecnicos?.length) return;
+
+        // Notificar a cada técnico disponible
+        for (const tec of tecnicos) {
+            emailService.notificarTicketATecnico({
+                tecnicoNombre: tec.nombre,
+                tecnicoEmail:  tec.email,
+                motivo:        ticket.motivo,
+                categoria:     ticket.categoria,
+                direccion:     propiedadDireccion,
+                clienteNombre
+            }).catch(() => {});
+        }
+        console.log(`[EMAIL] Notificados ${tecnicos.length} técnicos de nuevo ticket`);
+    } catch (err) {
+        console.error('[EMAIL] Error notificando técnicos:', err.message);
     }
 };
 

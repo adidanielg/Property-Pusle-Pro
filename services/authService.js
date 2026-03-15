@@ -89,6 +89,22 @@ const authService = {
             throw new Error(error.message);
         }
 
+        // Enviar email de bienvenida (async — no bloquea el registro)
+        try {
+            const emailService = require('./emailService');
+            const nombre = role === 'tecnico'
+                ? newUser.nombre
+                : newUser.nombre_contacto;
+            emailService.enviarBienvenida({
+                nombre,
+                email:    newUser.email,
+                username: newUser.username,
+                role
+            });
+        } catch (emailErr) {
+            console.error('[EMAIL] Error enviando bienvenida:', emailErr.message);
+        }
+
         return newUser.username;
     }
 };
