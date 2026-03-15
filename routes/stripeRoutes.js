@@ -68,8 +68,9 @@ router.post('/cancel', requireAuth(['cliente']), async (req, res) => {
 // Webhook manejado en server.js directamente
 
 // ── POST /stripe/activate-by-session ─────────────────────────
-// Fallback: activar plan si el webhook tardó o falló
-router.post('/activate-by-session', requireAuth(['cliente']), async (req, res) => {
+// Fallback público: activar plan si el webhook tardó o falló
+// No requiere auth — usa session_id para verificar y cliente_id del metadata
+router.post('/activate-by-session', async (req, res) => {
     try {
         const { session_id } = req.body;
         if (!session_id) return res.json({ success: false });
@@ -77,28 +78,32 @@ router.post('/activate-by-session', requireAuth(['cliente']), async (req, res) =
         const stripe  = require('stripe')(process.env.STRIPE_SECRET_KEY);
         const session = await stripe.checkout.sessions.retrieve(session_id);
 
-        // Para trials: payment_status = 'no_payment_required', status = 'complete'
-        // Para pagos normales: payment_status = 'paid', status = 'complete'
-        const isValid = session.status === 'complete' || 
+        // Verificar que el checkout fue completado
+        const isValid = session.status === 'complete' ||
                         session.payment_status === 'paid' ||
                         session.payment_status === 'no_payment_required';
         if (!isValid) {
-            return res.json({ success: false, reason: 'not_paid', status: session.status, payment_status: session.payment_status });
+            return res.json({ success: false, reason: 'not_completed' });
         }
+
+        // Obtener cliente_id del metadata
+        const clienteId = session.metadata?.cliente_id;
+        if (!clienteId) return res.json({ success: false, reason: 'no_cliente_id' });
 
         const plan  = session.metadata?.plan || 'starter';
         const subId = session.subscription;
+        const supabase = require('../services/supabaseClient');
 
-        await require('../services/supabaseClient')
+        await supabase
             .from('companias')
             .update({
                 plan,
                 stripe_subscription_id: subId,
                 suscripcion_activa:     true,
             })
-            .eq('id', req.user.id);
+            .eq('id', clienteId);
 
-        console.log(`[STRIPE FALLBACK] Plan activado: cliente=${req.user.id} plan=${plan}`);
+        console.log(`[STRIPE FALLBACK] ✅ Plan activado: cliente=${clienteId} plan=${plan}`);
         res.json({ success: true, plan });
     } catch (err) {
         console.error('[STRIPE FALLBACK]', err.message);

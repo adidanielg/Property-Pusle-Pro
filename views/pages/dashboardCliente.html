@@ -590,7 +590,7 @@
                     <li>✓ 10 tickets activos</li>
                     <li>✓ 1 técnico</li>
                 </ul>
-                <button id="btn-plan-starter" class="ppb ppb-ghost ppb-full" onclick="elegirPlan('starter', this)" style="margin-top:.5rem">Empezar gratis →</button>
+                <button class="ppb ppb-ghost ppb-full" onclick="elegirPlan('starter')" style="margin-top:.5rem">Empezar gratis →</button>
             </div>
 
             <!-- Pro -->
@@ -604,7 +604,7 @@
                     <li>✓ 50 tickets activos</li>
                     <li>✓ 5 técnicos</li>
                 </ul>
-                <button id="btn-plan-pro" class="ppb ppb-primary ppb-full" onclick="elegirPlan('pro', this)" style="margin-top:.5rem">Elegir Pro →</button>
+                <button class="ppb ppb-primary ppb-full" onclick="elegirPlan('pro')" style="margin-top:.5rem">Elegir Pro →</button>
             </div>
 
             <!-- Business -->
@@ -663,6 +663,8 @@
     </div>
 </div>
 
+<script src="/js/app.js"></script>
+<script src="/js/imageOptimizer.js"></script>
 <script>
 // MOTIVOS
 const MOTIVOS = {"Climatización (HVAC)":["Aire acondicionado no enfría","Aire acondicionado no enciende","Fuga de agua del A/C","Cambio de filtro de aire","Termostato dañado","Calefacción no funciona","Ruido en el sistema HVAC","Mantenimiento preventivo HVAC"],"Electricidad":["Corte de electricidad en área específica","Interruptor (breaker) disparado","Enchufe no funciona","Luz no enciende","Luces parpadeando","Instalación de lámpara","Problema con ventilador de techo","Problema con panel eléctrico"],"Plomería":["Fuga de agua","Grifo goteando","Inodoro tapado","Inodoro no descarga","Baja presión de agua","Tubería rota","Desagüe lento","Fuga bajo el fregadero","Calentador de agua no funciona"],"Piscina":["Agua sucia","Bomba de piscina dañada","Filtro de piscina obstruido","Nivel químico incorrecto","Fuga en piscina","Limpieza de piscina","Reparación de iluminación de piscina"],"Jardinería / Landscaping":["Corte de césped","Árbol caído","Sistema de riego roto","Plantas secas","Maleza excesiva","Limpieza de jardín","Poda de árboles"],"Irrigation / Sistema de riego":["Aspersor roto","Aspersores no funcionan","Fuga en sistema de riego","Temporizador de riego dañado","Zona de riego no funciona"],"Pest Control":["Hormigas","Cucarachas","Roedores","Avispas","Termitas","Mosquitos","Inspección de plagas"],"Limpieza / Pressure Washing":["Lavado de driveway","Lavado de paredes exteriores","Lavado de techo","Lavado de patio","Limpieza de ventanas exteriores"],"Electrodomésticos":["Refrigerador no enfría","Estufa no funciona","Lavadora dañada","Secadora dañada","Lavavajillas no funciona","Microondas dañado"],"Estructura / Reparaciones":["Puerta dañada","Cerradura rota","Ventana rota","Pared dañada","Techo con gotera","Piso dañado","Escalera dañada"],"Seguridad":["Alarma no funciona","Cámara de seguridad dañada","Sensor de humo dañado","Sensor de movimiento dañado"],"Bajo voltaje / Cámaras":["Instalación de cámara","Cámara no graba","Cámara sin imagen","DVR/NVR no funciona","Instalación de timbre inteligente","Control de acceso dañado","Cableado de bajo voltaje","Sistema de intercomunicación","Instalación de alarma","Revisión de sistema de seguridad"],"Handyman":["Instalación de muebles","Montaje en pared","Reparación de gabinetes","Cambio de bisagras","Reparación de persianas","Instalación de cortinas","Sellado de grietas","Pintura menor","Reparación de drywall","Reparación general menor","Instalación de estantes","Otro trabajo de handyman"],"General":["Inspección general","Mantenimiento preventivo","Reparación menor","Otro problema"]};
@@ -821,9 +823,9 @@ async function abrirPropiedadOPlan() {
     }
 }
 
-async function elegirPlan(plan, btnEl) {
+async function elegirPlan(plan) {
     try {
-        const btn = btnEl || document.getElementById('btn-plan-' + plan);
+        const btn = document.querySelector(`[onclick="elegirPlan('${plan}')"]`);
         if (btn) { btn.disabled = true; btn.textContent = 'Redirigiendo...'; }
         const res  = await fetch('/stripe/checkout', {
             method: 'POST', headers: {'Content-Type':'application/json'},
@@ -836,10 +838,7 @@ async function elegirPlan(plan, btnEl) {
             showToast(data.error || 'Error al iniciar el pago', 'error');
             if (btn) { btn.disabled = false; btn.textContent = plan === 'starter' ? 'Empezar gratis →' : 'Elegir ' + plan + ' →'; }
         }
-    } catch(e) { 
-        console.error('[ELEGIR PLAN]', e);
-        showToast('Error de conexión', 'error'); 
-    }
+    } catch { showToast('Error de conexión', 'error'); }
 }
 
 // ── STRIPE ────────────────────────────────────────────────────
@@ -880,18 +879,12 @@ if (params.get('upgraded') === '1') {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({ session_id: params.get('session_id') || '' })
-    }).then(r => r.json()).then(data => {
-        if (data.success) {
-            console.log('[STRIPE] Plan activado via fallback:', data.plan);
-        }
     }).catch(() => {});
 }
 
 </script>
 
-<script src="/js/app.js"></script>
 <script src="/js/i18n.js"></script>
-<script src="/js/imageOptimizer.js"></script>
 <script src="/js/notifications.js"></script>
 </body>
 </html>
