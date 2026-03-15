@@ -267,3 +267,24 @@ ALTER TABLE password_reset_tokens DISABLE ROW LEVEL SECURITY;
 
 -- Limpiar tokens expirados automáticamente (opcional, correr periódicamente)
 -- DELETE FROM password_reset_tokens WHERE expires_at < NOW();
+
+-- ── Migración: Códigos de invitación para técnicos ──────────
+-- Ejecutar en Supabase → SQL Editor → Run
+
+CREATE TABLE IF NOT EXISTS codigos_invitacion (
+    id         UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
+    codigo     TEXT        NOT NULL UNIQUE,
+    usado      BOOLEAN     NOT NULL DEFAULT FALSE,
+    usado_por  UUID        REFERENCES tecnicos(id) ON DELETE SET NULL,
+    usado_at   TIMESTAMPTZ,
+    creado_por TEXT        NOT NULL DEFAULT 'admin',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_codigos_codigo ON codigos_invitacion(codigo);
+CREATE INDEX IF NOT EXISTS idx_codigos_usado  ON codigos_invitacion(usado);
+
+ALTER TABLE codigos_invitacion DISABLE ROW LEVEL SECURITY;
+
+-- Agregar columna invitado a tecnicos
+ALTER TABLE tecnicos ADD COLUMN IF NOT EXISTS invitado BOOLEAN DEFAULT FALSE;

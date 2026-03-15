@@ -483,6 +483,17 @@
         </div>
     </div>
 
+    <!-- Códigos de Invitación -->
+    <div class="adm-section" id="codigos">
+        <div class="adm-section-head">
+            <h2>🎟️ Códigos de Invitación</h2>
+            <button class="ab ab-green" onclick="generarCodigo()">+ Generar código</button>
+        </div>
+        <div id="codigos-lista" style="padding:1rem">
+            <div style="color:#4a5568;font-size:.85rem">Cargando códigos...</div>
+        </div>
+    </div>
+
     <!-- Fees -->
     <div class="adm-section" id="fees">
         <div class="adm-section-head">
@@ -763,6 +774,65 @@ async function cobrarFee(id, nombre, monto) {
 
 cargarCancelaciones();
 cargarFees();
+
+// ── Códigos de invitación ────────────────────────────────────
+async function cargarCodigos() {
+    try {
+        const res  = await fetch('/admin/codigos');
+        const data = await res.json();
+        const lista = document.getElementById('codigos-lista');
+        if (!lista) return;
+
+        if (!data.codigos?.length) {
+            lista.innerHTML = '<div style="color:#4a5568;font-size:.85rem;font-style:italic">No hay códigos generados. Genera uno para invitar técnicos.</div>';
+            return;
+        }
+
+        lista.innerHTML = data.codigos.map(c => `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:.6rem .85rem;background:${c.usado ? '#0d0f14' : '#141720'};border:1px solid ${c.usado ? '#1e2235' : 'rgba(124,109,250,.3)'};border-radius:8px;margin-bottom:.4rem">
+                <div style="display:flex;align-items:center;gap:.75rem">
+                    <span style="font-family:monospace;font-size:.95rem;font-weight:700;color:${c.usado ? '#4a5568' : '#7c74ff'};letter-spacing:.1em">${c.codigo}</span>
+                    ${c.usado
+                        ? `<span style="font-size:.72rem;color:#4a5568">Usado por <strong style="color:#8892a4">${c.tecnicos?.nombre || 'técnico'}</strong> · ${new Date(c.usado_at).toLocaleDateString()}</span>`
+                        : '<span style="background:rgba(52,211,153,.15);color:#34d399;font-size:.68rem;font-weight:700;padding:.2rem .5rem;border-radius:99px">✅ Disponible</span>'
+                    }
+                </div>
+                ${!c.usado ? `<button class="ab ab-red ab-sm" onclick="eliminarCodigo('${c.id}')">🗑️</button>` : ''}
+            </div>
+        `).join('');
+    } catch (err) {
+        console.error('[CODIGOS]', err);
+    }
+}
+
+async function generarCodigo() {
+    try {
+        const res  = await fetch('/admin/codigos', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            await cargarCodigos();
+            // Copiar al clipboard
+            navigator.clipboard?.writeText(data.codigo.codigo).catch(() => {});
+            alert(`✅ Código generado: ${data.codigo.codigo}
+
+(Copiado al portapapeles)`);
+        }
+    } catch (err) {
+        alert('Error generando código');
+    }
+}
+
+async function eliminarCodigo(id) {
+    if (!confirm('¿Eliminar este código?')) return;
+    try {
+        await fetch(`/admin/codigos/${id}`, { method: 'DELETE' });
+        await cargarCodigos();
+    } catch (err) {
+        alert('Error eliminando código');
+    }
+}
+
+cargarCodigos();
 
 // ── Acordeón compañías ────────────────────────────────────────
 function toggleCompania(idx) {

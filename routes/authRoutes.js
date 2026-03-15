@@ -22,7 +22,7 @@ router.post('/register', validate(schemas.register), async (req, res) => {
         if (userData.password !== confirm_password)
             return res.status(400).json({ error: 'Las contraseñas no coinciden' });
 
-        const username = await authService.register(userData, role);
+        const username = await authService.register(userData, role, req.body.codigo_invitacion);
         res.json({ success: true, username });
 
     } catch (err) {

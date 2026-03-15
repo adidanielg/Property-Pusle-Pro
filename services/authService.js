@@ -47,7 +47,7 @@ const authService = {
     },
 
     // ── REGISTRO ──────────────────────────────────────────────
-    async register(data, role) {
+    async register(data, role, codigoInvitacion = null) {
         const table = role === 'tecnico' ? 'tecnicos' : 'companias';
 
         // Generar username: nombre+apellido normalizado + 2 dígitos random
@@ -87,6 +87,38 @@ const authService = {
         if (error) {
             if (error.code === '23505') throw new Error('El email ya está registrado');
             throw new Error(error.message);
+        }
+
+        // Verificar código de invitación para técnicos
+        if (role === 'tecnico' && codigoInvitacion) {
+            const { data: codigo, error: codigoError } = await supabase
+                .from('codigos_invitacion')
+                .select('*')
+                .eq('codigo', codigoInvitacion.trim().toUpperCase())
+                .eq('usado', false)
+                .single();
+
+            if (!codigoError && codigo) {
+                // Marcar código como usado
+                await supabase
+                    .from('codigos_invitacion')
+                    .update({
+                        usado:    true,
+                        usado_por: newUser.id,
+                        usado_at:  new Date().toISOString()
+                    })
+                    .eq('id', codigo.id);
+
+                // Activar técnico con plan gratuito
+                await supabase
+                    .from('tecnicos')
+                    .update({ invitado: true })
+                    .eq('id', newUser.id);
+
+                console.log(`[CODIGO] Técnico ${newUser.username} activado con código ${codigoInvitacion}`);
+            } else {
+                console.log(`[CODIGO] Código inválido o ya usado: ${codigoInvitacion}`);
+            }
         }
 
         // Enviar email de bienvenida (async — no bloquea el registro)

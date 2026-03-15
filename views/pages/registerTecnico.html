@@ -81,6 +81,19 @@
 
             <div id="registerError" class="form-error" style="display:none"></div>
 
+            <div class="form-group">
+                <label class="form-label" style="display:flex;align-items:center;gap:.5rem">
+                    🎟️ <span>Código de invitación</span>
+                    <span style="font-size:.72rem;color:var(--text-3);font-weight:400">(opcional)</span>
+                </label>
+                <input type="text" name="codigo_invitacion" class="form-input"
+                    placeholder="PP-XXXX-XXXX"
+                    style="text-transform:uppercase;letter-spacing:.1em;font-family:var(--font-mono)"
+                    oninput="this.value=this.value.toUpperCase()">
+                <p style="font-size:.72rem;color:var(--text-3);margin-top:.3rem">
+                    Si tienes un código de invitación ingrésalo aquí para acceso especial.
+                </p>
+            </div>
             <button type="submit" class="btn btn-full mt-2" style="background:var(--text-1);color:#fff" id="btnSubmit" data-i18n="reg.register">
                 Registrarme
             </button>

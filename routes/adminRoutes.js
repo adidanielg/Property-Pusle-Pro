@@ -222,4 +222,53 @@ router.post('/fees/:tecnicoId/cobrar', async (req, res) => {
     }
 });
 
+// ── GET /admin/codigos ────────────────────────────────────────
+router.get('/codigos', async (req, res) => {
+    try {
+        const { data } = await supabase
+            .from('codigos_invitacion')
+            .select('*, tecnicos:usado_por(nombre)')
+            .order('created_at', { ascending: false });
+        res.json({ success: true, codigos: data || [] });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── POST /admin/codigos ───────────────────────────────────────
+router.post('/codigos', async (req, res) => {
+    try {
+        const crypto = require('crypto');
+        // Generar código legible: PP-XXXX-XXXX
+        const part1 = crypto.randomBytes(2).toString('hex').toUpperCase();
+        const part2 = crypto.randomBytes(2).toString('hex').toUpperCase();
+        const codigo = `PP-${part1}-${part2}`;
+
+        const { data, error } = await supabase
+            .from('codigos_invitacion')
+            .insert({ codigo, creado_por: 'admin' })
+            .select().single();
+
+        if (error) throw error;
+        res.json({ success: true, codigo: data });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── DELETE /admin/codigos/:id ────────────────────────────────
+router.delete('/codigos/:id', async (req, res) => {
+    try {
+        const { error } = await supabase
+            .from('codigos_invitacion')
+            .delete()
+            .eq('id', req.params.id)
+            .eq('usado', false); // Solo eliminar si no fue usado
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;
