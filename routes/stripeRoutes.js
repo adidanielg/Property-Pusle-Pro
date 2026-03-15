@@ -35,7 +35,16 @@ router.post('/checkout', requireAuth(['cliente']), async (req, res) => {
 });
 
 // ── POST /stripe/checkout-tecnico ───────────────────────────
-router.post('/checkout-tecnico', requireAuth(['tecnico']), async (req, res) => {
+router.post('/checkout-tecnico', async (req, res) => {
+    // Auth manual — cookie jwt_tecnico no se detecta por baseUrl /stripe
+    try {
+        const jwt   = require('jsonwebtoken');
+        const token = req.cookies?.jwt_tecnico;
+        if (!token) return res.status(401).json({ error: 'unauthorized' });
+        const decoded = jwt.verify(token, process.env.SESSION_SECRET);
+        if (decoded.role !== 'tecnico') return res.status(403).json({ error: 'forbidden' });
+        req.user = decoded;
+    } catch { return res.status(401).json({ error: 'unauthorized' }); }
     try {
         const baseUrl    = process.env.BASE_URL || 'https://www.getpropertypulse.net';
         const successUrl = `${baseUrl}/tecnico/dashboard?suscrito=1`;
