@@ -245,3 +245,25 @@ SELECT column_name, data_type
 FROM information_schema.columns
 WHERE table_name = 'companias'
   AND column_name IN ('stripe_customer_id', 'stripe_subscription_id', 'suscripcion_activa', 'plan');
+
+  -- ── Migración: Password Reset Tokens ────────────────────────
+-- Ejecutar en Supabase → SQL Editor → Run
+
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id         UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id    UUID        NOT NULL,
+    user_role  TEXT        NOT NULL CHECK (user_role IN ('cliente', 'tecnico')),
+    token      TEXT        NOT NULL UNIQUE,
+    used       BOOLEAN     NOT NULL DEFAULT FALSE,
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_reset_tokens_token   ON password_reset_tokens(token);
+CREATE INDEX IF NOT EXISTS idx_reset_tokens_user    ON password_reset_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_reset_tokens_expires ON password_reset_tokens(expires_at);
+
+ALTER TABLE password_reset_tokens DISABLE ROW LEVEL SECURITY;
+
+-- Limpiar tokens expirados automáticamente (opcional, correr periódicamente)
+-- DELETE FROM password_reset_tokens WHERE expires_at < NOW();

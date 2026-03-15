@@ -170,7 +170,11 @@ router.get('/recuperar-usuario', (req, res) => {
 // ── POST /auth/recuperar-usuario ─────────────────────────────
 router.post('/recuperar-usuario', async (req, res) => {
     const { email } = req.body;
-    if (!email) return res.render('recuperarUsuario.html', { error: 'Ingresa tu email', success: null });
+    const isJson = req.headers['content-type']?.includes('application/json');
+    if (!email) {
+        if (isJson) return res.status(400).json({ error: 'Ingresa tu email' });
+        return res.render('recuperarUsuario.html', { error: 'Ingresa tu email', success: null });
+    }
 
     try {
         const supabase = require('../services/supabaseClient');
@@ -196,13 +200,132 @@ router.post('/recuperar-usuario', async (req, res) => {
             });
         }
 
-        res.render('recuperarUsuario.html', {
-            error: null,
-            success: 'Si ese email está registrado, recibirás tu usuario en los próximos minutos.'
-        });
+        const msg = 'Si ese email está registrado, recibirás tu usuario en los próximos minutos.';
+        if (isJson) return res.json({ success: true, message: msg });
+        res.render('recuperarUsuario.html', { error: null, success: msg });
     } catch (err) {
         console.error('[RECUPERAR]', err.message);
+        if (req.headers['content-type']?.includes('application/json'))
+            return res.status(500).json({ error: 'Error procesando solicitud' });
         res.render('recuperarUsuario.html', { error: 'Error procesando solicitud', success: null });
+    }
+});
+
+// ── POST /auth/solicitar-reset ───────────────────────────────
+// Solicitar reset de contraseña — genera token y envía email
+router.post('/solicitar-reset', async (req, res) => {
+    const { email, username } = req.body;
+    if (!email || !username) {
+        return res.status(400).json({ error: 'Email y usuario son requeridos' });
+    }
+
+    try {
+        const crypto   = require('crypto');
+        const supabase = require('../services/supabaseClient');
+        const emailService = require('../services/emailService');
+
+        // Buscar en clientes primero
+        let user = null, role = 'cliente', nombre = '';
+        const { data: cli } = await supabase.from('companias')
+            .select('id, nombre_contacto, email, username')
+            .eq('email', email).eq('username', username).single();
+
+        if (cli) { user = cli; nombre = cli.nombre_contacto; }
+
+        // Si no, buscar en técnicos
+        if (!user) {
+            const { data: tec } = await supabase.from('tecnicos')
+                .select('id, nombre, email, username')
+                .eq('email', email).eq('username', username).single();
+            if (tec) { user = tec; role = 'tecnico'; nombre = tec.nombre; }
+        }
+
+        // Siempre responder igual por seguridad
+        if (user) {
+            const token     = crypto.randomBytes(32).toString('hex');
+            const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+
+            // Invalidar tokens anteriores del usuario
+            await supabase.from('password_reset_tokens')
+                .update({ used: true })
+                .eq('user_id', user.id).eq('used', false);
+
+            // Crear nuevo token
+            await supabase.from('password_reset_tokens').insert({
+                user_id:    user.id,
+                user_role:  role,
+                token,
+                expires_at: expiresAt.toISOString()
+            });
+
+            const baseUrl  = process.env.BASE_URL || 'https://www.getpropertypulse.net';
+            const resetUrl = `${baseUrl}/auth/reset-password?token=${token}`;
+
+            emailService.enviarResetPassword({ nombre, email: user.email, resetUrl });
+        }
+
+        res.json({ success: true, message: 'Si los datos son correctos, recibirás un email con el link.' });
+    } catch (err) {
+        console.error('[RESET]', err.message);
+        res.status(500).json({ error: 'Error procesando solicitud' });
+    }
+});
+
+// ── GET /auth/reset-password ──────────────────────────────────
+// Página para ingresar nueva contraseña
+router.get('/reset-password', async (req, res) => {
+    const { token } = req.query;
+    if (!token) return res.redirect('/auth/login');
+
+    try {
+        const supabase = require('../services/supabaseClient');
+        const { data } = await supabase.from('password_reset_tokens')
+            .select('*').eq('token', token).eq('used', false).single();
+
+        if (!data || new Date(data.expires_at) < new Date()) {
+            return res.render('resetPassword.html', { error: 'El link ha expirado o ya fue usado.', token: null, success: null });
+        }
+
+        res.render('resetPassword.html', { error: null, token, success: null });
+    } catch (err) {
+        res.render('resetPassword.html', { error: 'Link inválido.', token: null, success: null });
+    }
+});
+
+// ── POST /auth/reset-password ─────────────────────────────────
+// Procesar nueva contraseña
+router.post('/reset-password', async (req, res) => {
+    const { token, password, confirm_password } = req.body;
+
+    if (!token) return res.render('resetPassword.html', { error: 'Token inválido', token: null, success: null });
+    if (!password || password.length < 6) return res.render('resetPassword.html', { error: 'La contraseña debe tener al menos 6 caracteres', token, success: null });
+    if (password !== confirm_password) return res.render('resetPassword.html', { error: 'Las contraseñas no coinciden', token, success: null });
+
+    try {
+        const bcrypt   = require('bcryptjs');
+        const supabase = require('../services/supabaseClient');
+
+        // Verificar token
+        const { data: resetData } = await supabase.from('password_reset_tokens')
+            .select('*').eq('token', token).eq('used', false).single();
+
+        if (!resetData || new Date(resetData.expires_at) < new Date()) {
+            return res.render('resetPassword.html', { error: 'El link ha expirado. Solicita uno nuevo.', token: null, success: null });
+        }
+
+        // Actualizar contraseña
+        const hashed = await bcrypt.hash(password, 10);
+        const table  = resetData.user_role === 'tecnico' ? 'tecnicos' : 'companias';
+
+        await supabase.from(table).update({ password: hashed }).eq('id', resetData.user_id);
+
+        // Marcar token como usado
+        await supabase.from('password_reset_tokens').update({ used: true }).eq('token', token);
+
+        res.render('resetPassword.html', { error: null, token: null, success: '✅ Contraseña actualizada. Ya puedes iniciar sesión.' });
+    } catch (err) {
+        console.error('[RESET PASSWORD]', err.message);
+        res.render('resetPassword.html', { error: 'Error actualizando contraseña', token, success: null });
     }
 });
 

@@ -247,4 +247,48 @@ const emailService = {
     }
 };
 
+
+    // ── 5. Reset de contraseña ────────────────────────────────
+    async enviarResetPassword({ nombre, email, resetUrl }) {
+        try {
+            await resend.emails.send({
+                from:    FROM,
+                to:      email,
+                subject: '🔐 Restablecer contraseña — PropertyPulse',
+                html: `
+<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background:#08080f;font-family:'Segoe UI',Arial,sans-serif">
+<div style="max-width:560px;margin:0 auto;padding:40px 20px">
+  <div style="text-align:center;margin-bottom:32px">
+    <span style="font-size:1.4rem;font-weight:800;color:#f0f0f8">🏢 Property<span style="color:#7c6dfa">Pulse</span></span>
+  </div>
+  <div style="background:#0f0f1a;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:36px">
+    <h1 style="color:#f0f0f8;font-size:1.3rem;font-weight:700;margin:0 0 8px">🔐 Restablecer contraseña</h1>
+    <p style="color:#8888aa;font-size:.95rem;line-height:1.6;margin:0 0 24px">
+      Hola ${nombre}, recibimos una solicitud para restablecer tu contraseña.
+      Este link expira en <strong style="color:#f0f0f8">1 hora</strong>.
+    </p>
+    <a href="${resetUrl}" style="display:block;background:#7c6dfa;color:#fff;text-align:center;padding:14px;border-radius:10px;text-decoration:none;font-weight:600;font-size:.95rem;margin-bottom:20px">
+      Restablecer mi contraseña →
+    </a>
+    <div style="background:#15152a;border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:14px;margin-bottom:20px">
+      <p style="color:#55557a;font-size:.75rem;margin:0 0 4px">O copia este link en tu navegador:</p>
+      <p style="color:#7c6dfa;font-size:.75rem;word-break:break-all;margin:0">${resetUrl}</p>
+    </div>
+    <p style="color:#55557a;font-size:.78rem;text-align:center;margin:0">
+      Si no solicitaste esto, ignora este email. Tu contraseña no cambiará.
+    </p>
+  </div>
+  <p style="color:#55557a;font-size:.75rem;text-align:center;margin-top:24px">© 2026 PropertyPulse</p>
+</div>
+</body>
+</html>`
+            });
+            console.log(`[EMAIL] Reset password enviado a ${email}`);
+        } catch (err) {
+            console.error('[EMAIL] Error reset password:', err.message);
+        }
+    }
+
 module.exports = emailService;

@@ -34,7 +34,9 @@
             <span data-i18n="login.noAccount">¿No tienes cuenta?</span>
             <a href="/auth/register-cliente" style="color:var(--accent);font-weight:600" data-i18n="login.register">Regístrate gratis</a>
             <br>
-            <a href="/auth/recuperar-usuario" style="color:var(--text-3);font-size:.8rem">¿Olvidaste tu usuario?</a>
+            <a href="#" style="color:var(--text-3);font-size:.8rem" onclick="document.getElementById('modalRecuperarUser').classList.add('open');return false">¿Olvidaste tu usuario?</a>
+            &nbsp;·&nbsp;
+            <a href="#" style="color:var(--text-3);font-size:.8rem" onclick="document.getElementById('modalResetPass').classList.add('open');return false">¿Olvidaste tu contraseña?</a>
         </p>
         <p class="text-small text-muted mt-1" style="text-align:center">
             <span data-i18n="login.areTech">¿Eres técnico?</span>
@@ -78,5 +80,85 @@ if (new URLSearchParams(window.location.search).get('expired') === '1') {
     <button id="lang-es" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)">ES</button>
     <button id="lang-en" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)">EN</button>
 </div></div>
+
+<!-- Modal: Recuperar Usuario -->
+<div id="modalRecuperarUser" class="modal-overlay">
+    <div class="modal" style="max-width:420px">
+        <div class="modal-header">
+            <h2>👤 Recuperar usuario</h2>
+            <button class="modal-close" onclick="document.getElementById('modalRecuperarUser').classList.remove('open')">✕</button>
+        </div>
+        <p style="font-size:.875rem;color:var(--text-2);margin-bottom:1.25rem">Ingresa tu email y te enviamos tu nombre de usuario.</p>
+        <div class="form-group">
+            <label class="form-label">Email de tu cuenta</label>
+            <input type="email" id="recEmail" class="form-input" placeholder="tu@email.com">
+        </div>
+        <div id="recUserMsg" style="display:none;font-size:.82rem;padding:.5rem .75rem;border-radius:8px;margin-bottom:.75rem"></div>
+        <button class="btn btn-primary btn-full" onclick="enviarRecuperarUser()">Enviar mi usuario →</button>
+    </div>
+</div>
+
+<!-- Modal: Recuperar Contraseña -->
+<div id="modalResetPass" class="modal-overlay">
+    <div class="modal" style="max-width:420px">
+        <div class="modal-header">
+            <h2>🔐 Recuperar contraseña</h2>
+            <button class="modal-close" onclick="document.getElementById('modalResetPass').classList.remove('open')">✕</button>
+        </div>
+        <p style="font-size:.875rem;color:var(--text-2);margin-bottom:1.25rem">Ingresa tu email y usuario para recibir un link de reset.</p>
+        <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" id="resetEmail" class="form-input" placeholder="tu@email.com">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Usuario</label>
+            <input type="text" id="resetUser" class="form-input" placeholder="Tu nombre de usuario">
+        </div>
+        <div id="resetMsg" style="display:none;font-size:.82rem;padding:.5rem .75rem;border-radius:8px;margin-bottom:.75rem"></div>
+        <button class="btn btn-primary btn-full" onclick="enviarResetPass()">Enviar link de reset →</button>
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('.modal-overlay').forEach(el =>
+    el.addEventListener('click', e => { if(e.target===el) el.classList.remove('open'); })
+);
+
+async function enviarRecuperarUser() {
+    const email = document.getElementById('recEmail').value.trim();
+    const msg   = document.getElementById('recUserMsg');
+    if (!email) { msg.style.display='block'; msg.style.background='var(--red-soft)'; msg.style.color='var(--red)'; msg.textContent='Ingresa tu email'; return; }
+    try {
+        const res  = await fetch('/auth/recuperar-usuario', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        msg.style.display  = 'block';
+        msg.style.background = 'var(--green-soft)';
+        msg.style.color      = 'var(--green)';
+        msg.textContent = data.message || '✅ Email enviado si el email está registrado';
+    } catch { msg.style.display='block'; msg.textContent='Error de conexión'; }
+}
+
+async function enviarResetPass() {
+    const email    = document.getElementById('resetEmail').value.trim();
+    const username = document.getElementById('resetUser').value.trim();
+    const msg      = document.getElementById('resetMsg');
+    if (!email || !username) { msg.style.display='block'; msg.style.background='var(--red-soft)'; msg.style.color='var(--red)'; msg.textContent='Completa todos los campos'; return; }
+    try {
+        const res  = await fetch('/auth/solicitar-reset', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ email, username })
+        });
+        const data = await res.json();
+        msg.style.display    = 'block';
+        msg.style.background = 'var(--green-soft)';
+        msg.style.color      = 'var(--green)';
+        msg.textContent = data.message || '✅ Email enviado';
+    } catch { msg.style.display='block'; msg.textContent='Error de conexión'; }
+}
+</script>
+
 </body>
 </html>
