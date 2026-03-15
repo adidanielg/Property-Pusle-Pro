@@ -34,6 +34,25 @@ router.post('/checkout', requireAuth(['cliente']), async (req, res) => {
     }
 });
 
+// ── POST /stripe/checkout-tecnico ───────────────────────────
+router.post('/checkout-tecnico', requireAuth(['tecnico']), async (req, res) => {
+    try {
+        const baseUrl    = process.env.BASE_URL || 'https://www.getpropertypulse.net';
+        const successUrl = `${baseUrl}/tecnico/dashboard?suscrito=1`;
+        const cancelUrl  = `${baseUrl}/tecnico/dashboard`;
+
+        const session = await stripeService.createCheckoutSessionTecnico(
+            req.user.id,
+            successUrl,
+            cancelUrl
+        );
+        res.json({ success: true, url: session.url });
+    } catch (err) {
+        console.error('[STRIPE TECNICO]', err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // ── POST /stripe/portal ───────────────────────────────────────
 // Portal de Stripe para gestionar/cancelar suscripción
 router.post('/portal', requireAuth(['cliente']), async (req, res) => {

@@ -66,6 +66,48 @@ const stripeService = {
         return session;
     },
 
+    // ── Checkout para técnicos ───────────────────────────────
+    async createCheckoutSessionTecnico(tecnicoId, successUrl, cancelUrl) {
+        const priceId = process.env.STRIPE_PRICE_TECNICO;
+        if (!priceId) throw new Error('STRIPE_PRICE_TECNICO no configurado');
+
+        const supabase = require('./supabaseClient');
+        const { data: tecnico } = await supabase
+            .from('tecnicos')
+            .select('nombre, email, stripe_customer_id')
+            .eq('id', tecnicoId)
+            .single();
+
+        if (!tecnico) throw new Error('Técnico no encontrado');
+
+        let customerId = tecnico.stripe_customer_id;
+        if (!customerId) {
+            const customer = await stripe.customers.create({
+                email: tecnico.email,
+                name:  tecnico.nombre,
+                metadata: { tecnico_id: tecnicoId }
+            });
+            customerId = customer.id;
+            await supabase.from('tecnicos')
+                .update({ stripe_customer_id: customerId })
+                .eq('id', tecnicoId);
+        }
+
+        const session = await stripe.checkout.sessions.create({
+            customer:   customerId,
+            mode:       'subscription',
+            line_items: [{ price: priceId, quantity: 1 }],
+            success_url: `${successUrl}&session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url:  cancelUrl,
+            metadata:   { tecnico_id: tecnicoId, tipo: 'tecnico' },
+            subscription_data: {
+                metadata: { tecnico_id: tecnicoId, tipo: 'tecnico' }
+            },
+        });
+
+        return session;
+    },
+
     // ── Cancelar suscripción ──────────────────────────────────
     async cancelSubscription(clienteId) {
         const { data: cliente } = await supabase
@@ -121,6 +163,21 @@ const stripeService = {
 
             case 'checkout.session.completed': {
                 const session   = event.data.object;
+                const tipo      = session.metadata?.tipo;
+
+                // ── Checkout de TÉCNICO ───────────────────────
+                if (tipo === 'tecnico') {
+                    const tecnicoId = session.metadata?.tecnico_id;
+                    if (!tecnicoId) break;
+                    await supabase.from('tecnicos').update({
+                        suscripcion_activa:     true,
+                        stripe_subscription_id: session.subscription,
+                    }).eq('id', tecnicoId);
+                    console.log(`[STRIPE] ✅ Técnico suscrito: ${tecnicoId}`);
+                    break;
+                }
+
+                // ── Checkout de CLIENTE ───────────────────────
                 let clienteId   = session.metadata?.cliente_id;
                 let plan        = session.metadata?.plan;
                 const subId     = session.subscription;
@@ -207,11 +264,22 @@ const stripeService = {
 
             case 'customer.subscription.deleted': {
                 const sub       = event.data.object;
+                const tipo      = sub.metadata?.tipo;
+                const tecnicoId = sub.metadata?.tecnico_id;
                 const clienteId = sub.metadata?.cliente_id;
+
+                // Técnico canceló
+                if (tipo === 'tecnico' && tecnicoId) {
+                    await supabase.from('tecnicos').update({
+                        suscripcion_activa:     false,
+                        stripe_subscription_id: null,
+                    }).eq('id', tecnicoId);
+                    console.log(`[STRIPE] Técnico canceló suscripción: ${tecnicoId}`);
+                    break;
+                }
 
                 if (!clienteId) break;
 
-                // Bajar a starter cuando cancela
                 await supabase
                     .from('companias')
                     .update({

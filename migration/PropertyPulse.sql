@@ -288,3 +288,14 @@ ALTER TABLE codigos_invitacion DISABLE ROW LEVEL SECURITY;
 
 -- Agregar columna invitado a tecnicos
 ALTER TABLE tecnicos ADD COLUMN IF NOT EXISTS invitado BOOLEAN DEFAULT FALSE;
+
+-- ── Migración: Suscripción técnicos ──────────────────────────
+-- Ejecutar en Supabase → SQL Editor → Run
+
+ALTER TABLE tecnicos
+    ADD COLUMN IF NOT EXISTS suscripcion_activa      BOOLEAN DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS stripe_customer_id      TEXT,
+    ADD COLUMN IF NOT EXISTS stripe_subscription_id  TEXT;
+
+CREATE INDEX IF NOT EXISTS idx_tecnicos_stripe_customer
+    ON tecnicos(stripe_customer_id);
