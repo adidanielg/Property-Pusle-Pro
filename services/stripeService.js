@@ -51,7 +51,7 @@ const stripeService = {
             customer:    customerId,
             mode:        'subscription',
             line_items:  [{ price: priceId, quantity: 1 }],
-            success_url: `${successUrl}?session_id={CHECKOUT_SESSION_ID}`,
+            success_url: `${successUrl}&session_id={CHECKOUT_SESSION_ID}`,
             cancel_url:  cancelUrl,
             metadata:    { cliente_id: clienteId, plan },
             subscription_data: {

@@ -54,7 +54,6 @@ app.use(helmet({
             fontSrc:        ["'self'", "https://fonts.gstatic.com"],
             imgSrc:         ["'self'", "data:", "blob:", "https://*.supabase.co", "https://maps.googleapis.com", "https://maps.gstatic.com"],
             connectSrc:     ["'self'", "https://*.supabase.co", "https://maps.googleapis.com", "https://api.stripe.com"],
-            navigateTo:     ["'self'", "https://maps.google.com", "https://maps.apple.com"],
             workerSrc:      ["'self'"],
             frameSrc:       ["https://js.stripe.com", "https://hooks.stripe.com"],
             manifestSrc:    ["'self'"],
