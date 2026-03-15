@@ -59,6 +59,24 @@ router.post('/tickets/:id/estado', validate(schemas.estadoTicket), async (req, r
         if (ticket.estado === 'completado')
             return res.status(400).json({ error: 'Este ticket ya está completado' });
 
+        // Verificar suscripción solo al ACEPTAR (en_proceso)
+        if (estado === 'en_proceso') {
+            const { data: tec } = await supabase
+                .from('tecnicos')
+                .select('suscripcion_activa, invitado')
+                .eq('id', req.user.id)
+                .single();
+
+            const puedeTrabajar = tec?.suscripcion_activa === true || tec?.invitado === true;
+            if (!puedeTrabajar) {
+                return res.status(403).json({
+                    error:        'sin_suscripcion',
+                    message:      'Necesitas una suscripción activa para aceptar trabajos.',
+                    checkout_url: '/stripe/checkout-tecnico'
+                });
+            }
+        }
+
         const ticketActualizado = await ticketService.actualizarEstado(
             req.params.id, req.user.id, estado
         );
