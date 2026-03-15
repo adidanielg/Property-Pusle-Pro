@@ -7,22 +7,7 @@ const notificationService = require('../services/notificationService');
 const { validate, schemas }   = require('../middleware/validate');
 const { checkPropiedadLimit, checkTicketLimit, getSiguientePlan } = require('../services/planLimits');
 
-// Multer con validación de tipo y tamaño
-const upload = multer({
-    storage: multer.memoryStorage(),
-    limits: {
-        fileSize: 5 * 1024 * 1024, // máx 5MB
-        files: 1
-    },
-    fileFilter: (req, file, cb) => {
-        const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-        if (allowed.includes(file.mimetype)) {
-            cb(null, true);
-        } else {
-            cb(new Error('Solo se permiten imágenes (JPEG, PNG, WebP, GIF)'), false);
-        }
-    }
-});
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.use(requireAuth(['cliente']));
 
@@ -162,9 +147,17 @@ router.post('/propiedades', validate(schemas.crearPropiedad), async (req, res) =
     try {
         const { direccion, servicios_contratados } = req.body;
 
-        // ── Verificar límite de propiedades del plan ──────────
+        // ── Verificar suscripción y límite de propiedades ──────
         const limitCheck = await checkPropiedadLimit(req.user.id);
         if (!limitCheck.allowed) {
+            // Sin suscripción activa — mostrar modal de planes
+            if (limitCheck.no_plan) {
+                return res.status(403).json({
+                    error:   'no_plan',
+                    message: 'Necesitas un plan activo para agregar propiedades.',
+                    plan:    limitCheck.plan
+                });
+            }
             return res.status(403).json({
                 error:       'limit_reached',
                 message:     `Tu plan permite ${limitCheck.limite} propiedades. Ya tienes ${limitCheck.actual}.`,

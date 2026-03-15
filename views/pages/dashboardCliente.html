@@ -303,13 +303,13 @@
     <section id="propiedades">
         <div class="pp-head">
             <h2 data-i18n="dash.myProperties">Mis Propiedades</h2>
-            <button class="ppb ppb-ghost ppb-sm" onclick="abrirModal('propiedadModal')">+ Añadir</button>
+            <button class="ppb ppb-ghost ppb-sm" onclick="abrirPropiedadOPlan()">+ Añadir</button>
         </div>
         <% if (propiedades.length === 0) { %>
         <div class="pp-empty">
             <div style="font-size:2rem;margin-bottom:.75rem;opacity:.4">🏠</div>
             <p style="font-size:.875rem" data-i18n="dash.noProperties">No tienes propiedades. Añade una para comenzar.</p>
-            <button class="ppb ppb-primary ppb-sm" style="margin-top:1rem" onclick="abrirModal('propiedadModal')">+ Añadir propiedad</button>
+            <button class="ppb ppb-primary ppb-sm" style="margin-top:1rem" onclick="abrirPropiedadOPlan()">+ Añadir propiedad</button>
         </div>
         <% } else { %>
         <div class="pp-props">
@@ -413,7 +413,7 @@
         <% if (propiedades.length > 0) { %>
             <button class="ppb ppb-primary ppb-full" onclick="abrirModal('ticketModal')">🎫 Crear reporte</button>
         <% } else { %>
-            <button class="ppb ppb-ghost ppb-full" onclick="abrirModal('propiedadModal')">🏠 Añade una propiedad primero</button>
+            <button class="ppb ppb-ghost ppb-full" onclick="abrirPropiedadOPlan()">🏠 Añade una propiedad primero</button>
         <% } %>
     </div>
 
@@ -568,6 +568,62 @@
 </div>
 
 <!-- Propiedad -->
+<!-- Modal: Elegir Plan -->
+<div id="planesModal" class="modal-overlay">
+    <div class="modal" style="max-width:700px">
+        <div class="modal-header">
+            <h2>🚀 Elige tu plan para continuar</h2>
+            <button class="modal-close" onclick="cerrarModal('planesModal')">✕</button>
+        </div>
+        <p style="font-size:.875rem;color:var(--text-2);margin-bottom:1.5rem">
+            Selecciona un plan para empezar a gestionar tus propiedades. El plan Starter incluye <strong style="color:var(--green)">10 días gratis</strong>.
+        </p>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1.5rem">
+
+            <!-- Starter -->
+            <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:1.25rem;display:flex;flex-direction:column;gap:.5rem">
+                <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3)">Starter</div>
+                <div style="font-size:2rem;font-weight:900;letter-spacing:-2px;color:var(--text-1)">$9<span style="font-size:.85rem;font-weight:400;color:var(--text-3)">/mes</span></div>
+                <div style="background:var(--green-soft);color:var(--green);font-size:.72rem;font-weight:700;padding:.2rem .5rem;border-radius:99px;display:inline-block;width:fit-content">✨ 10 días gratis</div>
+                <ul style="list-style:none;font-size:.78rem;color:var(--text-2);display:flex;flex-direction:column;gap:.3rem;margin:auto 0">
+                    <li>✓ 3 propiedades</li>
+                    <li>✓ 10 tickets activos</li>
+                    <li>✓ 1 técnico</li>
+                </ul>
+                <button class="ppb ppb-ghost ppb-full" onclick="elegirPlan('starter')" style="margin-top:.5rem">Empezar gratis →</button>
+            </div>
+
+            <!-- Pro -->
+            <div style="background:var(--surface-2);border:2px solid var(--accent);border-radius:14px;padding:1.25rem;display:flex;flex-direction:column;gap:.5rem;position:relative">
+                <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:.65rem;font-weight:700;padding:.2rem .65rem;border-radius:99px;white-space:nowrap">⭐ Más popular</div>
+                <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent)">Pro</div>
+                <div style="font-size:2rem;font-weight:900;letter-spacing:-2px;color:var(--text-1)">$29<span style="font-size:.85rem;font-weight:400;color:var(--text-3)">/mes</span></div>
+                <div style="height:1.4rem"></div>
+                <ul style="list-style:none;font-size:.78rem;color:var(--text-2);display:flex;flex-direction:column;gap:.3rem;margin:auto 0">
+                    <li>✓ 15 propiedades</li>
+                    <li>✓ 50 tickets activos</li>
+                    <li>✓ 5 técnicos</li>
+                </ul>
+                <button class="ppb ppb-primary ppb-full" onclick="elegirPlan('pro')" style="margin-top:.5rem">Elegir Pro →</button>
+            </div>
+
+            <!-- Business -->
+            <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:1.25rem;display:flex;flex-direction:column;gap:.5rem;opacity:.7">
+                <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3)">Business</div>
+                <div style="font-size:2rem;font-weight:900;letter-spacing:-2px;color:var(--text-1)">$79<span style="font-size:.85rem;font-weight:400;color:var(--text-3)">/mes</span></div>
+                <div style="height:1.4rem"></div>
+                <ul style="list-style:none;font-size:.78rem;color:var(--text-2);display:flex;flex-direction:column;gap:.3rem;margin:auto 0">
+                    <li>✓ Propiedades ilimitadas</li>
+                    <li>✓ Tickets ilimitados</li>
+                    <li>✓ Técnicos ilimitados</li>
+                </ul>
+                <button class="ppb ppb-ghost ppb-full" disabled style="margin-top:.5rem;opacity:.5;cursor:not-allowed">🔒 Próximamente</button>
+            </div>
+        </div>
+        <p style="font-size:.75rem;color:var(--text-3);text-align:center">Sin contratos · Cancela cuando quieras · Pago seguro con Stripe</p>
+    </div>
+</div>
+
 <div id="propiedadModal" class="modal-overlay">
     <div class="modal">
         <div class="modal-header"><h2 id="propModalTitle">Añadir Propiedad</h2><button class="modal-close" onclick="cerrarModal('propiedadModal')">✕</button></div>
@@ -742,6 +798,46 @@ async function checkUpgradeBanner(){
 
 cargarPerfil();
 checkUpgradeBanner();
+
+// ── PLANES / STRIPE ───────────────────────────────────────────
+let _tienePlan = null;
+
+async function verificarPlan() {
+    if (_tienePlan !== null) return _tienePlan;
+    try {
+        const res  = await fetch('/cliente/limits');
+        const data = await res.json();
+        _tienePlan = data.suscripcion_activa === true;
+    } catch { _tienePlan = false; }
+    return _tienePlan;
+}
+
+async function abrirPropiedadOPlan() {
+    const tienePlan = await verificarPlan();
+    if (tienePlan) {
+        abrirModal('propiedadModal');
+    } else {
+        abrirModal('planesModal');
+    }
+}
+
+async function elegirPlan(plan) {
+    try {
+        const btn = document.querySelector(`[onclick="elegirPlan('${plan}')"]`);
+        if (btn) { btn.disabled = true; btn.textContent = 'Redirigiendo...'; }
+        const res  = await fetch('/stripe/checkout', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ plan })
+        });
+        const data = await res.json();
+        if (data.success && data.url) {
+            window.location.href = data.url;
+        } else {
+            showToast(data.error || 'Error al iniciar el pago', 'error');
+            if (btn) { btn.disabled = false; btn.textContent = plan === 'starter' ? 'Empezar gratis →' : 'Elegir ' + plan + ' →'; }
+        }
+    } catch { showToast('Error de conexión', 'error'); }
+}
 
 // ── STRIPE ────────────────────────────────────────────────────
 async function irACheckout(plan) {

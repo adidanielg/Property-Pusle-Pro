@@ -43,8 +43,11 @@ const stripeService = {
                 .eq('id', clienteId);
         }
 
+        // Trial de 10 días solo para Starter
+        const trialDays = plan === 'starter' ? 10 : 0;
+
         // Crear sesión de checkout
-        const session = await stripe.checkout.sessions.create({
+        const sessionData = {
             customer:    customerId,
             mode:        'subscription',
             line_items:  [{ price: priceId, quantity: 1 }],
@@ -52,10 +55,13 @@ const stripeService = {
             cancel_url:  cancelUrl,
             metadata:    { cliente_id: clienteId, plan },
             subscription_data: {
-                metadata: { cliente_id: clienteId, plan }
+                metadata: { cliente_id: clienteId, plan },
+                ...(trialDays > 0 && { trial_period_days: trialDays })
             },
             allow_promotion_codes: true,
-        });
+        };
+
+        const session = await stripe.checkout.sessions.create(sessionData);
 
         return session;
     },
