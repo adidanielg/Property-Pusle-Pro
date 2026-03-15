@@ -33,11 +33,11 @@ router.get('/dashboard', async (req, res) => {
                 .order('created_at', { ascending: false })
                 .range(0, PAGE_SIZE - 1),
             supabase.from('companias')
-                .select('*')
+                .select('*, propiedades(id, direccion, servicios_contratados)')
                 .eq('tipo_cliente', 'Individual')
                 .order('created_at', { ascending: false }),
             supabase.from('companias')
-                .select('*')
+                .select('*, propiedades(id, direccion, servicios_contratados)')
                 .eq('tipo_cliente', 'Compania')
                 .order('created_at', { ascending: false }),
             supabase.from('tecnicos')

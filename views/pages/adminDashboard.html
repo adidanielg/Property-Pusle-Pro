@@ -257,79 +257,148 @@
         <div class="adm-section-head">
             <h2>👤 Clientes Individuales (<%= individuales.length %>)</h2>
         </div>
-        <div class="adm-table-wrap">
-            <table class="adm-table">
-                <thead><tr>
-                    <th>Nombre</th><th>Usuario</th><th>Email</th><th>Teléfono</th><th>Registro</th><th>Acciones</th>
-                </tr></thead>
-                <tbody>
-                    <% if (individuales.length === 0) { %>
-                    <tr><td colspan="6" class="adm-empty">No hay clientes individuales.</td></tr>
-                    <% } %>
-                    <% individuales.forEach(function(c) { %>
-                    <tr>
-                        <td style="font-weight:600;color:#e2e8f0"><%= c.nombre_contacto %></td>
-                        <td class="adm-mono" style="font-size:.75rem;color:#7c74ff"><%= c.username %></td>
-                        <td style="font-size:.8rem;color:#8892a4"><%= c.email %></td>
-                        <td style="font-size:.8rem;color:#8892a4"><%= c.telefono %></td>
-                        <td class="adm-mono" style="font-size:.73rem;color:#4a5568"><%= new Date(c.created_at).toLocaleDateString() %></td>
-                        <td>
-                            <div style="display:flex;gap:.35rem">
-                                <button class="ab ab-blue ab-sm"
-                                    data-id="<%= c.id %>" data-nombre="<%= c.nombre_contacto %>"
-                                    data-empresa="<%= c.nombre_empresa %>" data-email="<%= c.email %>"
-                                    data-telefono="<%= c.telefono %>" data-tipo="<%= c.tipo_cliente %>"
-                                    onclick="abrirEditarCliente(this)">✏️ Editar</button>
-                                <button class="ab ab-red ab-sm"
-                                    data-id="<%= c.id %>" data-nombre="<%= c.nombre_contacto %>" data-tipo="cliente"
-                                    onclick="confirmarEliminar(this)">🗑️</button>
-                            </div>
-                        </td>
-                    </tr>
+        <% if (individuales.length === 0) { %>
+        <div class="adm-empty">No hay clientes individuales registrados.</div>
+        <% } else { %>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:.75rem;padding:1rem">
+            <% individuales.forEach(function(c) { %>
+            <div style="background:#0d0f14;border:1px solid #1e2235;border-radius:12px;padding:1rem;display:flex;flex-direction:column;gap:.5rem">
+                <!-- Header -->
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                    <div>
+                        <div style="font-weight:700;color:#e2e8f0;font-size:.9rem"><%= c.nombre_contacto %></div>
+                        <div class="adm-mono" style="font-size:.72rem;color:#7c74ff"><%= c.username %></div>
+                    </div>
+                    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.3rem">
+                        <span class="adm-badge <%= c.suscripcion_activa ? 'adm-b-completado' : 'adm-b-cancelado' %>">
+                            <%= c.suscripcion_activa ? '✅ Activo' : '❌ Sin plan' %>
+                        </span>
+                        <span class="adm-badge adm-b-cat" style="text-transform:capitalize"><%= c.plan || 'starter' %></span>
+                    </div>
+                </div>
+                <!-- Info -->
+                <div style="font-size:.75rem;color:#4a5568;display:flex;flex-direction:column;gap:.2rem">
+                    <span>📧 <%= c.email %></span>
+                    <span>📞 <%= c.telefono %></span>
+                    <span>📅 <%= new Date(c.created_at).toLocaleDateString() %></span>
+                </div>
+                <!-- Propiedades -->
+                <% if (c.propiedades && c.propiedades.length > 0) { %>
+                <div style="border-top:1px solid #1e2235;padding-top:.5rem;margin-top:.25rem">
+                    <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#4a5568;margin-bottom:.4rem">🏠 Propiedades (<%= c.propiedades.length %>)</div>
+                    <% c.propiedades.forEach(function(p) { %>
+                    <div style="font-size:.75rem;color:#8892a4;padding:.25rem .5rem;background:#141720;border-radius:6px;margin-bottom:.25rem">
+                        📍 <%= p.direccion %>
+                    </div>
                     <% }); %>
-                </tbody>
-            </table>
+                </div>
+                <% } else { %>
+                <div style="border-top:1px solid #1e2235;padding-top:.5rem;margin-top:.25rem;font-size:.75rem;color:#4a5568">
+                    🏠 Sin propiedades
+                </div>
+                <% } %>
+                <!-- Acciones -->
+                <div style="display:flex;gap:.35rem;margin-top:.25rem">
+                    <button class="ab ab-blue ab-sm" style="flex:1"
+                        data-id="<%= c.id %>" data-nombre="<%= c.nombre_contacto %>"
+                        data-empresa="<%= c.nombre_empresa %>" data-email="<%= c.email %>"
+                        data-telefono="<%= c.telefono %>" data-tipo="<%= c.tipo_cliente %>"
+                        onclick="abrirEditarCliente(this)">✏️ Editar</button>
+                    <button class="ab ab-red ab-sm"
+                        data-id="<%= c.id %>" data-nombre="<%= c.nombre_contacto %>" data-tipo="cliente"
+                        onclick="confirmarEliminar(this)">🗑️</button>
+                </div>
+            </div>
+            <% }); %>
         </div>
+        <% } %>
     </div>
 
     <!-- Compañías -->
-    <div class="adm-section">
+    <div class="adm-section" id="companias-section">
         <div class="adm-section-head">
             <h2>🏢 Compañías (<%= companias.length %>)</h2>
         </div>
-        <div class="adm-table-wrap">
-            <table class="adm-table">
-                <thead><tr>
-                    <th>Empresa</th><th>Contacto</th><th>Usuario</th><th>Email</th><th>Registro</th><th>Acciones</th>
-                </tr></thead>
-                <tbody>
-                    <% if (companias.length === 0) { %>
-                    <tr><td colspan="6" class="adm-empty">No hay compañías registradas.</td></tr>
-                    <% } %>
-                    <% companias.forEach(function(c) { %>
-                    <tr>
-                        <td style="font-weight:600;color:#e2e8f0"><%= c.nombre_empresa %></td>
-                        <td style="color:#8892a4;font-size:.82rem"><%= c.nombre_contacto %></td>
-                        <td class="adm-mono" style="font-size:.75rem;color:#7c74ff"><%= c.username %></td>
-                        <td style="font-size:.8rem;color:#8892a4"><%= c.email %></td>
-                        <td class="adm-mono" style="font-size:.73rem;color:#4a5568"><%= new Date(c.created_at).toLocaleDateString() %></td>
-                        <td>
-                            <div style="display:flex;gap:.35rem">
-                                <button class="ab ab-blue ab-sm"
-                                    data-id="<%= c.id %>" data-nombre="<%= c.nombre_contacto %>"
-                                    data-empresa="<%= c.nombre_empresa %>" data-email="<%= c.email %>"
-                                    data-telefono="<%= c.telefono %>" data-tipo="<%= c.tipo_cliente %>"
-                                    onclick="abrirEditarCliente(this)">✏️ Editar</button>
-                                <button class="ab ab-red ab-sm"
-                                    data-id="<%= c.id %>" data-nombre="<%= c.nombre_empresa %>" data-tipo="cliente"
-                                    onclick="confirmarEliminar(this)">🗑️</button>
+        <% if (companias.length === 0) { %>
+        <div class="adm-empty">No hay compañías registradas.</div>
+        <% } else { %>
+        <div style="display:flex;flex-direction:column;gap:.5rem;padding:1rem">
+            <% companias.forEach(function(c, idx) { %>
+            <div style="background:#0d0f14;border:1px solid #1e2235;border-radius:12px;overflow:hidden">
+                <!-- Header clickeable -->
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem;cursor:pointer"
+                     onclick="toggleCompania(<%= idx %>)">
+                    <div style="display:flex;align-items:center;gap:.75rem">
+                        <div style="width:36px;height:36px;background:rgba(124,109,250,.15);border-radius:10px;display:grid;place-items:center;font-size:1rem;flex-shrink:0">🏢</div>
+                        <div>
+                            <div style="font-weight:700;color:#e2e8f0;font-size:.9rem"><%= c.nombre_empresa !== 'Individual' ? c.nombre_empresa : c.nombre_contacto %></div>
+                            <div style="font-size:.75rem;color:#8892a4">👤 <%= c.nombre_contacto %> · <span class="adm-mono" style="color:#7c74ff"><%= c.username %></span></div>
+                        </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:.5rem">
+                        <span class="adm-badge <%= c.suscripcion_activa ? 'adm-b-completado' : 'adm-b-cancelado' %>">
+                            <%= c.suscripcion_activa ? '✅ Activo' : '❌ Sin plan' %>
+                        </span>
+                        <span class="adm-badge adm-b-cat" style="text-transform:capitalize"><%= c.plan || 'starter' %></span>
+                        <span style="color:#4a5568;font-size:.85rem" id="arrow-<%= idx %>">▼</span>
+                    </div>
+                </div>
+
+                <!-- Contenido expandible -->
+                <div id="compania-<%= idx %>" style="display:none;border-top:1px solid #1e2235;padding:1rem">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+                        <div>
+                            <div style="font-size:.68rem;color:#4a5568;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.25rem">Contacto</div>
+                            <div style="font-size:.82rem;color:#8892a4">📧 <%= c.email %></div>
+                            <div style="font-size:.82rem;color:#8892a4">📞 <%= c.telefono %></div>
+                            <div style="font-size:.75rem;color:#4a5568;margin-top:.25rem">📅 <%= new Date(c.created_at).toLocaleDateString() %></div>
+                        </div>
+                        <div>
+                            <div style="font-size:.68rem;color:#4a5568;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.25rem">Suscripción</div>
+                            <div style="font-size:.82rem;color:#e2e8f0;font-weight:600;text-transform:capitalize"><%= c.plan || 'starter' %></div>
+                            <div style="font-size:.78rem;color:<%= c.suscripcion_activa ? '#34d399' : '#f87171' %>">
+                                <%= c.suscripcion_activa ? '✅ Activa' : '❌ Sin suscripción' %>
                             </div>
-                        </td>
-                    </tr>
-                    <% }); %>
-                </tbody>
-            </table>
+                        </div>
+                    </div>
+
+                    <!-- Propiedades -->
+                    <div>
+                        <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#4a5568;margin-bottom:.5rem">
+                            🏠 Propiedades (<%= c.propiedades ? c.propiedades.length : 0 %>)
+                        </div>
+                        <% if (c.propiedades && c.propiedades.length > 0) { %>
+                        <div style="display:flex;flex-direction:column;gap:.35rem">
+                            <% c.propiedades.forEach(function(p) { %>
+                            <div style="background:#141720;border:1px solid #252836;border-radius:8px;padding:.6rem .85rem;font-size:.8rem;color:#c9d1e0">
+                                <div>📍 <strong><%= p.direccion %></strong></div>
+                                <% if (p.servicios_contratados) { %>
+                                <div style="font-size:.72rem;color:#4a5568;margin-top:.2rem">📋 <%= p.servicios_contratados %></div>
+                                <% } %>
+                            </div>
+                            <% }); %>
+                        </div>
+                        <% } else { %>
+                        <div style="font-size:.78rem;color:#4a5568;font-style:italic">No ha agregado propiedades aún.</div>
+                        <% } %>
+                    </div>
+
+                    <!-- Acciones -->
+                    <div style="display:flex;gap:.5rem;margin-top:1rem;padding-top:.75rem;border-top:1px solid #1e2235">
+                        <button class="ab ab-blue ab-sm"
+                            data-id="<%= c.id %>" data-nombre="<%= c.nombre_contacto %>"
+                            data-empresa="<%= c.nombre_empresa %>" data-email="<%= c.email %>"
+                            data-telefono="<%= c.telefono %>" data-tipo="<%= c.tipo_cliente %>"
+                            onclick="abrirEditarCliente(this)">✏️ Editar cliente</button>
+                        <button class="ab ab-red ab-sm"
+                            data-id="<%= c.id %>" data-nombre="<%= c.nombre_empresa %>" data-tipo="cliente"
+                            onclick="confirmarEliminar(this)">🗑️ Eliminar</button>
+                    </div>
+                </div>
+            </div>
+            <% }); %>
         </div>
+        <% } %>
     </div>
 
     <!-- Tickets -->
@@ -694,6 +763,16 @@ async function cobrarFee(id, nombre, monto) {
 
 cargarCancelaciones();
 cargarFees();
+
+// ── Acordeón compañías ────────────────────────────────────────
+function toggleCompania(idx) {
+    const el    = document.getElementById('compania-' + idx);
+    const arrow = document.getElementById('arrow-' + idx);
+    if (!el) return;
+    const isOpen = el.style.display !== 'none';
+    el.style.display    = isOpen ? 'none' : 'block';
+    if (arrow) arrow.textContent = isOpen ? '▼' : '▲';
+}
 </script>
 
 <script src="/js/i18n.js"></script>
