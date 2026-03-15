@@ -65,23 +65,40 @@ router.post('/cancel', requireAuth(['cliente']), async (req, res) => {
     }
 });
 
-// ── POST /webhook/stripe ──────────────────────────────────────
-// Webhook de Stripe — DEBE recibir el body RAW (sin parsear)
-// Esta ruta se registra en server.js ANTES del express.json()
-router.post('/webhook/stripe',
-    express.raw({ type: 'application/json' }),
-    async (req, res) => {
-        const signature = req.headers['stripe-signature'];
+// Webhook manejado en server.js directamente
 
-        try {
-            const event = stripeService.verifyWebhook(req.body, signature);
-            await stripeService.handleWebhookEvent(event);
-            res.json({ received: true });
-        } catch (err) {
-            console.error('[STRIPE WEBHOOK]', err.message);
-            res.status(400).json({ error: `Webhook error: ${err.message}` });
+// ── POST /stripe/activate-by-session ─────────────────────────
+// Fallback: activar plan si el webhook tardó o falló
+router.post('/activate-by-session', requireAuth(['cliente']), async (req, res) => {
+    try {
+        const { session_id } = req.body;
+        if (!session_id) return res.json({ success: false });
+
+        const stripe  = require('stripe')(process.env.STRIPE_SECRET_KEY);
+        const session = await stripe.checkout.sessions.retrieve(session_id);
+
+        if (session.payment_status !== 'paid' && session.status !== 'complete') {
+            return res.json({ success: false, reason: 'not_paid' });
         }
+
+        const plan  = session.metadata?.plan || 'starter';
+        const subId = session.subscription;
+
+        await require('../services/supabaseClient')
+            .from('companias')
+            .update({
+                plan,
+                stripe_subscription_id: subId,
+                suscripcion_activa:     true,
+            })
+            .eq('id', req.user.id);
+
+        console.log(`[STRIPE FALLBACK] Plan activado: cliente=${req.user.id} plan=${plan}`);
+        res.json({ success: true, plan });
+    } catch (err) {
+        console.error('[STRIPE FALLBACK]', err.message);
+        res.json({ success: false });
     }
-);
+});
 
 module.exports = router;

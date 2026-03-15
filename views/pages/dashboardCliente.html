@@ -803,7 +803,7 @@ checkUpgradeBanner();
 let _tienePlan = null;
 
 async function verificarPlan() {
-    if (_tienePlan !== null) return _tienePlan;
+    // Siempre consultar fresh — no cachear para evitar estado incorrecto
     try {
         const res  = await fetch('/cliente/limits');
         const data = await res.json();
@@ -867,11 +867,17 @@ async function abrirPortalStripe() {
     } catch { showToast('Error de conexión', 'error'); }
 }
 
-// Mostrar mensaje de upgrade exitoso
+// Mostrar mensaje de upgrade exitoso y activar plan si el webhook tardó
 const params = new URLSearchParams(window.location.search);
 if (params.get('upgraded') === '1') {
     showToast('🎉 ¡Plan actualizado correctamente!');
     history.replaceState({}, '', '/cliente/dashboard');
+    // Activar plan via endpoint fallback (por si el webhook tardó)
+    fetch('/stripe/activate-by-session', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ session_id: params.get('session_id') || '' })
+    }).catch(() => {});
 }
 
 </script>

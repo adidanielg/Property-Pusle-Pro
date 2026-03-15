@@ -25,6 +25,24 @@ const stripeRoutes       = require('./routes/stripeRoutes');
 const app = express();
 app.set('trust proxy', 1);
 
+// ── Webhook Stripe — PRIMERO, antes de cualquier middleware ───
+// Stripe requiere el body RAW sin parsear para verificar la firma
+const stripeService = require('./services/stripeService');
+app.post('/webhook/stripe',
+    express.raw({ type: 'application/json' }),
+    async (req, res) => {
+        const sig = req.headers['stripe-signature'];
+        try {
+            const event = stripeService.verifyWebhook(req.body, sig);
+            await stripeService.handleWebhookEvent(event);
+            res.json({ received: true });
+        } catch (err) {
+            console.error('[WEBHOOK]', err.message);
+            res.status(400).send(`Webhook Error: ${err.message}`);
+        }
+    }
+);
+
 // ── Seguridad — Helmet ────────────────────────────────────────
 app.use(helmet({
     contentSecurityPolicy: {
@@ -57,24 +75,6 @@ app.set('view engine', 'html');
 app.set('views', path.join(viewsRoot, 'pages'));
 
 // ── Middlewares base ──────────────────────────────────────────
-// ── Webhook Stripe — DEBE ir ANTES de express.json() ─────────
-// Stripe necesita el body raw sin parsear para verificar la firma
-const stripeService = require('./services/stripeService');
-app.post('/webhook/stripe',
-    express.raw({ type: 'application/json' }),
-    async (req, res) => {
-        const sig = req.headers['stripe-signature'];
-        try {
-            const event = stripeService.verifyWebhook(req.body, sig);
-            await stripeService.handleWebhookEvent(event);
-            res.json({ received: true });
-        } catch (err) {
-            console.error('[WEBHOOK]', err.message);
-            res.status(400).send(`Webhook Error: ${err.message}`);
-        }
-    }
-);
-
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

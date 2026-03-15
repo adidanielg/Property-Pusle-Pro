@@ -121,11 +121,31 @@ const stripeService = {
 
             case 'checkout.session.completed': {
                 const session   = event.data.object;
-                const clienteId = session.metadata?.cliente_id;
-                const plan      = session.metadata?.plan;
+                let clienteId   = session.metadata?.cliente_id;
+                let plan        = session.metadata?.plan;
                 const subId     = session.subscription;
 
-                if (!clienteId || !plan) break;
+                // Fallback: buscar por stripe_customer_id si no hay metadata
+                if (!clienteId && session.customer) {
+                    const { data: c } = await supabase
+                        .from('companias')
+                        .select('id, plan')
+                        .eq('stripe_customer_id', session.customer)
+                        .single();
+                    if (c) clienteId = c.id;
+                }
+
+                if (!clienteId) {
+                    console.error('[STRIPE] checkout.session.completed sin cliente_id', session.id);
+                    break;
+                }
+
+                // Si no hay plan en metadata, deducirlo del price_id
+                if (!plan && session.line_items) {
+                    const priceId = session.line_items?.data?.[0]?.price?.id;
+                    plan = Object.entries(PRICES).find(([, v]) => v === priceId)?.[0] || 'starter';
+                }
+                plan = plan || 'starter';
 
                 await supabase
                     .from('companias')
@@ -136,7 +156,7 @@ const stripeService = {
                     })
                     .eq('id', clienteId);
 
-                console.log(`[STRIPE] Checkout completado: cliente=${clienteId} plan=${plan}`);
+                console.log(`[STRIPE] ✅ Checkout completado: cliente=${clienteId} plan=${plan}`);
                 break;
             }
 
