@@ -32,12 +32,17 @@ app.post('/webhook/stripe',
     express.raw({ type: 'application/json' }),
     async (req, res) => {
         const sig = req.headers['stripe-signature'];
+        console.log('[WEBHOOK] Recibido evento de Stripe');
+        console.log('[WEBHOOK] Signature presente:', !!sig);
+        console.log('[WEBHOOK] Body size:', req.body?.length || 0);
         try {
             const event = stripeService.verifyWebhook(req.body, sig);
+            console.log('[WEBHOOK] Evento verificado:', event.type);
             await stripeService.handleWebhookEvent(event);
+            console.log('[WEBHOOK] ✅ Evento procesado:', event.type);
             res.json({ received: true });
         } catch (err) {
-            console.error('[WEBHOOK]', err.message);
+            console.error('[WEBHOOK] ❌ Error:', err.message);
             res.status(400).send(`Webhook Error: ${err.message}`);
         }
     }

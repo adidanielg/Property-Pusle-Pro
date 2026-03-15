@@ -77,8 +77,13 @@ router.post('/activate-by-session', requireAuth(['cliente']), async (req, res) =
         const stripe  = require('stripe')(process.env.STRIPE_SECRET_KEY);
         const session = await stripe.checkout.sessions.retrieve(session_id);
 
-        if (session.payment_status !== 'paid' && session.status !== 'complete') {
-            return res.json({ success: false, reason: 'not_paid' });
+        // Para trials: payment_status = 'no_payment_required', status = 'complete'
+        // Para pagos normales: payment_status = 'paid', status = 'complete'
+        const isValid = session.status === 'complete' || 
+                        session.payment_status === 'paid' ||
+                        session.payment_status === 'no_payment_required';
+        if (!isValid) {
+            return res.json({ success: false, reason: 'not_paid', status: session.status, payment_status: session.payment_status });
         }
 
         const plan  = session.metadata?.plan || 'starter';

@@ -590,7 +590,7 @@
                     <li>✓ 10 tickets activos</li>
                     <li>✓ 1 técnico</li>
                 </ul>
-                <button class="ppb ppb-ghost ppb-full" onclick="elegirPlan('starter')" style="margin-top:.5rem">Empezar gratis →</button>
+                <button id="btn-plan-starter" class="ppb ppb-ghost ppb-full" onclick="elegirPlan('starter', this)" style="margin-top:.5rem">Empezar gratis →</button>
             </div>
 
             <!-- Pro -->
@@ -604,7 +604,7 @@
                     <li>✓ 50 tickets activos</li>
                     <li>✓ 5 técnicos</li>
                 </ul>
-                <button class="ppb ppb-primary ppb-full" onclick="elegirPlan('pro')" style="margin-top:.5rem">Elegir Pro →</button>
+                <button id="btn-plan-pro" class="ppb ppb-primary ppb-full" onclick="elegirPlan('pro', this)" style="margin-top:.5rem">Elegir Pro →</button>
             </div>
 
             <!-- Business -->
@@ -821,9 +821,9 @@ async function abrirPropiedadOPlan() {
     }
 }
 
-async function elegirPlan(plan) {
+async function elegirPlan(plan, btnEl) {
     try {
-        const btn = document.querySelector(`[onclick="elegirPlan('${plan}')"]`);
+        const btn = btnEl || document.getElementById('btn-plan-' + plan);
         if (btn) { btn.disabled = true; btn.textContent = 'Redirigiendo...'; }
         const res  = await fetch('/stripe/checkout', {
             method: 'POST', headers: {'Content-Type':'application/json'},
@@ -836,7 +836,10 @@ async function elegirPlan(plan) {
             showToast(data.error || 'Error al iniciar el pago', 'error');
             if (btn) { btn.disabled = false; btn.textContent = plan === 'starter' ? 'Empezar gratis →' : 'Elegir ' + plan + ' →'; }
         }
-    } catch { showToast('Error de conexión', 'error'); }
+    } catch(e) { 
+        console.error('[ELEGIR PLAN]', e);
+        showToast('Error de conexión', 'error'); 
+    }
 }
 
 // ── STRIPE ────────────────────────────────────────────────────
@@ -877,6 +880,10 @@ if (params.get('upgraded') === '1') {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({ session_id: params.get('session_id') || '' })
+    }).then(r => r.json()).then(data => {
+        if (data.success) {
+            console.log('[STRIPE] Plan activado via fallback:', data.plan);
+        }
     }).catch(() => {});
 }
 

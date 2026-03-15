@@ -31,7 +31,7 @@ async function checkTicketLimit(companiaId) {
 }
 
 async function getLimits(companiaId) {
-    const { data: c } = await supabase.from('companias').select('plan').eq('id', companiaId).single();
+    const { data: c } = await supabase.from('companias').select('plan, suscripcion_activa').eq('id', companiaId).single();
     const plan = c?.plan || 'starter';
     const limites = PLANES[plan];
 
