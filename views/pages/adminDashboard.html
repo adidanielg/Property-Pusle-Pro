@@ -118,13 +118,7 @@
 .adm-empty { text-align:center; padding:2.5rem; color:#4a5568; font-size:.875rem; }
 
 /* Fees */
-.adm-fee-row { display:flex; align-items:center; gap:.75rem; padding:.7rem 1rem; border-bottom:1px solid #1a1d2e; }
-.adm-fee-row:last-child { border-bottom:none; }
-.adm-fee-name  { font-size:.875rem; font-weight:600; color:#c9d1e0; flex:1; }
-.adm-fee-spec  { font-size:.75rem; color:#4a5568; }
-.adm-fee-val   { font-size:.88rem; font-weight:700; font-family:'JetBrains Mono',monospace; }
-.adm-fee-pending { color:#7c74ff; }
-.adm-fee-done    { color:#34d399; }
+
 
 /* Modal override para dark */
 .adm-modal { background:#141720; border:1px solid #252836; border-radius:20px; padding:2rem; width:100%; max-width:520px; box-shadow:0 20px 60px rgba(0,0,0,.6); animation:modalIn .2s cubic-bezier(.34,1.56,.64,1); }
@@ -156,8 +150,7 @@
         <a href="#clientes">👥 Clientes</a>
         <a href="#tickets">🎫 Tickets</a>
         <a href="#cancelaciones">❌ Cancelaciones</a>
-        <a href="#fees">💰 Fees</a>
-    </nav>
+            </nav>
     <div id="lang-toggle" style="display:flex;gap:.2rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.2rem">
     <button id="lang-es" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)">ES</button>
     <button id="lang-en" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)">EN</button>
@@ -746,34 +739,8 @@ async function cargarCancelaciones() {
 
 // FEES
 async function cargarFees() {
-    const container=document.getElementById('feesBody');
-    container.innerHTML='<div class="adm-empty">Cargando...</div>';
-    try {
-        const res=await fetch('/admin/fees'); const data=await res.json();
-        if(!data.fees?.length){container.innerHTML='<div class="adm-empty">No hay fees registrados aún.</div>';return;}
-        container.innerHTML=`<div style="padding:.5rem 0">${data.fees.map(f=>`
-            <div class="adm-fee-row">
-                <div>
-                    <div class="adm-fee-name">${f.nombre}</div>
-                    <div class="adm-fee-spec">${f.especialidad||'—'} · ${f.total_trabajos||0} trabajos · ${f.promedio_estrellas?parseFloat(f.promedio_estrellas).toFixed(1)+' ★':'sin rating'}</div>
-                </div>
-                <div style="text-align:right;margin-left:auto">
-                    <div class="adm-fee-val adm-fee-pending">$${parseFloat(f.fee_pendiente||0).toFixed(2)} <span style="font-size:.7rem;color:#4a5568;font-family:Outfit">pendiente</span></div>
-                    <div class="adm-fee-val adm-fee-done" style="font-size:.78rem">$${parseFloat(f.fee_cobrado||0).toFixed(2)} cobrado</div>
-                </div>
-                ${parseFloat(f.fee_pendiente||0)>0?`<button class="ab ab-green ab-sm" onclick="cobrarFee('${f.tecnico_id}','${f.nombre}',${parseFloat(f.fee_pendiente||0).toFixed(2)})">✅ Cobrar</button>`:'<span style="font-size:.72rem;color:#4a5568">Sin pendiente</span>'}
-            </div>
-        `).join('')}</div>`;
-    }catch{container.innerHTML='<div class="adm-empty" style="color:#f87171">Error cargando fees</div>';}
-}
-
-async function cobrarFee(id, nombre, monto) {
-    if(!await confirmAction(`Marcar $${monto} de ${nombre} como cobrado. Esta acción no se puede deshacer.`,'Sí, cobrado','Cancelar'))return;
-    try{const res=await fetch(`/admin/fees/${id}/cobrar`,{method:'POST'});const data=await res.json();if(data.success){showToast(`✅ Fee de ${nombre} cobrado`);cargarFees();}else showToast(data.error,'error');}catch{showToast('Error','error');}
-}
 
 cargarCancelaciones();
-cargarFees();
 
 // ── Códigos de invitación ────────────────────────────────────
 async function cargarCodigos() {

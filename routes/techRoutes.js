@@ -2,7 +2,6 @@ const express     = require('express');
 const router      = express.Router();
 const { requireAuth } = require('../middleware/authMiddleware');
 const ticketService   = require('../services/ticketService');
-const feeService      = require('../services/feeService');
 const supabase        = require('../services/supabaseClient');
 const { validate, schemas } = require('../middleware/validate');
 
@@ -11,13 +10,12 @@ router.use(requireAuth(['tecnico']));
 // ── Dashboard ─────────────────────────────────────────────────
 router.get('/dashboard', async (req, res) => {
     try {
-        const [tickets, { data: calificaciones }, resumenFees, { data: tecnicoData }] = await Promise.all([
+        const [tickets, { data: calificaciones }, { data: tecnicoData }] = await Promise.all([
             ticketService.getTicketsParaTecnico(req.user.id),
             supabase.from('calificaciones')
                 .select('estrellas, comentario, created_at, companias:cliente_id(nombre_contacto, nombre_empresa)')
                 .eq('tecnico_id', req.user.id)
                 .order('created_at', { ascending: false }),
-            feeService.getResumenTecnico(req.user.id),
             supabase.from('tecnicos').select('ocupado').eq('id', req.user.id).single()
         ]);
 
@@ -33,7 +31,7 @@ router.get('/dashboard', async (req, res) => {
             calificaciones: calificaciones || [],
             promedio,
             totalCalif,
-            fees:           resumenFees
+            fees: null
         });
     } catch (err) {
         console.error('[TECH DASHBOARD]', err);
@@ -58,24 +56,6 @@ router.post('/tickets/:id/estado', validate(schemas.estadoTicket), async (req, r
         if (ticket.estado !== 'pendiente' && ticket.tecnico_asignado !== req.user.id)
             return res.status(403).json({ error: 'No tienes permiso para modificar este ticket' });
 
-        // Verificar suscripción solo al ACEPTAR (en_proceso)
-        if (estado === 'en_proceso') {
-            const { data: tec } = await supabase
-                .from('tecnicos')
-                .select('suscripcion_activa, invitado')
-                .eq('id', req.user.id)
-                .single();
-
-            const puedeTrabajar = tec?.suscripcion_activa === true || tec?.invitado === true;
-            if (!puedeTrabajar) {
-                return res.status(403).json({
-                    error:        'sin_suscripcion',
-                    message:      'Necesitas una suscripción activa para aceptar trabajos.',
-                    checkout_url: '/stripe/checkout-tecnico'
-                });
-            }
-        }
-
         if (ticket.estado === 'completado')
             return res.status(400).json({ error: 'Este ticket ya está completado' });
 
@@ -83,50 +63,16 @@ router.post('/tickets/:id/estado', validate(schemas.estadoTicket), async (req, r
             req.params.id, req.user.id, estado
         );
 
-        // Si completado → info del fee para mostrar en UI
-        let feeInfo = null;
-        if (estado === 'completado') {
-            feeInfo = await feeService.getResumenTecnico(req.user.id);
-        }
-
-        res.json({ success: true, ticket: ticketActualizado, feeInfo });
+        res.json({ success: true, ticket: ticketActualizado });
 
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// ── Earnings: detalle de fees ─────────────────────────────────
-router.get('/earnings', async (req, res) => {
-    try {
-        const resumen = await feeService.getResumenTecnico(req.user.id);
 
-        // Obtener rating
-        const { data: califs } = await supabase
-            .from('calificaciones')
-            .select('estrellas')
-            .eq('tecnico_id', req.user.id);
 
-        const promedio = califs?.length > 0
-            ? (califs.reduce((a, c) => a + c.estrellas, 0) / califs.length).toFixed(1)
-            : null;
 
-        res.json({ success: true, ...resumen, promedio, totalCalif: califs?.length || 0 });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// ── Ranking de técnicos (para mostrar posición) ───────────────
-router.get('/ranking', async (req, res) => {
-    try {
-        const tecnicos = await feeService.getTecnicoPorRating();
-        const miPosicion = tecnicos?.findIndex(t => t.id === req.user.id) + 1;
-        res.json({ success: true, ranking: tecnicos, miPosicion });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
 
 // ── Perfil: obtener ───────────────────────────────────────────
 router.get('/perfil', async (req, res) => {

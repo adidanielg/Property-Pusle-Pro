@@ -154,7 +154,7 @@
 .tec-widget { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.2rem; }
 .tec-widget-lbl { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--text-3); margin-bottom:.9rem; }
 
-/* Earnings */
+/* Stats */
 .tec-earn-row { display:flex; justify-content:space-between; align-items:center; padding:.5rem 0; border-bottom:1px solid var(--border); }
 .tec-earn-row:last-child { border-bottom:none; }
 .tec-earn-label { font-size:.8rem; color:var(--text-2); }
@@ -357,25 +357,19 @@
 
     <!-- Earnings -->
     <div class="tec-widget">
-        <div class="tec-widget-lbl">Mis Ganancias</div>
+        <div class="tec-widget-lbl">Mis Estadísticas</div>
         <div class="tec-earn-row">
             <span class="tec-earn-label">Total trabajos</span>
-            <span class="tec-earn-value"><%= fees.totalTrabajos %></span>
+            <span class="tec-earn-value" id="statTotalTrabajos">—</span>
         </div>
         <div class="tec-earn-row">
-            <span class="tec-earn-label">Fee pendiente</span>
-            <span class="tec-earn-value" style="color:var(--accent)">$<%= fees.feePendiente.toFixed(2) %></span>
+            <span class="tec-earn-label">Completados</span>
+            <span class="tec-earn-value" style="color:var(--green)" id="statCompletados">—</span>
         </div>
         <div class="tec-earn-row">
-            <span class="tec-earn-label">Fee cobrado</span>
-            <span class="tec-earn-value" style="color:var(--green)">$<%= fees.feeCobrado.toFixed(2) %></span>
+            <span class="tec-earn-label">En proceso</span>
+            <span class="tec-earn-value" style="color:var(--accent)" id="statEnProceso">—</span>
         </div>
-        <% if (fees.primerTrabajo) { %>
-        <div style="margin-top:.75rem;background:var(--green-soft);border:1px solid var(--green);border-radius:8px;padding:.6rem .75rem;font-size:.75rem;color:#065f46">
-            🎉 <strong>Tu primer trabajo es gratis</strong> — sin fee por el próximo trabajo
-        </div>
-        <% } %>
-        <div style="margin-top:.75rem;font-size:.72rem;color:var(--text-3)">$4.50 por trabajo completado · primer trabajo gratis</div>
     </div>
 
     <!-- Ranking -->
@@ -517,6 +511,24 @@ async function cambiarEstado(ticketId, nuevoEstado) {
         }
     } catch { showToast('Error de conexión','error'); }
 }
+
+// Llenar estadísticas dinámicamente desde los tickets
+document.addEventListener('DOMContentLoaded', () => {
+    const tickets = document.querySelectorAll('[data-estado]');
+    let completados = 0, enProceso = 0;
+    tickets.forEach(t => {
+        const estado = t.getAttribute('data-estado');
+        if (estado === 'completado') completados++;
+        if (estado === 'en_proceso') enProceso++;
+    });
+    const total = completados + enProceso;
+    const el1 = document.getElementById('statTotalTrabajos');
+    const el2 = document.getElementById('statCompletados');
+    const el3 = document.getElementById('statEnProceso');
+    if (el1) el1.textContent = total;
+    if (el2) el2.textContent = completados;
+    if (el3) el3.textContent = enProceso;
+});
 
 // CANCELAR
 let tecTicketACancelar=null;
