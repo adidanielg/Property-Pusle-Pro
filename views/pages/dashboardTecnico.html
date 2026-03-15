@@ -374,25 +374,19 @@
 
     <!-- Earnings -->
     <div class="tec-widget">
-        <div class="tec-widget-lbl">Mis Ganancias</div>
+        <div class="tec-widget-lbl">Mis Estadísticas</div>
         <div class="tec-earn-row">
             <span class="tec-earn-label">Total trabajos</span>
-            <span class="tec-earn-value"><%= fees.totalTrabajos %></span>
+            <span class="tec-earn-value" id="statTotalTrabajos">—</span>
         </div>
         <div class="tec-earn-row">
-            <span class="tec-earn-label">Fee pendiente</span>
-            <span class="tec-earn-value" style="color:var(--accent)">$<%= fees.feePendiente.toFixed(2) %></span>
+            <span class="tec-earn-label">Completados</span>
+            <span class="tec-earn-value" style="color:var(--green)" id="statCompletados">—</span>
         </div>
         <div class="tec-earn-row">
-            <span class="tec-earn-label">Fee cobrado</span>
-            <span class="tec-earn-value" style="color:var(--green)">$<%= fees.feeCobrado.toFixed(2) %></span>
+            <span class="tec-earn-label">En proceso</span>
+            <span class="tec-earn-value" style="color:var(--accent)" id="statEnProceso">—</span>
         </div>
-        <% if (fees.primerTrabajo) { %>
-        <div style="margin-top:.75rem;background:var(--green-soft);border:1px solid var(--green);border-radius:8px;padding:.6rem .75rem;font-size:.75rem;color:#065f46">
-            🎉 <strong>Tu primer trabajo es gratis</strong> — sin fee por el próximo trabajo
-        </div>
-        <% } %>
-        <div style="margin-top:.75rem;font-size:.72rem;color:var(--text-3)">$4.50 por trabajo completado · primer trabajo gratis</div>
     </div>
 
     <!-- Ranking -->
