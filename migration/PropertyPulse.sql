@@ -223,3 +223,25 @@ WHERE EXISTS (
     WHERE tk.tecnico_asignado = t.id
     AND tk.estado = 'en_proceso'
 );
+
+-- ── Migración: Stripe columns ──────────────────────────────────
+-- Ejecutar en Supabase SQL Editor
+
+-- Agregar columnas de Stripe a la tabla companias
+ALTER TABLE companias
+    ADD COLUMN IF NOT EXISTS stripe_customer_id      TEXT,
+    ADD COLUMN IF NOT EXISTS stripe_subscription_id  TEXT,
+    ADD COLUMN IF NOT EXISTS suscripcion_activa       BOOLEAN DEFAULT FALSE;
+
+-- Índices para búsquedas rápidas
+CREATE INDEX IF NOT EXISTS idx_companias_stripe_customer
+    ON companias(stripe_customer_id);
+
+CREATE INDEX IF NOT EXISTS idx_companias_stripe_subscription
+    ON companias(stripe_subscription_id);
+
+-- Verificar
+SELECT column_name, data_type
+FROM information_schema.columns
+WHERE table_name = 'companias'
+  AND column_name IN ('stripe_customer_id', 'stripe_subscription_id', 'suscripcion_activa', 'plan');

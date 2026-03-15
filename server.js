@@ -20,6 +20,7 @@ const clientRoutes       = require('./routes/clientRoutes');
 const techRoutes         = require('./routes/techRoutes');
 const adminRoutes        = require('./routes/adminRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
+const stripeRoutes       = require('./routes/stripeRoutes');
 
 const app = express();
 app.set('trust proxy', 1);
@@ -29,14 +30,15 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc:     ["'self'"],
-            scriptSrc:      ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://maps.googleapis.com"],
+            scriptSrc:      ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://maps.googleapis.com", "https://js.stripe.com"],
             scriptSrcAttr:  ["'unsafe-inline'"],  // permite onclick= en elementos HTML
             styleSrc:       ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
             fontSrc:        ["'self'", "https://fonts.gstatic.com"],
             imgSrc:         ["'self'", "data:", "blob:", "https://*.supabase.co", "https://maps.googleapis.com", "https://maps.gstatic.com"],
-            connectSrc:     ["'self'", "https://*.supabase.co", "https://maps.googleapis.com"],
+            connectSrc:     ["'self'", "https://*.supabase.co", "https://maps.googleapis.com", "https://api.stripe.com"],
             navigateTo:     ["'self'", "https://maps.google.com", "https://maps.apple.com"],
             workerSrc:      ["'self'"],
+            frameSrc:       ["https://js.stripe.com", "https://hooks.stripe.com"],
             manifestSrc:    ["'self'"],
         },
     },
@@ -55,6 +57,24 @@ app.set('view engine', 'html');
 app.set('views', path.join(viewsRoot, 'pages'));
 
 // ── Middlewares base ──────────────────────────────────────────
+// ── Webhook Stripe — DEBE ir ANTES de express.json() ─────────
+// Stripe necesita el body raw sin parsear para verificar la firma
+const stripeService = require('./services/stripeService');
+app.post('/webhook/stripe',
+    express.raw({ type: 'application/json' }),
+    async (req, res) => {
+        const sig = req.headers['stripe-signature'];
+        try {
+            const event = stripeService.verifyWebhook(req.body, sig);
+            await stripeService.handleWebhookEvent(event);
+            res.json({ received: true });
+        } catch (err) {
+            console.error('[WEBHOOK]', err.message);
+            res.status(400).send(`Webhook Error: ${err.message}`);
+        }
+    }
+);
+
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -95,6 +115,7 @@ app.use('/cliente',        clientRoutes);
 app.use('/tecnico',        techRoutes);
 app.use('/admin',          adminRoutes);
 app.use('/notificaciones', notificationRoutes);
+app.use('/stripe',         stripeRoutes);
 
 // ── Manejo de errores ─────────────────────────────────────────
 app.use(notFound);

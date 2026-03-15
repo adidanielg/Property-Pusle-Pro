@@ -6,6 +6,11 @@ const REQUIRED = [
     'ADMIN_PASSWORD',
     'VAPID_PUBLIC_KEY',
     'VAPID_PRIVATE_KEY',
+    'STRIPE_SECRET_KEY',
+    'STRIPE_WEBHOOK_SECRET',
+    'STRIPE_PRICE_STARTER',
+    'STRIPE_PRICE_PRO',
+    'STRIPE_PRICE_BUSINESS',
 ];
 
 function validateEnv() {

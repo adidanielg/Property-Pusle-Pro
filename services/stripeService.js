@@ -1,0 +1,188 @@
+// PropertyPulse — stripeService.js
+// Maneja Checkout sessions, webhooks y gestión de suscripciones
+
+const stripe     = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const supabase   = require('./supabaseClient');
+
+const PRICES = {
+    starter:  process.env.STRIPE_PRICE_STARTER,
+    pro:      process.env.STRIPE_PRICE_PRO,
+    business: process.env.STRIPE_PRICE_BUSINESS,
+};
+
+const stripeService = {
+
+    // ── Crear sesión de checkout ──────────────────────────────
+    async createCheckoutSession(clienteId, plan, successUrl, cancelUrl) {
+        const priceId = PRICES[plan];
+        if (!priceId) throw new Error(`Plan inválido: ${plan}`);
+
+        // Obtener info del cliente
+        const { data: cliente } = await supabase
+            .from('companias')
+            .select('email, nombre_contacto, stripe_customer_id')
+            .eq('id', clienteId)
+            .single();
+
+        if (!cliente) throw new Error('Cliente no encontrado');
+
+        // Crear o reutilizar customer en Stripe
+        let customerId = cliente.stripe_customer_id;
+        if (!customerId) {
+            const customer = await stripe.customers.create({
+                email: cliente.email,
+                name:  cliente.nombre_contacto,
+                metadata: { cliente_id: clienteId }
+            });
+            customerId = customer.id;
+
+            // Guardar customer_id en Supabase
+            await supabase
+                .from('companias')
+                .update({ stripe_customer_id: customerId })
+                .eq('id', clienteId);
+        }
+
+        // Crear sesión de checkout
+        const session = await stripe.checkout.sessions.create({
+            customer:    customerId,
+            mode:        'subscription',
+            line_items:  [{ price: priceId, quantity: 1 }],
+            success_url: `${successUrl}?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url:  cancelUrl,
+            metadata:    { cliente_id: clienteId, plan },
+            subscription_data: {
+                metadata: { cliente_id: clienteId, plan }
+            },
+            allow_promotion_codes: true,
+        });
+
+        return session;
+    },
+
+    // ── Cancelar suscripción ──────────────────────────────────
+    async cancelSubscription(clienteId) {
+        const { data: cliente } = await supabase
+            .from('companias')
+            .select('stripe_subscription_id')
+            .eq('id', clienteId)
+            .single();
+
+        if (!cliente?.stripe_subscription_id) {
+            throw new Error('No tienes una suscripción activa');
+        }
+
+        // Cancelar al final del período (no inmediatamente)
+        await stripe.subscriptions.update(cliente.stripe_subscription_id, {
+            cancel_at_period_end: true
+        });
+
+        return { success: true };
+    },
+
+    // ── Crear portal de cliente (gestionar suscripción) ───────
+    async createPortalSession(clienteId, returnUrl) {
+        const { data: cliente } = await supabase
+            .from('companias')
+            .select('stripe_customer_id')
+            .eq('id', clienteId)
+            .single();
+
+        if (!cliente?.stripe_customer_id) {
+            throw new Error('No tienes una suscripción activa');
+        }
+
+        const session = await stripe.billingPortal.sessions.create({
+            customer:   cliente.stripe_customer_id,
+            return_url: returnUrl,
+        });
+
+        return session;
+    },
+
+    // ── Verificar webhook ─────────────────────────────────────
+    verifyWebhook(payload, signature) {
+        return stripe.webhooks.constructEvent(
+            payload,
+            signature,
+            process.env.STRIPE_WEBHOOK_SECRET
+        );
+    },
+
+    // ── Procesar evento de webhook ────────────────────────────
+    async handleWebhookEvent(event) {
+        switch (event.type) {
+
+            case 'checkout.session.completed': {
+                const session   = event.data.object;
+                const clienteId = session.metadata?.cliente_id;
+                const plan      = session.metadata?.plan;
+                const subId     = session.subscription;
+
+                if (!clienteId || !plan) break;
+
+                await supabase
+                    .from('companias')
+                    .update({
+                        plan,
+                        stripe_subscription_id: subId,
+                        suscripcion_activa:     true,
+                    })
+                    .eq('id', clienteId);
+
+                console.log(`[STRIPE] Checkout completado: cliente=${clienteId} plan=${plan}`);
+                break;
+            }
+
+            case 'customer.subscription.updated': {
+                const sub       = event.data.object;
+                const clienteId = sub.metadata?.cliente_id;
+
+                if (!clienteId) break;
+
+                // Obtener el plan del price_id actual
+                const priceId = sub.items.data[0]?.price?.id;
+                const plan    = Object.entries(PRICES).find(([, v]) => v === priceId)?.[0];
+
+                const activa = ['active', 'trialing'].includes(sub.status);
+
+                await supabase
+                    .from('companias')
+                    .update({
+                        plan:                   plan || 'starter',
+                        suscripcion_activa:     activa,
+                        stripe_subscription_id: sub.id,
+                    })
+                    .eq('id', clienteId);
+
+                console.log(`[STRIPE] Suscripción actualizada: cliente=${clienteId} plan=${plan} activa=${activa}`);
+                break;
+            }
+
+            case 'customer.subscription.deleted': {
+                const sub       = event.data.object;
+                const clienteId = sub.metadata?.cliente_id;
+
+                if (!clienteId) break;
+
+                // Bajar a starter cuando cancela
+                await supabase
+                    .from('companias')
+                    .update({
+                        plan:                   'starter',
+                        suscripcion_activa:     false,
+                        stripe_subscription_id: null,
+                    })
+                    .eq('id', clienteId);
+
+                console.log(`[STRIPE] Suscripción cancelada: cliente=${clienteId}`);
+                break;
+            }
+
+            default:
+                console.log(`[STRIPE] Evento no manejado: ${event.type}`);
+        }
+    }
+};
+
+module.exports = stripeService;

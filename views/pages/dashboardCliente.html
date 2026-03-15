@@ -733,11 +733,50 @@ async function checkUpgradeBanner(){
     if(pN)pN.textContent=(data.plan||'starter').charAt(0).toUpperCase()+(data.plan||'starter').slice(1);
     if(data.propiedades){const p=data.propiedades,pct=p.limite===null?0:Math.round(p.actual/p.limite*100);pB.style.width=pct+'%';pB.style.background=pct>=80?'var(--red)':'var(--accent)';pL.textContent=`${p.actual} / ${p.limite===null?'∞':p.limite}`;}
     if(data.tickets){const t=data.tickets,pct=t.limite===null?0:Math.round(t.actual/t.limite*100);tB.style.width=pct+'%';tB.style.background=pct>=80?'var(--red)':'var(--accent)';tL.textContent=`${t.actual} / ${t.limite===null?'∞':t.limite}`;}
-    if(data.show_upgrade){if(ban)ban.style.display='flex';if(uB)uB.style.display='flex';}}catch{}
+    if(data.show_upgrade){if(ban)ban.style.display='flex';if(uB)uB.style.display='flex';}
+    // Mostrar botón portal si tiene suscripción activa
+    const portalBtn = document.getElementById('planPortalBtn');
+    if(portalBtn && data.suscripcion_activa) portalBtn.style.display='flex';
+    }catch{}
 }
 
 cargarPerfil();
 checkUpgradeBanner();
+
+// ── STRIPE ────────────────────────────────────────────────────
+async function irACheckout(plan) {
+    try {
+        const btn = event?.target;
+        if (btn) { btn.disabled = true; btn.textContent = 'Redirigiendo...'; }
+        const res  = await fetch('/stripe/checkout', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ plan })
+        });
+        const data = await res.json();
+        if (data.success && data.url) {
+            window.location.href = data.url;
+        } else {
+            showToast(data.error || 'Error al iniciar el pago', 'error');
+            if (btn) { btn.disabled = false; btn.textContent = 'Mejorar plan'; }
+        }
+    } catch { showToast('Error de conexión', 'error'); }
+}
+
+async function abrirPortalStripe() {
+    try {
+        const res  = await fetch('/stripe/portal', { method: 'POST' });
+        const data = await res.json();
+        if (data.success && data.url) window.location.href = data.url;
+        else showToast(data.error || 'Error', 'error');
+    } catch { showToast('Error de conexión', 'error'); }
+}
+
+// Mostrar mensaje de upgrade exitoso
+const params = new URLSearchParams(window.location.search);
+if (params.get('upgraded') === '1') {
+    showToast('🎉 ¡Plan actualizado correctamente!');
+    history.replaceState({}, '', '/cliente/dashboard');
+}
 
 </script>
 
