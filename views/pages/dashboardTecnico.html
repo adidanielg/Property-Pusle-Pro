@@ -518,8 +518,13 @@ async function cambiarEstado(ticketId, nuevoEstado) {
     try {
         const res  = await fetch(`/tecnico/tickets/${ticketId}/estado`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({estado:nuevoEstado}) });
         const data = await res.json();
-        if (data.success) location.reload();
-        else showToast('Error: ' + data.error, 'error');
+        if (data.success) {
+            location.reload();
+        } else if (data.error === 'sin_suscripcion') {
+            abrirModal('modalSuscripcionTec');
+        } else {
+            showToast('Error: ' + data.error, 'error');
+        }
     } catch { showToast('Error de conexión','error'); }
 }
 
@@ -629,5 +634,57 @@ cargarRanking();
 <script src="/js/app.js"></script>
 <script src="/js/i18n.js"></script>
 <script src="/js/notifications.js"></script>
+
+<!-- Modal: Suscripción Técnico -->
+<div id="modalSuscripcionTec" class="modal-overlay">
+    <div class="modal" style="max-width:460px">
+        <div class="modal-header">
+            <h2>🔒 Suscripción requerida</h2>
+            <button class="modal-close" onclick="cerrarModal('modalSuscripcionTec')">✕</button>
+        </div>
+        <div style="text-align:center;padding:1rem 0">
+            <div style="font-size:2.5rem;margin-bottom:.75rem">🛠️</div>
+            <p style="color:var(--text-2);font-size:.9rem;line-height:1.6;margin-bottom:1.5rem">
+                Para ver direcciones y aceptar trabajos necesitas una suscripción activa.<br>
+                Accede a todos los trabajos por solo
+                <strong style="color:var(--accent)">$19.99/mes</strong>.
+            </p>
+            <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1.5rem;text-align:left">
+                <div style="font-size:.82rem;color:var(--text-2);display:flex;flex-direction:column;gap:.4rem">
+                    <div>✅ Ver direcciones completas de los trabajos</div>
+                    <div>✅ Acceso al GPS para llegar al cliente</div>
+                    <div>✅ Aceptar trabajos ilimitados</div>
+                    <div>✅ Chat con clientes · Cancela cuando quieras</div>
+                </div>
+            </div>
+            <button onclick="suscribirseTecnico(this)" style="width:100%;padding:14px 20px;background:linear-gradient(135deg,#7c6dfa,#a78bfa);color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;box-shadow:0 4px 24px rgba(124,109,250,.4);transition:all .2s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                🚀 Suscribirme por $19.99/mes →
+            </button>
+            <p style="font-size:.72rem;color:var(--text-3);margin-top:.75rem">Pago seguro con Stripe · Sin contratos</p>
+        </div>
+    </div>
+</div>
+
+<script>
+async function suscribirseTecnico(btn) {
+    try {
+        if (btn) { btn.disabled = true; btn.textContent = 'Redirigiendo...'; }
+        const res  = await fetch('/stripe/checkout-tecnico', { method: 'POST' });
+        const data = await res.json();
+        if (data.success && data.url) {
+            window.location.href = data.url;
+        } else {
+            showToast(data.error || 'Error al iniciar el pago', 'error');
+            if (btn) { btn.disabled = false; btn.textContent = '🚀 Suscribirme por $19.99/mes →'; }
+        }
+    } catch { showToast('Error de conexión', 'error'); }
+}
+
+const tecParams = new URLSearchParams(window.location.search);
+if (tecParams.get('suscrito') === '1') {
+    showToast('🎉 ¡Suscripción activada! Ya puedes aceptar trabajos.');
+    history.replaceState({}, '', '/tecnico/dashboard');
+}
+</script>
 </body>
 </html>
