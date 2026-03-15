@@ -13,7 +13,8 @@
             <div class="form-error"><%= error %></div>
         <% } %>
 
-        <form action="/auth/login" method="POST">
+        <form action="/auth/login" method="POST" id="loginForm">
+            <input type="hidden" name="plan" id="planHidden">
             <input type="hidden" name="role" value="cliente">
 
             <div class="form-group">
@@ -44,6 +45,20 @@
 
 <script>
 // Mostrar banner si viene de sesión expirada
+// Leer plan de URL o sessionStorage
+const loginParams = new URLSearchParams(window.location.search);
+const planParam   = loginParams.get('plan') || sessionStorage.getItem('plan_pendiente');
+if (planParam) {
+    const h = document.getElementById('planHidden');
+    if (h) h.value = planParam;
+    // Mostrar badge
+    const badge = document.createElement('div');
+    badge.style.cssText = 'background:var(--accent-soft);color:var(--accent);font-size:.78rem;font-weight:700;padding:.4rem 1rem;border-radius:99px;text-align:center;margin-bottom:1rem';
+    badge.textContent = '🎯 Plan: ' + planParam.charAt(0).toUpperCase() + planParam.slice(1) + ' — inicia sesión para pagar';
+    const form = document.getElementById('loginForm');
+    if (form) form.insertBefore(badge, form.firstChild);
+}
+
 if (new URLSearchParams(window.location.search).get('expired') === '1') {
     const banner = document.createElement('div');
     banner.style.cssText = 'background:rgba(245,200,66,.12);border:1px solid rgba(245,200,66,.3);color:#f5c842;padding:.75rem 1rem;border-radius:8px;font-size:.875rem;margin-bottom:1rem;text-align:center;';

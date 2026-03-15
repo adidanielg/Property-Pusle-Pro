@@ -123,7 +123,7 @@
             </p>
         </div>
 
-        <a id="goLoginBtn" href="/auth/login" class="btn btn-primary btn-full" data-i18n="reg.goLogin">
+        <a id="goLoginBtn" href="/auth/login" class="btn btn-primary btn-full" data-i18n="reg.goLogin" onclick="if(sessionStorage.getItem('plan_pendiente'))this.href='/auth/login?plan='+sessionStorage.getItem('plan_pendiente')">
             Ir a iniciar sesión →
         </a>
 
@@ -155,6 +155,19 @@
     document.addEventListener('DOMContentLoaded', () => {
         toggleEmpresa();
     });
+
+    // ── Detectar plan en URL ──────────────────────────────────
+    const urlParams  = new URLSearchParams(window.location.search);
+    const planElegido = urlParams.get('plan') || null;
+
+    // Si hay plan, mostrar badge en el header
+    if (planElegido) {
+        const badge = document.createElement('div');
+        badge.style.cssText = 'background:var(--accent-soft);color:var(--accent);font-size:.78rem;font-weight:700;padding:.4rem 1rem;border-radius:99px;text-align:center;margin-bottom:1rem';
+        badge.textContent = '🎯 Plan seleccionado: ' + planElegido.charAt(0).toUpperCase() + planElegido.slice(1);
+        const form = document.querySelector('form') || document.querySelector('.auth-card');
+        if (form) form.insertBefore(badge, form.firstChild);
+    }
 
     // ── Copiar username ───────────────────────────────────────
     function copiarUsername() {
@@ -222,6 +235,8 @@
 
             if (result.success) {
                 document.getElementById('usernameDisplay').textContent = result.username;
+                // Guardar plan en sessionStorage para después del login
+                if (planElegido) sessionStorage.setItem('plan_pendiente', planElegido);
                 document.getElementById('successModal').classList.add('open');
             } else {
                 errDiv.textContent = '❌ ' + result.error;

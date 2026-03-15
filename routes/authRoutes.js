@@ -81,6 +81,25 @@ router.post('/login', validate(schemas.login), async (req, res) => {
             tecnico: '/tecnico/dashboard',
             admin:   '/admin/dashboard'
         };
+
+        // Si el cliente eligió un plan, redirigir al checkout
+        const plan = req.body.plan;
+        if (role === 'cliente' && plan && ['starter','pro','business'].includes(plan)) {
+            try {
+                const stripeService = require('../services/stripeService');
+                const baseUrl    = process.env.BASE_URL || 'https://www.getpropertypulse.net';
+                const session    = await stripeService.createCheckoutSession(
+                    user.id, plan,
+                    `${baseUrl}/cliente/dashboard?upgraded=1`,
+                    `${baseUrl}/app`
+                );
+                return res.redirect(session.url);
+            } catch (stripeErr) {
+                console.error('[STRIPE CHECKOUT]', stripeErr.message);
+                // Si falla Stripe, ir al dashboard normal
+            }
+        }
+
         return res.redirect(dashboards[role]);
 
     } catch (err) {
