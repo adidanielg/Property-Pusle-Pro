@@ -21,9 +21,9 @@
     html { scroll-behavior: smooth; }
 
     :root {
-        --bg:         #08071a;
-        --surface:    #0f0d2a;
-        --surface-2:  #16133a;
+        --bg:         #08080f;
+        --surface:    #0f0f1a;
+        --surface-2:  #15152a;
         --border:     rgba(255,255,255,.08);
         --border-2:   rgba(255,255,255,.14);
 
@@ -32,8 +32,8 @@
         --text-3:     #55557a;
 
         --accent:     #7c6dfa;
-        --accent-2:   #9d8fff;
-        --accent-glow:rgba(124,109,250,.4);
+        --accent-2:   #a78bfa;
+        --accent-glow:rgba(124,109,250,.35);
         --green:      #22d3a0;
         --gold:       #f5c842;
 
@@ -456,28 +456,31 @@
         padding: 1.75rem;
         position: relative;
         overflow: hidden;
-        transition: border-color .2s, transform .2s;
+        transition: border-color .2s, transform .2s, background .2s;
     }
 
     .step::before {
         content: '';
         position: absolute;
         top: 0; left: 0; right: 0;
-        height: 2px;
-        background: linear-gradient(90deg, var(--accent), transparent);
-        opacity: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--accent), var(--accent-2));
+        opacity: 1;
         transition: opacity .2s;
     }
 
-    .step:hover { border-color: var(--border-2); transform: translateY(-3px); }
-    .step:hover::before { opacity: 1; }
+    .step:hover { 
+        border-color: var(--accent); 
+        transform: translateY(-4px); 
+        background: rgba(124,109,250,.06);
+    }
 
     .step-num {
         font-family: var(--font-mono);
         font-size: .72rem;
         color: var(--accent);
-        background: rgba(124,109,250,.1);
-        border: 1px solid rgba(124,109,250,.2);
+        background: rgba(124,109,250,.15);
+        border: 1px solid rgba(124,109,250,.3);
         padding: .2rem .6rem;
         border-radius: 999px;
         display: inline-block;
@@ -502,12 +505,26 @@
     .benefit {
         background: var(--surface);
         padding: 2.25rem;
-        transition: background .2s;
+        transition: background .2s, transform .2s;
+        position: relative;
     }
 
-    .benefit:hover { background: var(--surface-2); }
+    .benefit:hover { 
+        background: var(--surface-2); 
+        transform: scale(1.01);
+    }
 
-    .benefit-icon { font-size: 2rem; margin-bottom: 1rem; }
+    .benefit-icon { 
+        font-size: 2rem; 
+        margin-bottom: 1rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 52px; height: 52px;
+        background: rgba(124,109,250,.12);
+        border: 1px solid rgba(124,109,250,.2);
+        border-radius: 14px;
+    }
     .benefit h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: .5rem; }
     .benefit p  { font-size: .875rem; color: var(--text-2); line-height: 1.65; }
 
@@ -633,12 +650,31 @@
         gap: 1.25rem;
     }
 
-    .testimonial {
+        .testimonial {
         background: var(--surface);
         border: 1px solid var(--border);
         border-radius: var(--rl);
-        padding: 1.75rem;
-        transition: border-color .2s;
+        padding: 2rem;
+        transition: border-color .2s, transform .2s;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .testimonial::before {
+        content: '"';
+        position: absolute;
+        top: -1rem; right: 1.5rem;
+        font-size: 8rem;
+        color: var(--accent);
+        opacity: .08;
+        font-family: Georgia, serif;
+        line-height: 1;
+        pointer-events: none;
+    }
+
+    .testimonial:hover {
+        border-color: rgba(124,109,250,.4);
+        transform: translateY(-3px);
     }
 
     .testimonial:hover { border-color: var(--border-2); }
@@ -819,6 +855,7 @@
     <div class="nav-links">
         <a href="#how-it-works" data-i18n="landing.howItWorks">How it works</a>
         <a href="#pricing" data-i18n="landing.pricing">Pricing</a>
+        <a href="#pricing-tech">For Technicians</a>
         <a href="#faq" data-i18n="landing.faq">FAQ</a>
         <div id="lang-toggle" style="display:flex;gap:.2rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.2rem">
     <button id="lang-es" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)">ES</button>
@@ -1057,6 +1094,61 @@
                 <li><span class="check">✓</span><span>Priority support</span></li>
             </ul>
             <a href="/app" class="btn-plan btn-plan-outline" data-i18n="landing.getStarted2">Get started →</a>
+        </div>
+    </div>
+</div>
+
+<!-- ── Planes Técnicos ───────────────────────────────────── -->
+<div id="pricing-tech" class="section" style="padding-top:0">
+    <p class="section-label reveal">For Technicians</p>
+    <h2 class="section-title reveal" style="max-width:600px">Join as a technician.<br><em>First job is on us.</em></h2>
+    <p class="section-sub reveal">Try the platform with your first job completely free. After that, one simple plan to keep the work coming.</p>
+
+    <div class="reveal" style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;max-width:760px;margin:2.5rem auto 0">
+
+        <!-- Free first job -->
+        <div class="pricing-card" style="position:relative">
+            <div style="position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:rgba(124,109,250,.2);color:var(--accent-2);border:1px solid rgba(124,109,250,.3);font-size:.68rem;font-weight:700;padding:.25rem .85rem;border-radius:999px;white-space:nowrap;letter-spacing:.05em">START HERE</div>
+            <div class="plan-name" style="margin-top:.5rem">Free Trial</div>
+            <div class="plan-price">
+                <span class="currency">$</span>
+                <span class="amount">0</span>
+                <span class="period">/first job</span>
+            </div>
+            <p class="plan-desc">Try the platform risk-free. No card needed.</p>
+            <hr class="plan-divider">
+            <ul class="plan-features">
+                <li><span class="check">✓</span><span>1 job to try the platform</span></li>
+                <li><span class="check">✓</span><span>Full address & GPS access</span></li>
+                <li><span class="check">✓</span><span>Chat with the client</span></li>
+                <li><span class="check">✓</span><span>Receive your first rating</span></li>
+                <li><span class="x">✗</span><span style="color:var(--text-3)">Access to more jobs</span></li>
+                <li><span class="x">✗</span><span style="color:var(--text-3)">Ranking visibility</span></li>
+            </ul>
+            <a href="/auth/register-tecnico" class="btn-plan btn-plan-outline">Register free →</a>
+        </div>
+
+        <!-- Technician Pro -->
+        <div class="pricing-card featured" style="position:relative">
+            <div class="pricing-featured-badge">Most Popular</div>
+            <div class="plan-name">Technician Pro</div>
+            <div class="plan-price">
+                <span class="currency">$</span>
+                <span class="amount">19.99</span>
+                <span class="period">/mo</span>
+            </div>
+            <p class="plan-desc">Full access to every job on the platform.</p>
+            <hr class="plan-divider">
+            <ul class="plan-features">
+                <li><span class="check">✓</span><span><strong>Unlimited jobs</strong></span></li>
+                <li><span class="check">✓</span><span><strong>Full address & GPS always</strong></span></li>
+                <li><span class="check">✓</span><span><strong>Chat with all clients</strong></span></li>
+                <li><span class="check">✓</span><span>Rating & reviews system</span></li>
+                <li><span class="check">✓</span><span>Ranking visibility</span></li>
+                <li><span class="check">✓</span><span>Push notifications</span></li>
+                <li><span class="check">✓</span><span>Job history & stats</span></li>
+            </ul>
+            <a href="/auth/register-tecnico" class="btn-plan btn-plan-primary">Get started →</a>
         </div>
     </div>
 </div>
