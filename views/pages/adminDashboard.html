@@ -593,6 +593,42 @@
 </div>
 
 <script>
+// ── Funciones críticas — definidas primero ────────────────
+function cerrarModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('open');
+}
+
+let idAEliminar = null, tipoAEliminar = null;
+function confirmarEliminar(btn) {
+    idAEliminar    = btn.dataset.id;
+    tipoAEliminar  = btn.dataset.tipo;
+    const nombre   = document.getElementById('eliminarNombre');
+    if (nombre) nombre.textContent = btn.dataset.nombre;
+    const modal = document.getElementById('eliminarModal');
+    if (modal) modal.classList.add('open');
+}
+
+function abrirEditarCliente(btn) {
+    document.getElementById('ecId').value      = btn.dataset.id;
+    document.getElementById('ecNombre').value  = btn.dataset.nombre;
+    document.getElementById('ecEmpresa').value = btn.dataset.empresa || '';
+    document.getElementById('ecEmail').value   = btn.dataset.email;
+    document.getElementById('ecTel').value     = btn.dataset.telefono;
+    document.getElementById('ecTipo').value    = btn.dataset.tipo;
+    document.getElementById('editarClienteModal').classList.add('open');
+}
+
+function abrirEditarTecnico(btn) {
+    document.getElementById('etId').value    = btn.dataset.id;
+    document.getElementById('etNombre').value= btn.dataset.nombre;
+    document.getElementById('etEmail').value = btn.dataset.email;
+    document.getElementById('etTel').value   = btn.dataset.telefono;
+    document.getElementById('etEsp').value   = btn.dataset.especialidad;
+    document.getElementById('editarTecnicoModal').classList.add('open');
+}
+
+// ─────────────────────────────────────────────────────────
 const ticketsSection = document.getElementById('tickets');
 let totalTickets = parseInt(ticketsSection?.dataset.totalTickets) || 0;
 const PAGE_SIZE   = parseInt(ticketsSection?.dataset.pageSize) || 20;
@@ -601,10 +637,6 @@ let totalPages    = Math.ceil(totalTickets / PAGE_SIZE) || 1;
 
 updatePaginacionUI(1, totalPages, totalTickets);
 
-function cerrarModal(id) {
-    const el = document.getElementById(id);
-    if (el) el.classList.remove('open');
-}
 document.querySelectorAll('.adm-overlay').forEach(el => el.addEventListener('click', e => { if (e.target===el) el.classList.remove('open'); }));
 
 // TICKETS
@@ -706,8 +738,6 @@ async function guardarCliente() {
 }
 
 // ELIMINAR
-let idAEliminar=null, tipoAEliminar=null;
-function confirmarEliminar(btn) { idAEliminar=btn.dataset.id; tipoAEliminar=btn.dataset.tipo; document.getElementById('eliminarNombre').textContent=btn.dataset.nombre; document.getElementById('eliminarModal').classList.add('open'); }
 async function ejecutarEliminar() {
     if(!idAEliminar)return;
     const btn=document.getElementById('btnEliminar'); btn.disabled=true; btn.textContent='Eliminando...';
