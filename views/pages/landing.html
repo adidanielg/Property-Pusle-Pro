@@ -21,9 +21,9 @@
     html { scroll-behavior: smooth; }
 
     :root {
-        --bg:         #040d09;
-        --surface:    #0a1f12;
-        --surface-2:  #0f2d1a;
+        --bg:         #08071a;
+        --surface:    #0f0d2a;
+        --surface-2:  #16133a;
         --border:     rgba(255,255,255,.08);
         --border-2:   rgba(255,255,255,.14);
 
@@ -31,10 +31,10 @@
         --text-2:     #8888aa;
         --text-3:     #55557a;
 
-        --accent:     #10b981;
-        --accent-2:   #34d399;
-        --accent-glow:rgba(16,185,129,.35);
-        --green:      #34d399;
+        --accent:     #7c6dfa;
+        --accent-2:   #9d8fff;
+        --accent-glow:rgba(124,109,250,.4);
+        --green:      #22d3a0;
         --gold:       #f5c842;
 
         --font-display: 'Instrument Serif', Georgia, serif;
@@ -620,8 +620,7 @@
 
     .btn-plan-primary {
         background: var(--accent);
-        color: #052e16;
-        font-weight: 700;
+        color: #fff;
         box-shadow: 0 0 25px var(--accent-glow);
     }
 
@@ -820,7 +819,6 @@
     <div class="nav-links">
         <a href="#how-it-works" data-i18n="landing.howItWorks">How it works</a>
         <a href="#pricing" data-i18n="landing.pricing">Pricing</a>
-        <a href="#pricing-tech">For Technicians</a>
         <a href="#faq" data-i18n="landing.faq">FAQ</a>
         <div id="lang-toggle" style="display:flex;gap:.2rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.2rem">
     <button id="lang-es" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)">ES</button>
@@ -1059,61 +1057,6 @@
                 <li><span class="check">✓</span><span>Priority support</span></li>
             </ul>
             <a href="/app" class="btn-plan btn-plan-outline" data-i18n="landing.getStarted2">Get started →</a>
-        </div>
-    </div>
-</div>
-
-<!-- ── Planes para Técnicos ─────────────────────────────── -->
-<div id="pricing-tech" class="section" style="padding-top:0">
-    <p class="section-label reveal">For Technicians</p>
-    <h2 class="section-title reveal">Join as a technician</h2>
-    <p class="section-sub reveal">Your first job is free — no commitment needed. After that, one simple plan to keep the work coming.</p>
-
-    <div class="reveal" style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;max-width:720px;margin:0 auto">
-
-        <!-- Free first job -->
-        <div class="pricing-card" style="position:relative">
-            <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:.68rem;font-weight:700;padding:.25rem .75rem;border-radius:99px;white-space:nowrap">Start here</div>
-            <div class="plan-name">Free Trial</div>
-            <div class="plan-price">
-                <span class="currency">$</span>
-                <span class="amount">0</span>
-                <span class="period">/first job</span>
-            </div>
-            <p class="plan-desc">Try the platform with your first job — completely free, no card required.</p>
-            <hr class="plan-divider">
-            <ul class="plan-features">
-                <li><span class="check">✓</span><span>1 job to try the platform</span></li>
-                <li><span class="check">✓</span><span>Full address & GPS access</span></li>
-                <li><span class="check">✓</span><span>Chat with the client</span></li>
-                <li><span class="check">✓</span><span>Receive rating</span></li>
-                <li><span class="x">✗</span><span style="color:var(--text-3)">Access to more jobs</span></li>
-                <li><span class="x">✗</span><span style="color:var(--text-3)">Ranking visibility</span></li>
-            </ul>
-            <a href="/auth/register-tecnico" class="btn-plan btn-plan-outline">Register free →</a>
-        </div>
-
-        <!-- Pro Tecnico -->
-        <div class="pricing-card featured">
-            <div class="pricing-featured-badge">Most Popular</div>
-            <div class="plan-name">Technician Pro</div>
-            <div class="plan-price">
-                <span class="currency">$</span>
-                <span class="amount">19.99</span>
-                <span class="period">/mo</span>
-            </div>
-            <p class="plan-desc">Full access to all jobs on the platform. Cancel anytime.</p>
-            <hr class="plan-divider">
-            <ul class="plan-features">
-                <li><span class="check">✓</span><span><strong>Unlimited jobs</strong></span></li>
-                <li><span class="check">✓</span><span><strong>Full address & GPS</strong></span></li>
-                <li><span class="check">✓</span><span><strong>Chat with clients</strong></span></li>
-                <li><span class="check">✓</span><span>Rating & reviews system</span></li>
-                <li><span class="check">✓</span><span>Ranking visibility</span></li>
-                <li><span class="check">✓</span><span>Push notifications</span></li>
-                <li><span class="check">✓</span><span>Job history & stats</span></li>
-            </ul>
-            <a href="/auth/register-tecnico" class="btn-plan btn-plan-primary">Get started →</a>
         </div>
     </div>
 </div>

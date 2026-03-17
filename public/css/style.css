@@ -7,21 +7,21 @@
 
 /* ── Variables LIGHT (default) ──────────────────────────── */
 :root {
-    --bg:           #f0fdf4;
+    --bg:           #f4f3ff;
     --surface:      #ffffff;
-    --surface-2:    #dcfce7;
-    --border:       #bbf7d0;
-    --border-focus: #10b981;
+    --surface-2:    #ede9ff;
+    --border:       #d4d0ff;
+    --border-focus: #5b4fff;
 
-    --text-1:       #052e16;
-    --text-2:       #166534;
-    --text-3:       #4ade80;
+    --text-1:       #0d0b1e;
+    --text-2:       #4a4580;
+    --text-3:       #9490c0;
 
-    --accent:       #10b981;
-    --accent-soft:  #dcfce7;
-    --accent-hover: #059669;
+    --accent:       #5b4fff;
+    --accent-soft:  #ede9ff;
+    --accent-hover: #4338e0;
 
-    --green:        #34d399;
+    --green:        #10b981;
     --green-soft:   #d1fae5;
     --yellow:       #f59e0b;
     --yellow-soft:  #fef3c7;
@@ -49,21 +49,21 @@
 
 /* ── Variables DARK ─────────────────────────────────────── */
 [data-theme="dark"] {
-    --bg:           #040d09;
-    --surface:      #0a1f12;
-    --surface-2:    #0f2d1a;
-    --border:       #134d26;
-    --border-focus: #10b981;
+    --bg:           #08071a;
+    --surface:      #0f0d2a;
+    --surface-2:    #16133a;
+    --border:       #2a2560;
+    --border-focus: #7c6dfa;
 
-    --text-1:       #d1fae5;
-    --text-2:       #6ee7b7;
-    --text-3:       #2d6a4f;
+    --text-1:       #eeeeff;
+    --text-2:       #9490c8;
+    --text-3:       #4a4580;
 
-    --accent:       #10b981;
-    --accent-soft:  #052e16;
-    --accent-hover: #34d399;
+    --accent:       #7c6dfa;
+    --accent-soft:  #1a1640;
+    --accent-hover: #9d8fff;
 
-    --green-soft:   #042c1a;
+    --green-soft:   #052e20;
     --yellow-soft:  #2d1f00;
     --red-soft:     #2d0a0a;
     --blue-soft:    #0a1628;
