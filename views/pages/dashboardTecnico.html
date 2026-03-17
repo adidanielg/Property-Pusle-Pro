@@ -228,6 +228,33 @@
 <!-- Main -->
 <main class="tec-main">
 
+    <!-- Banner primer trabajo gratis -->
+    <% if (!tecnico.suscripcion_activa && !tecnico.invitado && tecnico.trabajos_completados === 0) { %>
+    <div style="background:linear-gradient(135deg,rgba(124,109,250,.15),rgba(167,139,250,.1));border:1px solid rgba(124,109,250,.3);border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:center;gap:.75rem">
+        <div style="font-size:1.5rem">🎁</div>
+        <div>
+            <div style="font-weight:700;color:var(--accent);font-size:.9rem">¡Tu primer trabajo es gratis!</div>
+            <div style="font-size:.78rem;color:var(--text-2);margin-top:.2rem">Acepta tu primer trabajo para conocer cómo funciona la plataforma. Después necesitarás una suscripción de $19.99/mes.</div>
+        </div>
+    </div>
+    <% } %>
+
+    <!-- Banner suscripción requerida -->
+    <% if (!tecnico.suscripcion_activa && !tecnico.invitado && tecnico.trabajos_completados > 0) { %>
+    <div style="background:linear-gradient(135deg,rgba(251,191,36,.1),rgba(245,158,11,.05));border:1px solid rgba(251,191,36,.3);border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:.75rem">
+        <div style="display:flex;align-items:center;gap:.75rem">
+            <div style="font-size:1.5rem">⚠️</div>
+            <div>
+                <div style="font-weight:700;color:#f59e0b;font-size:.9rem">Suscripción requerida</div>
+                <div style="font-size:.78rem;color:var(--text-2);margin-top:.2rem">Ya usaste tu trabajo gratuito. Suscríbete para seguir recibiendo trabajos.</div>
+            </div>
+        </div>
+        <button onclick="abrirModal('modalSuscripcionTec')" style="background:linear-gradient(135deg,#7c6dfa,#a78bfa);color:#fff;border:none;border-radius:8px;padding:.5rem 1rem;font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap">
+            Suscribirme →
+        </button>
+    </div>
+    <% } %>
+
     <!-- Stats -->
     <div class="tec-stats">
         <div class="tec-stat">

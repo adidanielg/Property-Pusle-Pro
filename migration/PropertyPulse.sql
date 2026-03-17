@@ -299,3 +299,27 @@ ALTER TABLE tecnicos
 
 CREATE INDEX IF NOT EXISTS idx_tecnicos_stripe_customer
     ON tecnicos(stripe_customer_id);
+
+    -- ── Migración: contador de trabajos completados para técnicos ──
+-- Ejecutar en Supabase → SQL Editor → Run
+
+ALTER TABLE tecnicos
+    ADD COLUMN IF NOT EXISTS trabajos_completados INT NOT NULL DEFAULT 0;
+
+-- Sincronizar con los trabajos ya completados
+UPDATE tecnicos t
+SET trabajos_completados = (
+    SELECT COUNT(*) FROM tickets tk
+    WHERE tk.tecnico_asignado = t.id
+    AND tk.estado = 'completado'
+);
+
+-- Función para incrementar trabajos_completados de forma segura
+CREATE OR REPLACE FUNCTION incrementar_trabajos_completados(tecnico_uuid UUID)
+RETURNS void AS $$
+BEGIN
+    UPDATE tecnicos
+    SET trabajos_completados = trabajos_completados + 1
+    WHERE id = tecnico_uuid;
+END;
+$$ LANGUAGE plpgsql;

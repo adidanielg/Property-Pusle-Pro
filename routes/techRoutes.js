@@ -16,7 +16,7 @@ router.get('/dashboard', async (req, res) => {
                 .select('estrellas, comentario, created_at, companias:cliente_id(nombre_contacto, nombre_empresa)')
                 .eq('tecnico_id', req.user.id)
                 .order('created_at', { ascending: false }),
-            supabase.from('tecnicos').select('ocupado, suscripcion_activa, invitado').eq('id', req.user.id).single()
+            supabase.from('tecnicos').select('ocupado, suscripcion_activa, invitado, trabajos_completados').eq('id', req.user.id).single()
         ]);
 
         const totalCalif = calificaciones?.length || 0;
@@ -28,9 +28,10 @@ router.get('/dashboard', async (req, res) => {
             title:          'Panel Técnico | PropertyPulse',
             tecnico:        { 
                 ...req.user, 
-                ocupado:            tecnicoData?.ocupado            || false,
-                suscripcion_activa: tecnicoData?.suscripcion_activa || false,
-                invitado:           tecnicoData?.invitado           || false,
+                ocupado:              tecnicoData?.ocupado              || false,
+                suscripcion_activa:   tecnicoData?.suscripcion_activa   || false,
+                invitado:             tecnicoData?.invitado             || false,
+                trabajos_completados: tecnicoData?.trabajos_completados || 0,
             },
             tickets:        tickets        || [],
             calificaciones: calificaciones || [],
@@ -68,11 +69,15 @@ router.post('/tickets/:id/estado', validate(schemas.estadoTicket), async (req, r
         if (estado === 'en_proceso') {
             const { data: tec } = await supabase
                 .from('tecnicos')
-                .select('suscripcion_activa, invitado')
+                .select('suscripcion_activa, invitado, trabajos_completados')
                 .eq('id', req.user.id)
                 .single();
 
-            const puedeTrabajar = tec?.suscripcion_activa === true || tec?.invitado === true;
+            const primerTrabajo  = (tec?.trabajos_completados || 0) === 0;
+            const puedeTrabajar  = tec?.suscripcion_activa === true || 
+                                   tec?.invitado           === true || 
+                                   primerTrabajo;
+
             if (!puedeTrabajar) {
                 return res.status(403).json({
                     error:        'sin_suscripcion',
@@ -85,6 +90,12 @@ router.post('/tickets/:id/estado', validate(schemas.estadoTicket), async (req, r
         const ticketActualizado = await ticketService.actualizarEstado(
             req.params.id, req.user.id, estado
         );
+
+        // Incrementar contador al completar trabajo
+        if (estado === 'completado') {
+            await supabase.rpc('incrementar_trabajos_completados', { tecnico_uuid: req.user.id })
+                .catch(err => console.error('[COUNTER]', err.message));
+        }
 
         res.json({ success: true, ticket: ticketActualizado });
 
