@@ -247,6 +247,7 @@
     <nav class="pp-nav">
         <a href="#propiedades" class="active" data-i18n="dash.myProperties">🏠 Propiedades</a>
         <a href="#tickets" data-i18n="dash.myTickets">🎫 Tickets</a>
+        <a href="#tecnicos" onclick="cargarTecnicos()">🔧 Técnicos</a>
         <a href="#perfil" data-i18n="nav.profile">👤 Perfil</a>
     </nav>
     <div class="pp-nav-right">
@@ -390,6 +391,36 @@
 </main>
 
 <!-- Aside -->
+<section id="tecnicos" style="display:none">
+    <div style="margin-bottom:1rem">
+        <h2 style="font-size:.95rem;font-weight:700;color:var(--text-1);margin-bottom:.3rem">🔧 Técnicos disponibles</h2>
+        <p style="font-size:.8rem;color:var(--text-2)">Conoce a los técnicos de la plataforma antes de que se les asigne tu trabajo.</p>
+    </div>
+
+    <!-- Filtro por especialidad -->
+    <div style="margin-bottom:1rem">
+        <select id="filtroEspecialidad" class="form-select" style="max-width:280px" onchange="filtrarTecnicos()">
+            <option value="">Todas las especialidades</option>
+            <option value="Climatización (HVAC)">❄️ Climatización (HVAC)</option>
+            <option value="Electricidad">⚡ Electricidad</option>
+            <option value="Plomería">🔧 Plomería</option>
+            <option value="Piscina">🏊 Piscina</option>
+            <option value="Jardinería / Landscaping">🌿 Jardinería</option>
+            <option value="Pest Control">🐛 Pest Control</option>
+            <option value="Limpieza / Pressure Washing">🧹 Limpieza</option>
+            <option value="Electrodomésticos">🏠 Electrodomésticos</option>
+            <option value="Estructura / Reparaciones">🏗️ Estructura</option>
+            <option value="Seguridad">🔒 Seguridad</option>
+            <option value="Handyman">🛠️ Handyman</option>
+            <option value="General">⚙️ General</option>
+        </select>
+    </div>
+
+    <div id="tecnicosGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:.75rem">
+        <div style="color:var(--text-3);text-align:center;padding:2rem;grid-column:1/-1">Cargando técnicos...</div>
+    </div>
+</section>
+
 <aside class="pp-side">
 
     <!-- Plan -->
@@ -1138,6 +1169,159 @@ async function descargarPDF() {
     finally { done(); }
 }
 </script>
+
+
+<script>
+let tecnicosData = [];
+
+async function cargarTecnicos() {
+    // Mostrar sección
+    document.querySelectorAll('.pp-main > section').forEach(s => s.style.display = 'none');
+    document.getElementById('tecnicos').style.display = 'block';
+
+    const grid = document.getElementById('tecnicosGrid');
+    grid.innerHTML = '<div style="color:var(--text-3);text-align:center;padding:2rem;grid-column:1/-1">Cargando...</div>';
+
+    try {
+        const res  = await fetch('/cliente/tecnicos');
+        const data = await res.json();
+        tecnicosData = data.tecnicos || [];
+        renderTecnicos(tecnicosData);
+    } catch {
+        grid.innerHTML = '<div style="color:var(--text-3);text-align:center;padding:2rem;grid-column:1/-1">Error cargando técnicos.</div>';
+    }
+}
+
+function filtrarTecnicos() {
+    const esp = document.getElementById('filtroEspecialidad').value;
+    const filtrados = esp ? tecnicosData.filter(t => t.especialidad === esp) : tecnicosData;
+    renderTecnicos(filtrados);
+}
+
+function renderTecnicos(lista) {
+    const grid = document.getElementById('tecnicosGrid');
+    if (!lista.length) {
+        grid.innerHTML = '<div style="color:var(--text-3);text-align:center;padding:2rem;grid-column:1/-1">No hay técnicos disponibles.</div>';
+        return;
+    }
+
+    grid.innerHTML = lista.map(t => {
+        const estrellas = t.promedio ? '⭐'.repeat(Math.round(t.promedio)) : '';
+        const disponible = !t.ocupado;
+        const iniciales = t.nombre.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+
+        return `
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.25rem;transition:border-color .15s,transform .15s;cursor:pointer" 
+             onmouseover="this.style.borderColor='var(--accent)';this.style.transform='translateY(-2px)'"
+             onmouseout="this.style.borderColor='var(--border)';this.style.transform=''"
+             onclick="verPerfilTecnico('${t.id}')">
+
+            <!-- Avatar + nombre -->
+            <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.85rem">
+                <div style="width:42px;height:42px;border-radius:50%;background:var(--accent-soft);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;color:var(--accent);flex-shrink:0">
+                    ${iniciales}
+                </div>
+                <div>
+                    <div style="font-weight:700;color:var(--text-1);font-size:.9rem">${t.nombre}</div>
+                    <div style="font-size:.72rem;color:var(--text-3)">${t.especialidad}</div>
+                </div>
+                <div style="margin-left:auto;flex-shrink:0">
+                    <span style="font-size:.65rem;font-weight:700;padding:.2rem .5rem;border-radius:99px;background:${disponible?'var(--green-soft)':'var(--surface-2)'};color:${disponible?'var(--green)':'var(--text-3)'}">
+                        ${disponible ? '● Disponible' : '○ Ocupado'}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+                <div style="background:var(--surface-2);border-radius:8px;padding:.6rem;text-align:center">
+                    <div style="font-size:1.2rem;font-weight:800;color:var(--text-1)">${t.trabajos_completados || 0}</div>
+                    <div style="font-size:.65rem;color:var(--text-3)">trabajos</div>
+                </div>
+                <div style="background:var(--surface-2);border-radius:8px;padding:.6rem;text-align:center">
+                    <div style="font-size:1.2rem;font-weight:800;color:${t.promedio ? 'var(--yellow)' : 'var(--text-3)'}">
+                        ${t.promedio ? parseFloat(t.promedio).toFixed(1) : '—'}
+                    </div>
+                    <div style="font-size:.65rem;color:var(--text-3)">rating</div>
+                </div>
+            </div>
+
+            ${t.totalCalif > 0 ? `
+            <div style="margin-top:.6rem;font-size:.7rem;color:var(--text-3);text-align:center">
+                ${estrellas} ${t.totalCalif} reseña${t.totalCalif !== 1 ? 's' : ''}
+            </div>` : '<div style="margin-top:.6rem;font-size:.7rem;color:var(--text-3);text-align:center">Sin reseñas aún</div>'}
+        </div>`;
+    }).join('');
+}
+
+async function verPerfilTecnico(id) {
+    const t = tecnicosData.find(t => t.id === id);
+    if (!t) return;
+
+    // Cargar reseñas
+    let reseñasHtml = '<p style="color:var(--text-3);font-size:.8rem;text-align:center;padding:.5rem">Sin reseñas aún.</p>';
+    try {
+        const res  = await fetch('/cliente/tecnicos/' + id + '/resenas');
+        const data = await res.json();
+        if (data.reseñas?.length) {
+            reseñasHtml = data.reseñas.map(r => `
+            <div style="border-bottom:1px solid var(--border);padding:.75rem 0">
+                <div style="display:flex;justify-content:space-between;margin-bottom:.25rem">
+                    <span style="font-size:.8rem;font-weight:600;color:var(--text-1)">${'⭐'.repeat(r.estrellas)}</span>
+                    <span style="font-size:.7rem;color:var(--text-3)">${new Date(r.created_at).toLocaleDateString('es',{month:'short',year:'numeric'})}</span>
+                </div>
+                ${r.comentario ? `<p style="font-size:.8rem;color:var(--text-2);margin:0">${r.comentario}</p>` : ''}
+            </div>`).join('');
+        }
+    } catch {}
+
+    const iniciales = t.nombre.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+
+    document.getElementById('perfilTecModalBody').innerHTML = `
+    <div style="text-align:center;margin-bottom:1.25rem">
+        <div style="width:64px;height:64px;border-radius:50%;background:var(--accent-soft);border:3px solid var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.2rem;color:var(--accent);margin:0 auto .75rem">
+            ${iniciales}
+        </div>
+        <div style="font-weight:800;font-size:1.1rem;color:var(--text-1)">${t.nombre}</div>
+        <div style="font-size:.82rem;color:var(--text-3);margin-top:.2rem">${t.especialidad}</div>
+        <span style="display:inline-block;margin-top:.4rem;font-size:.68rem;font-weight:700;padding:.2rem .6rem;border-radius:99px;background:${!t.ocupado?'var(--green-soft)':'var(--surface-2)'};color:${!t.ocupado?'var(--green)':'var(--text-3)'}">
+            ${!t.ocupado ? '● Disponible ahora' : '○ Ocupado'}
+        </span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:1.25rem">
+        <div style="background:var(--surface-2);border-radius:10px;padding:.85rem;text-align:center">
+            <div style="font-size:1.4rem;font-weight:800;color:var(--accent)">${t.trabajos_completados || 0}</div>
+            <div style="font-size:.68rem;color:var(--text-3)">Trabajos</div>
+        </div>
+        <div style="background:var(--surface-2);border-radius:10px;padding:.85rem;text-align:center">
+            <div style="font-size:1.4rem;font-weight:800;color:var(--yellow)">${t.promedio ? parseFloat(t.promedio).toFixed(1) : '—'}</div>
+            <div style="font-size:.68rem;color:var(--text-3)">Rating</div>
+        </div>
+        <div style="background:var(--surface-2);border-radius:10px;padding:.85rem;text-align:center">
+            <div style="font-size:1.4rem;font-weight:800;color:var(--text-1)">${t.totalCalif || 0}</div>
+            <div style="font-size:.68rem;color:var(--text-3)">Reseñas</div>
+        </div>
+    </div>
+
+    <div style="font-size:.82rem;font-weight:700;color:var(--text-2);margin-bottom:.6rem;text-transform:uppercase;letter-spacing:.04em">Reseñas recientes</div>
+    <div style="max-height:200px;overflow-y:auto">${reseñasHtml}</div>
+    `;
+
+    document.getElementById('perfilTecModal').classList.add('open');
+}
+</script>
+
+<!-- Modal: Perfil técnico -->
+<div id="perfilTecModal" class="modal-overlay">
+    <div class="modal" style="max-width:420px;max-height:85vh;overflow-y:auto">
+        <div class="modal-header" style="position:sticky;top:0;background:var(--surface);z-index:1;border-bottom:1px solid var(--border);padding-bottom:.75rem">
+            <h2>🔧 Perfil del técnico</h2>
+            <button class="modal-close" onclick="cerrarModal('perfilTecModal')">✕</button>
+        </div>
+        <div id="perfilTecModalBody" style="padding-top:1rem"></div>
+    </div>
+</div>
 
 </body>
 </html>
