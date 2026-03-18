@@ -16,38 +16,68 @@ router.use(requireAuth(['cliente']));
 router.get('/dashboard', async (req, res) => {
     try {
         const id = req.user.id;
-        const [{ data: propiedades }, { data: tickets }, { data: misCalificaciones }] = await Promise.all([
-            supabase.from('propiedades')
-                .select('*')
-                .eq('compania_id', id)
-                .is('deleted_at', null)
-                .order('created_at', { ascending: false }),
-            supabase.from('tickets')
-                .select('*, propiedades(direccion), tecnicos:tecnico_asignado(nombre)')
-                .eq('cliente_id', id)
-                .is('deleted_at', null)
-                .order('created_at', { ascending: false }),
-            supabase.from('calificaciones')
-                .select('ticket_id')
-                .eq('cliente_id', id)
+
+        const { data: clienteInfo } = await supabase
+            .from('companias')
+            .select('tipo_cliente, nombre_empresa, nombre_contacto')
+            .eq('id', id).single();
+
+        const tipoCliente = clienteInfo?.tipo_cliente || 'Individual';
+
+        const [{ data: propiedades }, { data: tickets }, { data: misCalificaciones }, { data: todosTickets }] = await Promise.all([
+            supabase.from('propiedades').select('*').eq('compania_id', id).is('deleted_at', null).order('created_at', { ascending: false }),
+            supabase.from('tickets').select('*, propiedades(direccion), tecnicos:tecnico_asignado(nombre)').eq('cliente_id', id).neq('estado', 'cancelado').is('deleted_at', null).order('created_at', { ascending: false }),
+            supabase.from('calificaciones').select('ticket_id').eq('cliente_id', id),
+            supabase.from('tickets').select('id, estado, categoria, created_at, tecnicos:tecnico_asignado(nombre)').eq('cliente_id', id).is('deleted_at', null).order('created_at', { ascending: false }).limit(200)
         ]);
 
-        // IDs de tickets ya calificados
         const ticketsCalificados = new Set((misCalificaciones || []).map(c => c.ticket_id));
+        const completados = (todosTickets || []).filter(t => t.estado === 'completado');
+
+        // Técnico favorito
+        const tecCount = {};
+        completados.forEach(t => { const n = t.tecnicos?.nombre; if (n) tecCount[n] = (tecCount[n] || 0) + 1; });
+        const tecFavorito = Object.keys(tecCount).length > 0
+            ? Object.entries(tecCount).sort((a, b) => b[1] - a[1])[0][0] : null;
+
+        // Categoría más frecuente
+        const catCount = {};
+        (todosTickets || []).forEach(t => { if (t.categoria) catCount[t.categoria] = (catCount[t.categoria] || 0) + 1; });
+        const categoriaMasFrecuente = Object.keys(catCount).length > 0
+            ? Object.entries(catCount).sort((a, b) => b[1] - a[1])[0][0] : null;
+
+        // Tickets por mes (últimos 6 meses)
+        const ticketsPorMes = {};
+        const hoy = new Date();
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
+            const key = d.toLocaleDateString('es', { month: 'short', year: '2-digit' });
+            ticketsPorMes[key] = 0;
+        }
+        (todosTickets || []).forEach(t => {
+            const d = new Date(t.created_at);
+            const key = d.toLocaleDateString('es', { month: 'short', year: '2-digit' });
+            if (Object.prototype.hasOwnProperty.call(ticketsPorMes, key)) ticketsPorMes[key]++;
+        });
 
         res.render('dashboardCliente.html', {
-            title:              'Mi Panel | PropertyPulse',
-            cliente:            req.user,
-            propiedades:        propiedades        || [],
-            tickets:            tickets            || [],
-            ticketsCalificados
+            title:       'Mi Panel | PropertyPulse',
+            cliente:     { ...req.user, tipo_cliente: tipoCliente, nombre_empresa: clienteInfo?.nombre_empresa },
+            propiedades: propiedades || [],
+            tickets:     tickets     || [],
+            ticketsCalificados,
+            metricas: {
+                totalCompletados:      completados.length,
+                tecFavorito,
+                categoriaMasFrecuente,
+                ticketsPorMes:         JSON.stringify(ticketsPorMes)
+            }
         });
     } catch (err) {
         console.error('[CLIENT DASHBOARD]', err);
         res.status(500).send('Error cargando el panel');
     }
 });
-
 // ── Crear ticket → notificar técnicos ─────────────────────────
 router.post('/tickets', upload.single('foto'), validate(schemas.crearTicket), async (req, res) => {
     try {
@@ -528,121 +558,6 @@ router.post('/cotizaciones/:id/rechazar', async (req, res) => {
                 .update({ estado: 'pendiente', tecnico_asignado: null })
                 .eq('id', cot.ticket_id);
         }
-
-        res.json({ success: true });
-    } catch (err) {
-        console.error('[RECHAZAR COT]', err.message);
-        res.status(500).json({ error: err.message });
-    }
-});
-
-
-// ── Cotizaciones: ver por ticket ─────────────────────────────
-router.get('/tickets/:id/cotizaciones', async (req, res) => {
-    try {
-        // Verificar ownership
-        const { data: ticket } = await supabase
-            .from('tickets').select('id')
-            .eq('id', req.params.id).eq('cliente_id', req.user.id)
-            .maybeSingle();
-        if (!ticket) return res.status(403).json({ error: 'No autorizado' });
-
-        const { data } = await supabase
-            .from('cotizaciones')
-            .select('*, tecnicos:tecnico_id(nombre, especialidad)')
-            .eq('ticket_id', req.params.id)
-            .order('created_at', { ascending: false });
-
-        res.json({ success: true, cotizaciones: data || [] });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// ── Cotizaciones: aprobar ─────────────────────────────────────
-router.post('/cotizaciones/:id/aprobar', async (req, res) => {
-    try {
-        const { data: cot } = await supabase
-            .from('cotizaciones')
-            .select('id, ticket_id, tecnico_id, cliente_id, tickets(motivo)')
-            .eq('id', req.params.id)
-            .eq('cliente_id', req.user.id)
-            .eq('estado', 'pendiente')
-            .maybeSingle();
-
-        if (!cot) return res.status(404).json({ error: 'Cotización no encontrada' });
-
-        // 1. Aprobar esta cotización
-        await supabase.from('cotizaciones')
-            .update({ estado: 'aprobada', respondida_at: new Date().toISOString() })
-            .eq('id', cot.id);
-
-        // 2. Rechazar las demás del mismo ticket
-        await supabase.from('cotizaciones')
-            .update({ estado: 'rechazada', motivo_rechazo: 'Cliente aprobó otra cotización' })
-            .eq('ticket_id', cot.ticket_id)
-            .neq('id', cot.id)
-            .eq('estado', 'pendiente');
-
-        // 3. Pasar ticket a en_proceso con el técnico asignado
-        await supabase.from('tickets')
-            .update({ estado: 'en_proceso', tecnico_asignado: cot.tecnico_id })
-            .eq('id', cot.ticket_id);
-
-        // 4. Marcar técnico como ocupado
-        await supabase.from('tecnicos')
-            .update({ ocupado: true })
-            .eq('id', cot.tecnico_id);
-
-        // 5. Notificar al técnico
-        const { data: tec } = await supabase
-            .from('tecnicos').select('push_subscription').eq('id', cot.tecnico_id).single();
-
-        if (tec?.push_subscription) {
-            try {
-                const webpush = require('web-push');
-                webpush.setVapidDetails('mailto:admin@propertypulse.com',
-                    process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY);
-                webpush.sendNotification(
-                    JSON.parse(tec.push_subscription),
-                    JSON.stringify({
-                        title: '✅ Cotización aprobada',
-                        body:  `El cliente aprobó tu cotización. ¡Ve al trabajo!`,
-                        url:   '/tecnico/dashboard'
-                    })
-                ).catch(() => {});
-            } catch {}
-        }
-
-        res.json({ success: true });
-    } catch (err) {
-        console.error('[APROBAR COT]', err.message);
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// ── Cotizaciones: rechazar ────────────────────────────────────
-router.post('/cotizaciones/:id/rechazar', async (req, res) => {
-    try {
-        const { motivo } = req.body;
-
-        const { data: cot } = await supabase
-            .from('cotizaciones')
-            .select('id, ticket_id')
-            .eq('id', req.params.id)
-            .eq('cliente_id', req.user.id)
-            .eq('estado', 'pendiente')
-            .maybeSingle();
-
-        if (!cot) return res.status(404).json({ error: 'Cotización no encontrada' });
-
-        await supabase.from('cotizaciones')
-            .update({
-                estado:         'rechazada',
-                motivo_rechazo: motivo || 'Sin motivo',
-                respondida_at:  new Date().toISOString()
-            })
-            .eq('id', cot.id);
 
         res.json({ success: true });
     } catch (err) {
