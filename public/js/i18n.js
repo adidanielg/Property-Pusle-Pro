@@ -455,7 +455,7 @@ const i18n = {
         const cookieLang = cookie ? cookie.split('=')[1] : null;
 
         // cookieLang > localStorage > 'es'
-        this.lang = cookieLang || localStorage.getItem('pp_lang') || 'es';
+        this.lang = cookieLang || localStorage.getItem('pp_lang') || 'en';
         localStorage.setItem('pp_lang', this.lang);
 
         this.apply();
@@ -508,36 +508,22 @@ const i18n = {
     },
 
     renderToggle() {
-        // Siempre inyectar los botones con listeners frescos dentro del toggle existente
-        // (o crear uno flotante si no existe)
-        let toggle = document.getElementById('lang-toggle');
-        if (!toggle) {
-            toggle = document.createElement('div');
-            toggle.id = 'lang-toggle';
-            toggle.style.cssText = [
-                'position:fixed', 'top:1rem', 'right:4.5rem', 'z-index:9999',
-                'display:flex', 'gap:.2rem',
-                'background:var(--surface,#1a1a2e)',
-                'border:1px solid var(--border,rgba(255,255,255,.1))',
-                'border-radius:8px', 'padding:.2rem',
-                'box-shadow:0 2px 8px rgba(0,0,0,.3)'
-            ].join(';');
-            document.body.appendChild(toggle);
+        let w = document.getElementById('pp-lang-toggle');
+        if (!w) {
+            w = document.createElement('div');
+            w.id = 'pp-lang-toggle';
+            w.style.cssText = 'position:fixed;bottom:1.25rem;right:1.25rem;z-index:9999;display:flex;gap:.2rem;background:rgba(15,15,26,.92);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.25rem;backdrop-filter:blur(8px);box-shadow:0 4px 16px rgba(0,0,0,.4)';
+            document.body.appendChild(w);
         }
-
-        // Siempre reemplazar el contenido con botones frescos
-        toggle.innerHTML = '';
-        const mkBtn = (code, label) => {
-            const b = document.createElement('button');
-            b.id = 'lang-' + code;
-            b.title = label;
+        w.innerHTML = '';
+        ['es','en'].forEach(function(code) {
+            var b = document.createElement('button');
             b.textContent = code.toUpperCase();
-            b.style.cssText = 'padding:.3rem .6rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;background:transparent;color:rgba(255,255,255,.4);transition:all .15s';
-            b.addEventListener('click', () => i18n.setLang(code));
-            return b;
-        };
-        toggle.appendChild(mkBtn('es', 'Español'));
-        toggle.appendChild(mkBtn('en', 'English'));
+            b.setAttribute('data-lang', code);
+            b.style.cssText = 'padding:.28rem .65rem;border:none;border-radius:6px;font-size:.74rem;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;';
+            b.onclick = function() { i18n.setLang(code); };
+            w.appendChild(b);
+        });
         this.updateToggleUI();
     },
 
@@ -556,118 +542,15 @@ const i18n = {
     },
 
     updateToggleUI() {
-        const esBtn = document.getElementById('lang-es');
-        const enBtn = document.getElementById('lang-en');
-        if (!esBtn || !enBtn) return;
-
-        // Usar CSS variable para el color activo (funciona en dark/light mode)
-        const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#6c63ff';
-
-        esBtn.style.background = this.lang === 'es' ? accent : 'transparent';
-        esBtn.style.color      = this.lang === 'es' ? '#fff'  : 'var(--text-3, #9aa0ab)';
-        enBtn.style.background = this.lang === 'en' ? accent : 'transparent';
-        enBtn.style.color      = this.lang === 'en' ? '#fff'  : 'var(--text-3, #9aa0ab)';
-        // Admin extra
-        'admin.tecnicos':     'Technicians',
-        'admin.clientes':     'Clients',
-        'admin.ticketsOpen':  'Open Tickets',
-        'admin.resolved':     'Resolved',
-        'admin.email':        'Email',
-        'admin.availability': 'Availability',
-        'admin.subscription': 'Subscription',
-        'admin.noProps':      'No properties added yet.',
-        'admin.motivo':       'Reason / Category',
-        'admin.address':      'Address',
-        'admin.contact':      'Contact',
-
-        // Status
-        'status.pending':    'Pending',
-        'status.inProgress': 'In Progress',
-        'status.completed':  'Completed',
-        'status.cancelled':  'Cancelled',
-        'status.available':  'Available',
-        'status.busy':       'Busy',
-
-        // 404
-        '404.title': 'Page not found',
-        '404.sub':   "The address you're looking for doesn't exist or was moved. Check the URL or go back to home.",
-        '404.home':  'Go home',
-        '404.back':  'Go back',
-
-        // Recover username
-        'rec.title': 'Forgot your username?',
-        'rec.sub':   "Enter your email and we'll send your username.",
-        'rec.email': 'Your account email',
-        'rec.send':  'Send my username →',
-        'rec.back':  '← Back to login',
-
-        // Reset password
-        'reset.title':   'New password',
-        'reset.sub':     'Enter your new password.',
-        'reset.new':     'New password',
-        'reset.confirm': 'Confirm password',
-        'reset.save':    'Save new password →',
-        'reset.goLogin': 'Go to login →',
-
-        // Login modals
-        'modal.recUser':    'Recover username',
-        'modal.recUserSub': "Enter your email and we'll send your username.",
-        'modal.sendUser':   'Send my username →',
-        'modal.recPass':    'Recover password',
-        'modal.recPassSub': 'Enter your email and username to receive a reset link.',
-        'modal.sendReset':  'Send reset link →',
-        'modal.forgotUser': 'Forgot your username?',
-        'modal.forgotPass': 'Forgot your password?',
-
-        // Tech dashboard
-        'tech.myJobs':     'My Jobs',
-        'tech.pending':    'Pending',
-        'tech.inProgress': 'In Progress',
-        'tech.completed':  'Completed',
-        'tech.noJobs':     'No jobs assigned.',
-        'tech.ratings':    'My Ratings',
-        'tech.noRatings':  'No ratings yet.',
-        'tech.avgRating':  'Average',
-
-        // Client dashboard
-        'dash.plan':           'Your Plan',
-        'dash.editProfile':    'Edit profile',
-        'dash.changePassword': 'Change password',
-        'dash.newTicket':      'New report',
-
-        // Admin dashboard (missing)
-        'admin.subtitle':       'Global metrics, client and technician management.',
-        'admin.individuals':    'Individual Clients',
-        'admin.companies':      'Companies',
-        'admin.ticketsSystem':  'System Tickets',
-        'admin.allCategories':  'All categories',
-        'admin.allStatuses':    'All statuses',
-        'admin.noTecnicos':     'No technicians registered.',
-        'admin.noIndividuals':  'No individual clients.',
-        'admin.noCompanies':    'No companies registered.',
-        'admin.noTickets':      'No tickets registered.',
-        'admin.noReviews':      'No reviews',
-        'admin.active':         'Active',
-        'admin.inactive':       'Inactive',
-        'admin.unassigned':     'Unassigned',
-        'admin.editTech':       'Edit Technician',
-        'admin.editClient':     'Edit Client',
-        'admin.saveChanges':    'Save changes',
-        'admin.deleteConfirm':  'Delete record?',
-        'admin.deleteWarning':  'This action cannot be undone.',
-        'admin.deleteConfirmBtn':'Yes, delete',
-        'admin.col.name':       'Name',
-        'admin.col.specialty':  'Specialty',
-        'admin.col.phone':      'Phone',
-        'admin.col.rating':     'Rating',
-        'admin.col.status':     'Status',
-        'admin.col.actions':    'Actions',
-        'admin.col.user':       'User',
-        'admin.col.registered': 'Registered',
-        'admin.col.company':    'Company',
-        'admin.col.contact':    'Contact',
-
-    }
+        var w = document.getElementById('pp-lang-toggle');
+        if (!w) return;
+        var accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#7c6dfa';
+        w.querySelectorAll('button').forEach(function(b) {
+            var active = b.getAttribute('data-lang') === i18n.lang;
+            b.style.background = active ? accent : 'transparent';
+            b.style.color = active ? '#fff' : 'rgba(255,255,255,.45)';
+        });
+    },
 };
 
 // Inicializar cuando el DOM esté listo
