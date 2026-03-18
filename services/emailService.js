@@ -244,9 +244,7 @@ const emailService = {
         } catch (err) {
             console.error('[EMAIL] Error notificación técnico:', err.message);
         }
-    }
-};
-
+    },
 
     // ── 5. Reset de contraseña ────────────────────────────────
     async enviarResetPassword({ nombre, email, resetUrl }) {
@@ -290,5 +288,6 @@ const emailService = {
             console.error('[EMAIL] Error reset password:', err.message);
         }
     }
+};
 
 module.exports = emailService;
