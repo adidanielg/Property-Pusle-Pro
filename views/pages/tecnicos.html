@@ -3,226 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Técnicos — PropertyPulse</title>
+    <title>Nuestros Técnicos — PropertyPulse</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        .tec-page { max-width: 1000px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
-        .tec-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
-        .tec-logo { font-weight: 800; font-size: 1.1rem; color: var(--text-1); text-decoration: none; }
-        .tec-logo span { color: var(--accent); }
-        .tec-title { font-size: 1.6rem; font-weight: 800; letter-spacing: -.5px; color: var(--text-1); margin-bottom: .3rem; }
-        .tec-sub { font-size: .9rem; color: var(--text-2); margin-bottom: 1.75rem; }
-        .tec-filters { display: flex; gap: .6rem; flex-wrap: wrap; margin-bottom: 1.75rem; }
-        .tec-filter-btn {
-            padding: .35rem .85rem; border-radius: 99px; font-size: .78rem; font-weight: 600;
-            border: 1px solid var(--border); background: var(--surface);
-            color: var(--text-2); cursor: pointer; transition: all .15s;
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg: #08080f; --surface: #0f0f1a; --surface-2: #15152a;
+            --border: rgba(255,255,255,.08); --border-2: rgba(255,255,255,.14);
+            --text-1: #f0f0f8; --text-2: #8888aa; --text-3: #55557a;
+            --accent: #7c6dfa; --accent-2: #a78bfa;
+            --accent-soft: rgba(124,109,250,.12);
+            --yellow: #f5c842; --r: 10px; --rl: 16px;
         }
-        .tec-filter-btn:hover { border-color: var(--accent); color: var(--accent); }
-        .tec-filter-btn.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
-        .tec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
-        .tec-card {
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: 16px; padding: 1.4rem;
-            transition: border-color .15s, transform .15s;
-            cursor: pointer;
-        }
-        .tec-card:hover { border-color: var(--accent); transform: translateY(-3px); }
-        .tec-avatar {
-            width: 48px; height: 48px; border-radius: 50%;
-            background: var(--accent-soft); border: 2px solid var(--accent);
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 800; font-size: 1rem; color: var(--accent);
-            flex-shrink: 0;
-        }
-        .tec-disponible { background: var(--green-soft); color: var(--green); }
-        .tec-ocupado    { background: var(--surface-2);   color: var(--text-3); }
-        .tec-stat-box {
-            background: var(--surface-2); border-radius: 10px;
-            padding: .65rem; text-align: center; flex: 1;
-        }
-        .tec-stat-num { font-size: 1.3rem; font-weight: 800; color: var(--text-1); line-height: 1; }
-        .tec-stat-lbl { font-size: .65rem; color: var(--text-3); margin-top: .2rem; }
-        .tec-empty { text-align: center; padding: 3rem; color: var(--text-3); grid-column: 1/-1; }
+        body { font-family: 'DM Sans', system-ui, sans-serif; background: var(--bg); color: var(--text-1); min-height: 100vh; }
 
-        /* Modal */
-        .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); backdrop-filter:blur(6px); z-index:1000; align-items:center; justify-content:center; padding:1rem; }
-        .modal-overlay.open { display:flex; }
-        .modal { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:1.75rem; width:100%; max-width:420px; max-height:85vh; overflow-y:auto; }
-        .modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; }
-        .modal-header h2 { font-size:1rem; font-weight:700; }
-        .modal-close { background:none; border:none; color:var(--text-2); font-size:1.1rem; cursor:pointer; padding:.25rem; }
+        nav { display:flex; align-items:center; justify-content:space-between; padding:1.1rem 2rem; border-bottom:1px solid var(--border); position:sticky; top:0; background:rgba(8,8,15,.85); backdrop-filter:blur(16px); z-index:100; }
+        .logo { font-size:1.05rem; font-weight:700; color:var(--text-1); text-decoration:none; display:flex; align-items:center; gap:.4rem; }
+        .logo span { color:var(--accent); }
+        .dot { width:8px; height:8px; background:var(--accent); border-radius:50%; }
+        .nav-r { display:flex; align-items:center; gap:.6rem; }
+        .btn { padding:.45rem 1.1rem; border-radius:var(--r); font-size:.85rem; font-weight:600; text-decoration:none; transition:all .15s; font-family:inherit; cursor:pointer; border:none; }
+        .btn-out { border:1px solid var(--border-2); color:var(--text-1); background:transparent; }
+        .btn-out:hover { border-color:var(--accent); color:var(--accent); }
+        .btn-pri { background:var(--accent); color:#fff; }
+        .btn-pri:hover { background:var(--accent-2); }
+
+        .hero { text-align:center; padding:4rem 2rem 2.5rem; max-width:640px; margin:0 auto; }
+        .badge { display:inline-block; font-size:.72rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); background:var(--accent-soft); border:1px solid rgba(124,109,250,.25); padding:.3rem .9rem; border-radius:99px; margin-bottom:1.5rem; }
+        h1 { font-size:clamp(1.8rem,4.5vw,2.6rem); font-weight:700; line-height:1.15; letter-spacing:-.5px; margin-bottom:.9rem; }
+        h1 em { font-style:italic; color:var(--accent-2); }
+        .sub { font-size:.97rem; color:var(--text-2); line-height:1.7; }
+
+        .wrap { max-width:1100px; margin:0 auto; padding:0 1.5rem; }
+
+        .filtros { display:flex; gap:.45rem; flex-wrap:wrap; justify-content:center; padding:0 1.5rem 1.75rem; max-width:1100px; margin:0 auto; }
+        .pill { padding:.35rem .9rem; border-radius:99px; font-size:.78rem; font-weight:600; border:1px solid var(--border-2); background:transparent; color:var(--text-2); cursor:pointer; transition:all .15s; font-family:inherit; }
+        .pill:hover { border-color:var(--accent); color:var(--accent); }
+        .pill.active { background:var(--accent-soft); border-color:var(--accent); color:var(--accent); }
+
+        .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:1rem; padding-bottom:4rem; }
+        .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--rl); padding:1.4rem; cursor:pointer; transition:border-color .15s,transform .15s; }
+        .card:hover { border-color:var(--accent); transform:translateY(-3px); }
+        .avatar { width:46px; height:46px; border-radius:50%; background:var(--accent-soft); border:2px solid var(--accent); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.95rem; color:var(--accent); flex-shrink:0; }
+        .stat { background:var(--surface-2); border-radius:8px; padding:.55rem; text-align:center; flex:1; }
+        .stat-n { font-size:1.15rem; font-weight:800; line-height:1; }
+        .stat-l { font-size:.62rem; color:var(--text-3); margin-top:.2rem; }
+        .sp { display:inline-block; font-size:.65rem; font-weight:700; padding:.2rem .55rem; border-radius:99px; }
+        .sp-d { background:rgba(124,109,250,.15); color:var(--accent-2); }
+        .sp-o { background:rgba(255,255,255,.06); color:var(--text-3); }
+        .empty { text-align:center; padding:3rem; color:var(--text-3); grid-column:1/-1; }
+
+        .modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,.75); backdrop-filter:blur(8px); z-index:9999; align-items:center; justify-content:center; padding:1rem; }
+        .modal-bg.open { display:flex; }
+        .modal-box { background:var(--surface); border:1px solid var(--border-2); border-radius:20px; padding:2rem; width:100%; max-width:420px; max-height:88vh; overflow-y:auto; position:relative; }
+        .mc { position:absolute; top:1rem; right:1rem; background:rgba(255,255,255,.08); border:none; color:var(--text-2); width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center; }
+        .mc:hover { background:rgba(255,255,255,.15); }
+        .ms { background:var(--surface-2); border-radius:10px; padding:.85rem; text-align:center; }
+        .ms-n { font-size:1.6rem; font-weight:800; line-height:1; }
+        .ms-l { font-size:.68rem; color:var(--text-3); margin-top:.3rem; }
+        .ri { padding:.7rem 0; border-bottom:1px solid var(--border); }
+        .ri:last-child { border-bottom:none; }
+        .cta { display:block; background:var(--accent); color:#fff; text-align:center; padding:.9rem; border-radius:var(--r); font-weight:700; font-size:.95rem; text-decoration:none; transition:background .15s; }
+        .cta:hover { background:var(--accent-2); }
+
+        @media(max-width:600px) { nav { padding:1rem; } h1 { font-size:1.8rem; } }
     </style>
 </head>
 <body>
-<div class="tec-page">
 
-    <!-- Header -->
-    <div class="tec-header">
-        <a href="/" class="tec-logo">🏢 Property<span>Pulse</span></a>
-        <a href="/app" class="btn btn-primary" style="font-size:.85rem;padding:.45rem 1rem">Iniciar sesión →</a>
+<nav>
+    <a href="/" class="logo"><div class="dot"></div>Property<span>Pulse</span></a>
+    <div class="nav-r">
+        <a href="/" style="font-size:.85rem;color:var(--text-2);text-decoration:none;margin-right:.4rem">← Inicio</a>
+        <a href="/auth/login" class="btn btn-out">Portal Clientes</a>
+        <a href="/auth/login-tecnico" class="btn btn-pri">Portal Técnicos</a>
     </div>
+</nav>
 
-    <h1 class="tec-title">Técnicos disponibles</h1>
-    <p class="tec-sub">Encuentra el especialista para tu próximo trabajo de mantenimiento.</p>
-
-    <!-- Filtros -->
-    <div class="tec-filters" id="filtros">
-        <button class="tec-filter-btn active" onclick="filtrar('')" data-esp="">Todos</button>
-        <button class="tec-filter-btn" onclick="filtrar('Climatización (HVAC)')" data-esp="Climatización (HVAC)">❄️ HVAC</button>
-        <button class="tec-filter-btn" onclick="filtrar('Electricidad')" data-esp="Electricidad">⚡ Electricidad</button>
-        <button class="tec-filter-btn" onclick="filtrar('Plomería')" data-esp="Plomería">🔧 Plomería</button>
-        <button class="tec-filter-btn" onclick="filtrar('Piscina')" data-esp="Piscina">🏊 Piscina</button>
-        <button class="tec-filter-btn" onclick="filtrar('Jardinería / Landscaping')" data-esp="Jardinería / Landscaping">🌿 Jardinería</button>
-        <button class="tec-filter-btn" onclick="filtrar('Pest Control')" data-esp="Pest Control">🐛 Pest Control</button>
-        <button class="tec-filter-btn" onclick="filtrar('Limpieza / Pressure Washing')" data-esp="Limpieza / Pressure Washing">🧹 Limpieza</button>
-        <button class="tec-filter-btn" onclick="filtrar('Electrodomésticos')" data-esp="Electrodomésticos">🏠 Electrodomésticos</button>
-        <button class="tec-filter-btn" onclick="filtrar('Estructura / Reparaciones')" data-esp="Estructura / Reparaciones">🏗️ Estructura</button>
-        <button class="tec-filter-btn" onclick="filtrar('Seguridad')" data-esp="Seguridad">🔒 Seguridad</button>
-        <button class="tec-filter-btn" onclick="filtrar('Handyman')" data-esp="Handyman">🛠️ Handyman</button>
-    </div>
-
-    <!-- Grid -->
-    <div class="tec-grid" id="tecGrid">
-        <div class="tec-empty">Cargando técnicos...</div>
-    </div>
-
+<div class="hero">
+    <div class="badge">✦ Directorio de profesionales</div>
+    <h1>Nuestros <em>Técnicos</em></h1>
+    <p class="sub">Profesionales verificados en PropertyPulse. Filtra por especialidad, revisa su historial y reseñas reales de clientes.</p>
 </div>
 
-<!-- Modal perfil -->
-<div id="perfilModal" class="modal-overlay">
-    <div class="modal">
-        <div class="modal-header">
-            <h2>Perfil del técnico</h2>
-            <button class="modal-close" onclick="cerrarPerfil()">✕</button>
-        </div>
-        <div id="perfilBody"></div>
+<div class="filtros" id="filtros">
+    <button class="pill active" data-esp="">Todos</button>
+    <button class="pill" data-esp="Climatización (HVAC)">❄️ HVAC</button>
+    <button class="pill" data-esp="Electricidad">⚡ Electricidad</button>
+    <button class="pill" data-esp="Plomería">🔧 Plomería</button>
+    <button class="pill" data-esp="Piscina">🏊 Piscina</button>
+    <button class="pill" data-esp="Jardinería / Landscaping">🌿 Jardinería</button>
+    <button class="pill" data-esp="Irrigation / Sistema de riego">💧 Irrigation</button>
+    <button class="pill" data-esp="Pest Control">🐛 Pest Control</button>
+    <button class="pill" data-esp="Limpieza / Pressure Washing">🧹 Pressure Washing</button>
+    <button class="pill" data-esp="Electrodomésticos">🏠 Electrodomésticos</button>
+    <button class="pill" data-esp="Estructura / Reparaciones">🏗️ Estructura</button>
+    <button class="pill" data-esp="Seguridad">🔒 Seguridad</button>
+    <button class="pill" data-esp="Bajo voltaje / Cámaras">📹 Cámaras</button>
+    <button class="pill" data-esp="Handyman">🛠️ Handyman</button>
+    <button class="pill" data-esp="General">⚙️ General</button>
+</div>
+
+<div class="wrap">
+    <div class="grid" id="grid">
+        <div class="empty">Cargando técnicos...</div>
+    </div>
+</div>
+
+<div class="modal-bg" id="modal">
+    <div class="modal-box">
+        <button class="mc" id="mc">✕</button>
+        <div id="mb"></div>
     </div>
 </div>
 
 <script>
-let todos = [];
-let filtroActual = '';
+var tecs = [];
 
-async function cargar() {
-    try {
-        const res  = await fetch('/pub/tecnicos');
-        const data = await res.json();
-        todos = data.tecnicos || [];
-        renderizar(todos);
-    } catch {
-        document.getElementById('tecGrid').innerHTML = '<div class="tec-empty">Error cargando técnicos.</div>';
-    }
-}
+fetch('/pub/tecnicos')
+    .then(function(r){return r.json();})
+    .then(function(d){tecs=d.tecnicos||[];render('');})
+    .catch(function(){document.getElementById('grid').innerHTML='<div class="empty">Error cargando. Intenta nuevamente.</div>';});
 
-function filtrar(esp) {
-    filtroActual = esp;
-    document.querySelectorAll('.tec-filter-btn').forEach(b => {
-        b.classList.toggle('active', b.dataset.esp === esp);
-    });
-    const lista = esp ? todos.filter(t => t.especialidad === esp) : todos;
-    renderizar(lista);
-}
-
-function renderizar(lista) {
-    const grid = document.getElementById('tecGrid');
-    if (!lista.length) {
-        grid.innerHTML = '<div class="tec-empty">No hay técnicos para esta especialidad.</div>';
-        return;
-    }
-    grid.innerHTML = lista.map(t => {
-        const ini = t.nombre.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
-        const stars = t.promedio ? Math.round(parseFloat(t.promedio)) : 0;
-        const starsHtml = stars > 0 ? '⭐'.repeat(stars) : '';
-        return `
-        <div class="tec-card" onclick="verPerfil('${t.id}')">
-            <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem">
-                <div class="tec-avatar">${ini}</div>
-                <div style="flex:1;min-width:0">
-                    <div style="font-weight:700;color:var(--text-1);font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.nombre}</div>
-                    <div style="font-size:.75rem;color:var(--text-3);margin-top:.1rem">${t.especialidad}</div>
-                </div>
-                <span class="tec-filter-btn ${t.ocupado ? 'tec-ocupado' : 'tec-disponible'}" style="font-size:.65rem;padding:.2rem .5rem;cursor:default">
-                    ${t.ocupado ? '○ Ocupado' : '● Disponible'}
-                </span>
-            </div>
-
-            <div style="display:flex;gap:.5rem;margin-bottom:${t.totalCalif > 0 ? '.65rem' : '0'}">
-                <div class="tec-stat-box">
-                    <div class="tec-stat-num" style="color:var(--accent)">${t.trabajos_completados || 0}</div>
-                    <div class="tec-stat-lbl">trabajos</div>
-                </div>
-                <div class="tec-stat-box">
-                    <div class="tec-stat-num" style="color:${t.promedio ? 'var(--yellow)' : 'var(--text-3)'}">${t.promedio ? parseFloat(t.promedio).toFixed(1) : '—'}</div>
-                    <div class="tec-stat-lbl">rating</div>
-                </div>
-                <div class="tec-stat-box">
-                    <div class="tec-stat-num">${t.totalCalif}</div>
-                    <div class="tec-stat-lbl">reseñas</div>
-                </div>
-            </div>
-
-            ${t.totalCalif > 0 ? `<div style="font-size:.72rem;color:var(--text-3)">${starsHtml} ${t.totalCalif} reseña${t.totalCalif !== 1 ? 's' : ''}</div>` : ''}
-        </div>`;
-    }).join('');
-}
-
-async function verPerfil(id) {
-    const t = todos.find(t => t.id === id);
-    if (!t) return;
-
-    const ini = t.nombre.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
-
-    let reseñasHtml = '<p style="color:var(--text-3);font-size:.82rem;text-align:center;padding:.75rem">Sin reseñas aún.</p>';
-    try {
-        const res  = await fetch('/pub/tecnicos/' + id + '/resenas');
-        const data = await res.json();
-        if (data.resenas?.length) {
-            reseñasHtml = data.resenas.map(r => `
-            <div style="padding:.7rem 0;border-bottom:1px solid var(--border)">
-                <div style="display:flex;justify-content:space-between;margin-bottom:.2rem">
-                    <span style="font-size:.82rem">${'⭐'.repeat(r.estrellas)}</span>
-                    <span style="font-size:.7rem;color:var(--text-3)">${new Date(r.created_at).toLocaleDateString('es',{month:'short',year:'numeric'})}</span>
-                </div>
-                ${r.comentario ? `<p style="font-size:.8rem;color:var(--text-2);margin:0">${r.comentario}</p>` : ''}
-            </div>`).join('');
-        }
-    } catch {}
-
-    document.getElementById('perfilBody').innerHTML = `
-    <div style="text-align:center;margin-bottom:1.25rem">
-        <div style="width:60px;height:60px;border-radius:50%;background:var(--accent-soft);border:3px solid var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem;color:var(--accent);margin:0 auto .75rem">${ini}</div>
-        <div style="font-weight:800;font-size:1.1rem;color:var(--text-1)">${t.nombre}</div>
-        <div style="font-size:.82rem;color:var(--text-3);margin:.2rem 0 .5rem">${t.especialidad}</div>
-        <span style="font-size:.7rem;font-weight:700;padding:.2rem .65rem;border-radius:99px;background:${!t.ocupado?'var(--green-soft)':'var(--surface-2)'};color:${!t.ocupado?'var(--green)':'var(--text-3)'}">
-            ${!t.ocupado ? '● Disponible' : '○ Ocupado'}
-        </span>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:1.25rem">
-        <div class="tec-stat-box"><div class="tec-stat-num" style="color:var(--accent)">${t.trabajos_completados||0}</div><div class="tec-stat-lbl">Trabajos</div></div>
-        <div class="tec-stat-box"><div class="tec-stat-num" style="color:var(--yellow)">${t.promedio?parseFloat(t.promedio).toFixed(1):'—'}</div><div class="tec-stat-lbl">Rating</div></div>
-        <div class="tec-stat-box"><div class="tec-stat-num">${t.totalCalif||0}</div><div class="tec-stat-lbl">Reseñas</div></div>
-    </div>
-    <div style="font-size:.78rem;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.6rem">Reseñas recientes</div>
-    <div style="max-height:220px;overflow-y:auto">${reseñasHtml}</div>
-    <a href="/app" class="btn btn-primary btn-full" style="margin-top:1.25rem;text-align:center">Contratar a través de PropertyPulse →</a>
-    `;
-
-    document.getElementById('perfilModal').classList.add('open');
-}
-
-function cerrarPerfil() {
-    document.getElementById('perfilModal').classList.remove('open');
-}
-
-document.getElementById('perfilModal').addEventListener('click', e => {
-    if (e.target === document.getElementById('perfilModal')) cerrarPerfil();
+document.getElementById('filtros').addEventListener('click',function(e){
+    var b=e.target.closest('button');
+    if(!b)return;
+    document.querySelectorAll('.pill').forEach(function(x){x.classList.remove('active');});
+    b.classList.add('active');
+    render(b.dataset.esp||'');
 });
 
-cargar();
-</script>
+function render(esp){
+    var lista=esp?tecs.filter(function(t){return t.especialidad===esp;}):tecs;
+    var g=document.getElementById('grid');
+    if(!lista.length){g.innerHTML='<div class="empty">No hay técnicos para esta especialidad.</div>';return;}
+    g.innerHTML=lista.map(function(t){
+        var ini=t.nombre.split(' ').map(function(n){return n[0]||'';}).join('').substring(0,2).toUpperCase();
+        var d=!t.ocupado;
+        return '<div class="card" data-id="'+t.id+'">'
+            +'<div style="display:flex;align-items:center;gap:.7rem;margin-bottom:.9rem">'
+            +'<div class="avatar">'+ini+'</div>'
+            +'<div style="flex:1;min-width:0"><div style="font-weight:700;color:var(--text-1);font-size:.92rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+t.nombre+'</div>'
+            +'<div style="font-size:.73rem;color:var(--text-3);margin-top:.1rem">'+t.especialidad+'</div></div>'
+            +'<span class="sp '+(d?'sp-d':'sp-o')+'">'+(d?'● Disp.':'○ Ocup.')+'</span>'
+            +'</div>'
+            +'<div style="display:flex;gap:.4rem">'
+            +'<div class="stat"><div class="stat-n" style="color:var(--accent)">'+(t.trabajos_completados||0)+'</div><div class="stat-l">trabajos</div></div>'
+            +'<div class="stat"><div class="stat-n" style="color:var(--yellow)">'+(t.promedio?parseFloat(t.promedio).toFixed(1):'—')+'</div><div class="stat-l">rating</div></div>'
+            +'<div class="stat"><div class="stat-n">'+(t.totalCalif||0)+'</div><div class="stat-l">reseñas</div></div>'
+            +'</div></div>';
+    }).join('');
+    g.querySelectorAll('.card').forEach(function(c){c.addEventListener('click',function(){abrir(this.dataset.id);});});
+}
 
-<script src="/js/i18n.js"></script>
+async function abrir(id){
+    var t=tecs.find(function(x){return x.id===id;});
+    if(!t)return;
+    var ini=t.nombre.split(' ').map(function(n){return n[0]||'';}).join('').substring(0,2).toUpperCase();
+    var stars=t.promedio?Math.round(parseFloat(t.promedio)):0;
+    var d=!t.ocupado;
+
+    var rHtml='<p style="color:var(--text-3);font-size:.82rem;text-align:center;padding:.75rem">Sin reseñas aún.</p>';
+    try{
+        var res=await fetch('/pub/tecnicos/'+id+'/resenas');
+        var data=await res.json();
+        if(data.resenas&&data.resenas.length){
+            rHtml=data.resenas.map(function(r){
+                return '<div class="ri">'
+                    +'<div style="display:flex;justify-content:space-between;margin-bottom:.2rem">'
+                    +'<span style="font-size:.85rem">'+'⭐'.repeat(r.estrellas)+'</span>'
+                    +'<span style="font-size:.7rem;color:var(--text-3)">'+new Date(r.created_at).toLocaleDateString('es',{month:'short',year:'numeric'})+'</span>'
+                    +'</div>'
+                    +(r.comentario?'<p style="font-size:.8rem;color:var(--text-2);margin:0;line-height:1.5">'+r.comentario+'</p>':'')
+                    +'</div>';
+            }).join('');
+        }
+    }catch(e){}
+
+    document.getElementById('mb').innerHTML=
+        '<div style="text-align:center;margin-bottom:1.5rem">'
+        +'<div style="width:64px;height:64px;border-radius:50%;background:var(--accent-soft);border:3px solid var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.15rem;color:var(--accent);margin:0 auto .85rem">'+ini+'</div>'
+        +'<div style="font-weight:800;font-size:1.15rem;color:var(--text-1);margin-bottom:.25rem">'+t.nombre+'</div>'
+        +'<div style="font-size:.83rem;color:var(--text-3);margin-bottom:.6rem">'+t.especialidad+'</div>'
+        +'<span class="sp '+(d?'sp-d':'sp-o')+'" style="font-size:.72rem;padding:.25rem .7rem">'+(d?'● Disponible ahora':'○ Ocupado')+'</span>'
+        +'</div>'
+        +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.65rem;margin-bottom:1.5rem">'
+        +'<div class="ms"><div class="ms-n" style="color:var(--accent)">'+(t.trabajos_completados||0)+'</div><div class="ms-l">Trabajos</div></div>'
+        +'<div class="ms"><div class="ms-n" style="color:var(--yellow)">'+(t.promedio?parseFloat(t.promedio).toFixed(1):'—')+'</div><div class="ms-l">Rating</div></div>'
+        +'<div class="ms"><div class="ms-n">'+(t.totalCalif||0)+'</div><div class="ms-l">Reseñas</div></div>'
+        +'</div>'
+        +(stars>0?'<div style="text-align:center;font-size:.95rem;margin-bottom:1rem">'+'⭐'.repeat(stars)+'</div>':'')
+        +'<div style="font-size:.75rem;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.65rem">Reseñas recientes</div>'
+        +'<div style="max-height:200px;overflow-y:auto;margin-bottom:1.5rem">'+rHtml+'</div>'
+        +'<a href="/auth/register-cliente" class="cta">Contratar a través de PropertyPulse →</a>';
+
+    document.getElementById('modal').classList.add('open');
+}
+
+document.getElementById('mc').addEventListener('click',function(){document.getElementById('modal').classList.remove('open');});
+document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+</script>
 </body>
 </html>

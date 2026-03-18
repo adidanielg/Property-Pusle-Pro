@@ -112,56 +112,36 @@ app.get('/app',     (req, res) => res.render('index',   { title: 'Acceder — Pr
 app.get('/inicio',  (req, res) => res.redirect('/app'));
 app.get('/terms',    (req, res) => res.render('terms',    { title: 'Terms of Service — PropertyPulse' }));
 app.get('/privacy',  (req, res) => res.render('privacy',  { title: 'Privacy Policy — PropertyPulse' }));
-app.get('/tecnicos', (req, res) => res.render('tecnicos', { title: 'Técnicos — PropertyPulse' }));
+app.get('/tecnicos', (req, res) => res.render('tecnicos', { title: 'Nuestros Técnicos — PropertyPulse' }));
 
-// ── API pública — sin auth ─────────────────────────────────────
+// ── API pública ───────────────────────────────────────────────
 const supabasePub = require('./services/supabaseClient');
 
 app.get('/pub/tecnicos', async (req, res) => {
     try {
         const { data: tecnicos } = await supabasePub
-            .from('tecnicos')
-            .select('id, nombre, especialidad, ocupado, trabajos_completados, activo')
-            .eq('activo', true)
-            .order('trabajos_completados', { ascending: false });
-
-        const { data: calificaciones } = await supabasePub
-            .from('calificaciones').select('tecnico_id, estrellas');
-
-        const statsMap = {};
-        (calificaciones || []).forEach(c => {
-            if (!statsMap[c.tecnico_id]) statsMap[c.tecnico_id] = { suma: 0, total: 0 };
-            statsMap[c.tecnico_id].suma  += c.estrellas;
-            statsMap[c.tecnico_id].total += 1;
-        });
-
-        const result = (tecnicos || []).map(t => ({
+            .from('tecnicos').select('id, nombre, especialidad, ocupado, trabajos_completados, activo')
+            .eq('activo', true).order('trabajos_completados', { ascending: false });
+        const { data: califs } = await supabasePub.from('calificaciones').select('tecnico_id, estrellas');
+        const sm = {};
+        (califs||[]).forEach(c => { if(!sm[c.tecnico_id]) sm[c.tecnico_id]={suma:0,total:0}; sm[c.tecnico_id].suma+=c.estrellas; sm[c.tecnico_id].total+=1; });
+        const result = (tecnicos||[]).map(t => ({
             ...t,
-            promedio:   statsMap[t.id] ? (statsMap[t.id].suma / statsMap[t.id].total).toFixed(1) : null,
-            totalCalif: statsMap[t.id]?.total || 0
-        })).sort((a, b) => {
-            if (a.ocupado !== b.ocupado) return a.ocupado ? 1 : -1;
-            return (parseFloat(b.promedio) || 0) - (parseFloat(a.promedio) || 0);
-        });
-
+            promedio:   sm[t.id] ? (sm[t.id].suma/sm[t.id].total).toFixed(1) : null,
+            totalCalif: sm[t.id]?.total || 0
+        })).sort((a,b) => { if(a.ocupado!==b.ocupado) return a.ocupado?1:-1; return (parseFloat(b.promedio)||0)-(parseFloat(a.promedio)||0); });
         res.json({ success: true, tecnicos: result });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+    } catch(err) { res.status(500).json({ error: err.message }); }
 });
 
 app.get('/pub/tecnicos/:id/resenas', async (req, res) => {
     try {
-        const { data } = await supabasePub
-            .from('calificaciones')
+        const { data } = await supabasePub.from('calificaciones')
             .select('estrellas, comentario, created_at')
             .eq('tecnico_id', req.params.id)
-            .order('created_at', { ascending: false })
-            .limit(10);
+            .order('created_at', { ascending: false }).limit(10);
         res.json({ success: true, resenas: data || [] });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+    } catch(err) { res.status(500).json({ error: err.message }); }
 });
 
 // ── Rutas de la app ───────────────────────────────────────────
