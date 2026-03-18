@@ -93,8 +93,12 @@ router.post('/tickets/:id/estado', validate(schemas.estadoTicket), async (req, r
 
         // Incrementar contador al completar trabajo
         if (estado === 'completado') {
-            await supabase.rpc('incrementar_trabajos_completados', { tecnico_uuid: req.user.id })
-                .catch(err => console.error('[COUNTER]', err.message));
+            try {
+                const { error: rpcErr } = await supabase.rpc('incrementar_trabajos_completados', { tecnico_uuid: req.user.id });
+                if (rpcErr) console.error('[COUNTER]', rpcErr.message);
+            } catch (rpcEx) {
+                console.error('[COUNTER]', rpcEx.message);
+            }
         }
 
         res.json({ success: true, ticket: ticketActualizado });
