@@ -93,12 +93,8 @@ router.post('/tickets/:id/estado', validate(schemas.estadoTicket), async (req, r
 
         // Incrementar contador al completar trabajo
         if (estado === 'completado') {
-            try {
-                const { error: rpcErr } = await supabase.rpc('incrementar_trabajos_completados', { tecnico_uuid: req.user.id });
-                if (rpcErr) console.error('[COUNTER]', rpcErr.message);
-            } catch (rpcEx) {
-                console.error('[COUNTER]', rpcEx.message);
-            }
+            await supabase.rpc('incrementar_trabajos_completados', { tecnico_uuid: req.user.id })
+                .catch(err => console.error('[COUNTER]', err.message));
         }
 
         res.json({ success: true, ticket: ticketActualizado });
@@ -201,6 +197,18 @@ router.post('/tickets/:id/cancelar', validate(schemas.cancelarTicket), async (re
 // ── Chat: obtener mensajes ────────────────────────────────────
 router.get('/tickets/:id/mensajes', async (req, res) => {
     try {
+        // Verificar que el ticket está asignado a este técnico o es pendiente
+        const { data: ticket } = await supabase
+            .from('tickets')
+            .select('id, tecnico_asignado, estado')
+            .eq('id', req.params.id)
+            .single();
+
+        if (!ticket) return res.status(404).json({ error: 'Ticket no encontrado' });
+
+        const puedeVer = ticket.tecnico_asignado === req.user.id || ticket.estado === 'pendiente';
+        if (!puedeVer) return res.status(403).json({ error: 'No tienes acceso a este ticket' });
+
         const { data } = await supabase
             .from('ticket_mensajes')
             .select('*')
@@ -237,9 +245,24 @@ router.post('/tickets/:id/mensajes', validate(schemas.mensajeChat), async (req, 
 router.delete('/cuenta', async (req, res) => {
     try {
         const id = req.user.id;
-        await supabase.from('tecnicos').update({ push_subscription: null }).eq('id', id);
-        await supabase.from('tecnicos').delete().eq('id', id);
+
+        // Liberar tickets activos asignados al técnico
+        await supabase.from('tickets')
+            .update({ tecnico_asignado: null, estado: 'pendiente' })
+            .eq('tecnico_asignado', id)
+            .eq('estado', 'en_proceso');
+
+        // Soft delete — no borrar físicamente
+        await supabase.from('tecnicos')
+            .update({
+                push_subscription: null,
+                activo: false,
+                deleted_at: new Date().toISOString()
+            })
+            .eq('id', id);
+
         res.clearCookie('jwt');
+        res.clearCookie('jwt_tecnico');
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });

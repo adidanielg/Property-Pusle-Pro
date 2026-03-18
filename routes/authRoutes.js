@@ -2,6 +2,7 @@ const express     = require('express');
 const router      = express.Router();
 const authService = require('../services/authService');
 const { validate, schemas } = require('../middleware/validate');
+const { loginLimiter, registerLimiter } = require('../middleware/rateLimiter');
 
 // ── Vistas login ──────────────────────────────────────────────
 router.get('/login',         (req, res) => res.render('loginCliente.html', { error: null }));
@@ -13,7 +14,7 @@ router.get('/register-cliente', (req, res) => res.render('registerCliente.html')
 router.get('/register-tecnico', (req, res) => res.render('registerTecnico.html'));
 
 // ── POST /auth/register ───────────────────────────────────────
-router.post('/register', validate(schemas.register), async (req, res) => {
+router.post('/register', registerLimiter, validate(schemas.register), async (req, res) => {
     try {
         const { confirm_password, role, ...userData } = req.body;
 
@@ -32,7 +33,7 @@ router.post('/register', validate(schemas.register), async (req, res) => {
 });
 
 // ── POST /auth/login ──────────────────────────────────────────
-router.post('/login', validate(schemas.login), async (req, res) => {
+router.post('/login', loginLimiter, validate(schemas.login), async (req, res) => {
     const { username, password, role } = req.body;
 
     const vistas = {

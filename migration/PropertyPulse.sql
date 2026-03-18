@@ -323,3 +323,13 @@ BEGIN
     WHERE id = tecnico_uuid;
 END;
 $$ LANGUAGE plpgsql;
+
+-- ── Migración de seguridad ────────────────────────────────────
+-- Ejecutar en Supabase → SQL Editor → Run
+
+-- Soft delete en técnicos
+ALTER TABLE tecnicos ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ DEFAULT NULL;
+CREATE INDEX IF NOT EXISTS idx_tecnicos_deleted ON tecnicos(deleted_at) WHERE deleted_at IS NULL;
+
+-- Filtrar técnicos eliminados en consultas activas
+-- (el código ya usa activo=false + deleted_at, pero el índice ayuda)

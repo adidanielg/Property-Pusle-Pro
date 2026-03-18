@@ -34,10 +34,10 @@ const authService = {
             .eq('username', username)
             .single();
 
-        if (error || !user) throw new Error('Usuario no encontrado');
+        if (error || !user) throw new Error('Credenciales incorrectas');
 
         const isValid = await bcrypt.compare(password, user.password);
-        if (!isValid) throw new Error('Contraseña incorrecta');
+        if (!isValid) throw new Error('Credenciales incorrectas');
 
         const payload = { id: user.id, username: user.username, role };
         const token   = jwt.sign(payload, process.env.SESSION_SECRET, { expiresIn: '8h' });

@@ -73,7 +73,7 @@ const emailService = {
     </a>
 
     <p style="color:#55557a;font-size:.78rem;text-align:center;margin:0">
-      ¿Preguntas? Escríbenos a <a href="mailto:support@propertypulse.app" style="color:#7c6dfa">support@propertypulse.app</a>
+      ¿Preguntas? Escríbenos a <a href="mailto:support@propertypulse.net" style="color:#7c6dfa">support@propertypulse.net</a>
     </p>
   </div>
 

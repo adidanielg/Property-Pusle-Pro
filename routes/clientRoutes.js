@@ -16,16 +16,6 @@ router.use(requireAuth(['cliente']));
 router.get('/dashboard', async (req, res) => {
     try {
         const id = req.user.id;
-
-        // Obtener tipo de cliente
-        const { data: clienteInfo } = await supabase
-            .from('companias')
-            .select('tipo_cliente, nombre_empresa, nombre_contacto')
-            .eq('id', id)
-            .single();
-
-        const tipoCliente = clienteInfo?.tipo_cliente || 'Individual';
-
         const [{ data: propiedades }, { data: tickets }, { data: misCalificaciones }] = await Promise.all([
             supabase.from('propiedades')
                 .select('*')
@@ -35,7 +25,6 @@ router.get('/dashboard', async (req, res) => {
             supabase.from('tickets')
                 .select('*, propiedades(direccion), tecnicos:tecnico_asignado(nombre)')
                 .eq('cliente_id', id)
-                .neq('estado', 'cancelado')
                 .is('deleted_at', null)
                 .order('created_at', { ascending: false }),
             supabase.from('calificaciones')
@@ -48,7 +37,7 @@ router.get('/dashboard', async (req, res) => {
 
         res.render('dashboardCliente.html', {
             title:              'Mi Panel | PropertyPulse',
-            cliente:            { ...req.user, tipo_cliente: tipoCliente, nombre_empresa: clienteInfo?.nombre_empresa },
+            cliente:            req.user,
             propiedades:        propiedades        || [],
             tickets:            tickets            || [],
             ticketsCalificados
@@ -63,6 +52,19 @@ router.get('/dashboard', async (req, res) => {
 router.post('/tickets', upload.single('foto'), validate(schemas.crearTicket), async (req, res) => {
     try {
         const { propiedad_id, categoria, motivo, descripcion } = req.body;
+
+        // ── Verificar ownership de la propiedad ───────────────
+        const { data: propCheck } = await supabase
+            .from('propiedades')
+            .select('id')
+            .eq('id', propiedad_id)
+            .eq('compania_id', req.user.id)
+            .is('deleted_at', null)
+            .single();
+
+        if (!propCheck) {
+            return res.status(403).json({ error: 'No tienes permiso para crear tickets en esta propiedad' });
+        }
 
         // ── Verificar límite de tickets del plan ──────────────
         const limitCheck = await checkTicketLimit(req.user.id);
