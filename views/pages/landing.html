@@ -855,13 +855,16 @@
     <div class="nav-links">
         <a href="#how-it-works" data-i18n="landing.howItWorks">How it works</a>
         <a href="#pricing" data-i18n="landing.pricing">Pricing</a>
-        <a href="#pricing-tech">For Technicians</a>
+        <a href="#nuestros-tecnicos">Nuestros Técnicos</a>
         <a href="#faq" data-i18n="landing.faq">FAQ</a>
         <div id="lang-toggle" style="display:flex;gap:.2rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.2rem">
     <button id="lang-es" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)">ES</button>
     <button id="lang-en" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)">EN</button>
 </div>
-        <a href="/app" class="nav-cta">Get started free</a>
+        <div style="display:flex;gap:.5rem">
+            <a href="/auth/login" class="nav-cta" style="background:transparent;border:1px solid var(--accent);color:var(--accent)">Portal Clientes</a>
+            <a href="/auth/login-tecnico" class="nav-cta" style="background:var(--accent)">Portal Técnicos</a>
+        </div>
     </div>
 </nav>
 
@@ -877,8 +880,8 @@
     </p>
 
     <div class="hero-actions">
-        <a href="/app" class="btn-hero-primary" data-i18n="landing.getStarted">Get started free →</a>
-        <a href="#how-it-works" class="btn-hero-secondary" data-i18n="landing.seeHow">See how it works</a>
+        <a href="/auth/register-cliente" class="btn-hero-primary" data-i18n="landing.getStarted">Registrar como cliente →</a>
+        <a href="/auth/register-tecnico" class="btn-hero-secondary">Aplicar como técnico</a>
     </div>
     <p class="hero-note">No credit card required &nbsp;·&nbsp; Setup in 5 minutes &nbsp;·&nbsp; Cancel anytime</p>
 
@@ -1196,6 +1199,44 @@
     </div>
 </div>
 
+
+<!-- ── Nuestros Técnicos ─────────────────────────────────── -->
+<div id="nuestros-tecnicos" class="section" style="padding-top:0">
+    <p class="section-label reveal">Nuestros Técnicos</p>
+    <h2 class="section-title reveal" style="max-width:560px">Profesionales verificados<br>listos para tu propiedad</h2>
+    <p class="section-sub reveal">Filtra por especialidad y conoce a los técnicos antes de contratar.</p>
+
+    <!-- Filtros por categoría -->
+    <div class="reveal" id="tecFiltros" style="display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;margin-bottom:1.75rem">
+        <button data-esp="" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;background:var(--accent-soft);border:1px solid var(--accent);color:var(--accent)">Todos</button>
+        <button data-esp="Climatización (HVAC)" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;background:transparent;border:1px solid var(--border-2);color:var(--text-2)">❄️ HVAC</button>
+        <button data-esp="Electricidad" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;background:transparent;border:1px solid var(--border-2);color:var(--text-2)">⚡ Electricidad</button>
+        <button data-esp="Plomería" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;background:transparent;border:1px solid var(--border-2);color:var(--text-2)">🔧 Plomería</button>
+        <button data-esp="Piscina" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;background:transparent;border:1px solid var(--border-2);color:var(--text-2)">🏊 Piscina</button>
+        <button data-esp="Jardinería / Landscaping" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;background:transparent;border:1px solid var(--border-2);color:var(--text-2)">🌿 Jardinería</button>
+        <button data-esp="Irrigation / Sistema de riego" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;background:transparent;border:1px solid var(--border-2);color:var(--text-2)">💧 Irrigation</button>
+        <button data-esp="Pest Control" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;background:transparent;border:1px solid var(--border-2);color:var(--text-2)">🐛 Pest Control</button>
+        <button data-esp="Limpieza / Pressure Washing" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;background:transparent;border:1px solid var(--border-2);color:var(--text-2)">🧹 Pressure Washing</button>
+        <button data-esp="Electrodomésticos" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;background:transparent;border:1px solid var(--border-2);color:var(--text-2)">🏠 Electrodomésticos</button>
+        <button data-esp="Estructura / Reparaciones" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;background:transparent;border:1px solid var(--border-2);color:var(--text-2)">🏗️ Estructura</button>
+        <button data-esp="Seguridad" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;background:transparent;border:1px solid var(--border-2);color:var(--text-2)">🔒 Seguridad</button>
+        <button data-esp="Bajo voltaje / Cámaras" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;background:transparent;border:1px solid var(--border-2);color:var(--text-2)">📹 Cámaras</button>
+        <button data-esp="Handyman" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;background:transparent;border:1px solid var(--border-2);color:var(--text-2)">🛠️ Handyman</button>
+        <button data-esp="General" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;background:transparent;border:1px solid var(--border-2);color:var(--text-2)">⚙️ General</button>
+    </div>
+
+    <!-- Grid de técnicos -->
+    <div id="tecGrid" class="reveal" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem"></div>
+</div>
+
+<!-- Modal perfil técnico -->
+<div id="tecModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);z-index:9999;align-items:center;justify-content:center;padding:1rem">
+    <div style="background:var(--bg);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:2rem;width:100%;max-width:400px;max-height:85vh;overflow-y:auto;position:relative">
+        <button id="tecModalClose" style="position:absolute;top:1rem;right:1rem;background:rgba(255,255,255,.08);border:none;color:var(--text-2);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:1rem">✕</button>
+        <div id="tecModalBody"></div>
+    </div>
+</div>
+
 <!-- ── FAQ ───────────────────────────────────────────────── -->
 <div id="faq" class="section" style="padding-top:0">
     <p class="section-label reveal" data-i18n="landing.faq">FAQ</p>
@@ -1266,8 +1307,10 @@
     </div>
     <p>© 2026 PropertyPulse. All rights reserved.</p>
     <div class="footer-links">
-        <a href="/auth/login">Client Login</a>
-        <a href="/auth/login-tecnico">Technician Login</a>
+        <a href="/auth/login">Portal Clientes</a>
+        <a href="/auth/register-cliente">Registrar Cliente</a>
+        <a href="/auth/login-tecnico">Portal Técnicos</a>
+        <a href="/auth/register-tecnico">Aplicar como Técnico</a>
         <a href="#pricing" data-i18n="landing.pricing">Pricing</a>
     </div>
 </footer>
@@ -1329,5 +1372,130 @@
 </script>
 
 <script src="/js/i18n.js"></script>
+
+<script>
+(function() {
+    var tecs = [];
+
+    function init() {
+        // Filtros
+        document.querySelectorAll('#tecFiltros button').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('#tecFiltros button').forEach(function(b) {
+                    b.style.background = 'transparent';
+                    b.style.borderColor = 'var(--border-2)';
+                    b.style.color = 'var(--text-2)';
+                });
+                this.style.background   = 'var(--accent-soft)';
+                this.style.borderColor  = 'var(--accent)';
+                this.style.color        = 'var(--accent)';
+                renderTecs(this.dataset.esp || '');
+            });
+        });
+
+        // Cerrar modal
+        document.getElementById('tecModalClose').addEventListener('click', cerrarModal);
+        document.getElementById('tecModal').addEventListener('click', function(e) {
+            if (e.target === this) cerrarModal();
+        });
+
+        // Carga lazy
+        var grid = document.getElementById('tecGrid');
+        if (!grid) return;
+        var tecObs = new IntersectionObserver(function(entries) {
+            if (entries[0].isIntersecting) { cargarTecs(); tecObs.disconnect(); }
+        }, { threshold: 0.1 });
+        tecObs.observe(grid);
+    }
+
+    function cerrarModal() {
+        document.getElementById('tecModal').style.display = 'none';
+    }
+
+    async function cargarTecs() {
+        var grid = document.getElementById('tecGrid');
+        grid.innerHTML = '<div style="color:var(--text-3);text-align:center;padding:2rem;grid-column:1/-1">Cargando técnicos...</div>';
+        try {
+            var res  = await fetch('/pub/tecnicos');
+            var data = await res.json();
+            tecs = data.tecnicos || [];
+            renderTecs('');
+        } catch(e) {
+            grid.innerHTML = '<div style="color:var(--text-3);text-align:center;padding:2rem;grid-column:1/-1">Error cargando técnicos.</div>';
+        }
+    }
+
+    function renderTecs(esp) {
+        var grid = document.getElementById('tecGrid');
+        var lista = esp ? tecs.filter(function(t) { return t.especialidad === esp; }) : tecs;
+        if (!lista.length) {
+            grid.innerHTML = '<div style="color:var(--text-3);text-align:center;padding:2rem;grid-column:1/-1">No hay técnicos para esta especialidad.</div>';
+            return;
+        }
+        grid.innerHTML = lista.slice(0, 12).map(function(t) {
+            var ini = t.nombre.split(' ').map(function(n){return n[0]||'';}).join('').substring(0,2).toUpperCase();
+            var disp = !t.ocupado;
+            return '<div onclick="window._verTec('' + t.id + '')" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.25rem;cursor:pointer;transition:border-color .15s,transform .15s" onmouseover="this.style.borderColor='var(--accent)';this.style.transform='translateY(-3px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform=''">'
+                + '<div style="display:flex;align-items:center;gap:.65rem;margin-bottom:.85rem">'
+                + '<div style="width:44px;height:44px;border-radius:50%;background:rgba(124,109,250,.15);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;color:var(--accent);flex-shrink:0">' + ini + '</div>'
+                + '<div><div style="font-weight:700;color:var(--text-1);font-size:.9rem">' + t.nombre + '</div>'
+                + '<div style="font-size:.72rem;color:var(--text-3)">' + t.especialidad + '</div></div>'
+                + '</div>'
+                + '<div style="display:flex;gap:.4rem;margin-bottom:.6rem">'
+                + '<div style="flex:1;background:var(--surface-2);border-radius:8px;padding:.5rem;text-align:center"><div style="font-size:1.1rem;font-weight:800;color:var(--accent)">' + (t.trabajos_completados||0) + '</div><div style="font-size:.62rem;color:var(--text-3)">trabajos</div></div>'
+                + '<div style="flex:1;background:var(--surface-2);border-radius:8px;padding:.5rem;text-align:center"><div style="font-size:1.1rem;font-weight:800;color:#f5c842">' + (t.promedio ? parseFloat(t.promedio).toFixed(1) : '—') + '</div><div style="font-size:.62rem;color:var(--text-3)">rating</div></div>'
+                + '</div>'
+                + '<span style="font-size:.65rem;font-weight:700;padding:.2rem .55rem;border-radius:99px;background:' + (disp?'rgba(124,109,250,.15)':'rgba(255,255,255,.06)') + ';color:' + (disp?'var(--accent-2)':'var(--text-3)') + '">' + (disp?'● Disponible':'○ Ocupado') + '</span>'
+                + '</div>';
+        }).join('');
+    }
+
+    window._verTec = async function(id) {
+        var t = tecs.find(function(x){return x.id===id;});
+        if (!t) return;
+        var ini = t.nombre.split(' ').map(function(n){return n[0]||'';}).join('').substring(0,2).toUpperCase();
+        var stars = t.promedio ? Math.round(parseFloat(t.promedio)) : 0;
+
+        var reseñasHtml = '<p style="color:var(--text-3);font-size:.82rem;text-align:center;padding:.75rem">Sin reseñas aún.</p>';
+        try {
+            var res  = await fetch('/pub/tecnicos/' + id + '/resenas');
+            var data = await res.json();
+            if (data.resenas && data.resenas.length) {
+                reseñasHtml = data.resenas.map(function(r) {
+                    return '<div style="padding:.7rem 0;border-bottom:1px solid rgba(255,255,255,.08)">'
+                        + '<div style="display:flex;justify-content:space-between;margin-bottom:.2rem">'
+                        + '<span>' + '⭐'.repeat(r.estrellas) + '</span>'
+                        + '<span style="font-size:.7rem;color:var(--text-3)">' + new Date(r.created_at).toLocaleDateString('es',{month:'short',year:'numeric'}) + '</span>'
+                        + '</div>'
+                        + (r.comentario ? '<p style="font-size:.8rem;color:var(--text-2);margin:0">' + r.comentario + '</p>' : '')
+                        + '</div>';
+                }).join('');
+            }
+        } catch(e) {}
+
+        document.getElementById('tecModalBody').innerHTML =
+            '<div style="text-align:center;margin-bottom:1.5rem">'
+            + '<div style="width:60px;height:60px;border-radius:50%;background:rgba(124,109,250,.15);border:3px solid var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem;color:var(--accent);margin:0 auto .75rem">' + ini + '</div>'
+            + '<div style="font-weight:800;font-size:1.1rem;color:var(--text-1)">' + t.nombre + '</div>'
+            + '<div style="font-size:.82rem;color:var(--text-3);margin:.25rem 0 .5rem">' + t.especialidad + '</div>'
+            + '<span style="font-size:.7rem;font-weight:700;padding:.25rem .7rem;border-radius:99px;background:' + (!t.ocupado?'rgba(124,109,250,.15)':'rgba(255,255,255,.06)') + ';color:' + (!t.ocupado?'var(--accent-2)':'var(--text-3)') + '">' + (!t.ocupado?'● Disponible':'○ Ocupado') + '</span>'
+            + '</div>'
+            + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.65rem;margin-bottom:1.5rem">'
+            + '<div style="background:var(--surface-2);border-radius:10px;padding:.85rem;text-align:center"><div style="font-size:1.5rem;font-weight:800;color:var(--accent)">' + (t.trabajos_completados||0) + '</div><div style="font-size:.68rem;color:var(--text-3);margin-top:.2rem">Trabajos</div></div>'
+            + '<div style="background:var(--surface-2);border-radius:10px;padding:.85rem;text-align:center"><div style="font-size:1.5rem;font-weight:800;color:#f5c842">' + (t.promedio?parseFloat(t.promedio).toFixed(1):'—') + '</div><div style="font-size:.68rem;color:var(--text-3);margin-top:.2rem">Rating</div></div>'
+            + '<div style="background:var(--surface-2);border-radius:10px;padding:.85rem;text-align:center"><div style="font-size:1.5rem;font-weight:800;color:var(--text-1)">' + (t.totalCalif||0) + '</div><div style="font-size:.68rem;color:var(--text-3);margin-top:.2rem">Reseñas</div></div>'
+            + '</div>'
+            + (stars > 0 ? '<div style="text-align:center;margin-bottom:1rem">' + '⭐'.repeat(stars) + '</div>' : '')
+            + '<div style="font-size:.75rem;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.65rem">Reseñas recientes</div>'
+            + '<div style="max-height:180px;overflow-y:auto;margin-bottom:1.5rem">' + reseñasHtml + '</div>'
+            + '<a href="/auth/register-cliente" style="display:block;background:var(--accent);color:#fff;text-align:center;padding:.9rem;border-radius:10px;font-weight:700;font-size:.95rem;text-decoration:none">Contratar a través de PropertyPulse →</a>';
+
+        document.getElementById('tecModal').style.display = 'flex';
+    };
+
+    document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
+
 </body>
 </html>
