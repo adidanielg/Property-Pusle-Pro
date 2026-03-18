@@ -16,68 +16,38 @@ router.use(requireAuth(['cliente']));
 router.get('/dashboard', async (req, res) => {
     try {
         const id = req.user.id;
-
-        const { data: clienteInfo } = await supabase
-            .from('companias')
-            .select('tipo_cliente, nombre_empresa, nombre_contacto')
-            .eq('id', id).single();
-
-        const tipoCliente = clienteInfo?.tipo_cliente || 'Individual';
-
-        const [{ data: propiedades }, { data: tickets }, { data: misCalificaciones }, { data: todosTickets }] = await Promise.all([
-            supabase.from('propiedades').select('*').eq('compania_id', id).is('deleted_at', null).order('created_at', { ascending: false }),
-            supabase.from('tickets').select('*, propiedades(direccion), tecnicos:tecnico_asignado(nombre)').eq('cliente_id', id).neq('estado', 'cancelado').is('deleted_at', null).order('created_at', { ascending: false }),
-            supabase.from('calificaciones').select('ticket_id').eq('cliente_id', id),
-            supabase.from('tickets').select('id, estado, categoria, created_at, tecnicos:tecnico_asignado(nombre)').eq('cliente_id', id).is('deleted_at', null).order('created_at', { ascending: false }).limit(200)
+        const [{ data: propiedades }, { data: tickets }, { data: misCalificaciones }] = await Promise.all([
+            supabase.from('propiedades')
+                .select('*')
+                .eq('compania_id', id)
+                .is('deleted_at', null)
+                .order('created_at', { ascending: false }),
+            supabase.from('tickets')
+                .select('*, propiedades(direccion), tecnicos:tecnico_asignado(nombre)')
+                .eq('cliente_id', id)
+                .is('deleted_at', null)
+                .order('created_at', { ascending: false }),
+            supabase.from('calificaciones')
+                .select('ticket_id')
+                .eq('cliente_id', id)
         ]);
 
+        // IDs de tickets ya calificados
         const ticketsCalificados = new Set((misCalificaciones || []).map(c => c.ticket_id));
-        const completados = (todosTickets || []).filter(t => t.estado === 'completado');
-
-        // Técnico favorito
-        const tecCount = {};
-        completados.forEach(t => { const n = t.tecnicos?.nombre; if (n) tecCount[n] = (tecCount[n] || 0) + 1; });
-        const tecFavorito = Object.keys(tecCount).length > 0
-            ? Object.entries(tecCount).sort((a, b) => b[1] - a[1])[0][0] : null;
-
-        // Categoría más frecuente
-        const catCount = {};
-        (todosTickets || []).forEach(t => { if (t.categoria) catCount[t.categoria] = (catCount[t.categoria] || 0) + 1; });
-        const categoriaMasFrecuente = Object.keys(catCount).length > 0
-            ? Object.entries(catCount).sort((a, b) => b[1] - a[1])[0][0] : null;
-
-        // Tickets por mes (últimos 6 meses)
-        const ticketsPorMes = {};
-        const hoy = new Date();
-        for (let i = 5; i >= 0; i--) {
-            const d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
-            const key = d.toLocaleDateString('es', { month: 'short', year: '2-digit' });
-            ticketsPorMes[key] = 0;
-        }
-        (todosTickets || []).forEach(t => {
-            const d = new Date(t.created_at);
-            const key = d.toLocaleDateString('es', { month: 'short', year: '2-digit' });
-            if (Object.prototype.hasOwnProperty.call(ticketsPorMes, key)) ticketsPorMes[key]++;
-        });
 
         res.render('dashboardCliente.html', {
-            title:       'Mi Panel | PropertyPulse',
-            cliente:     { ...req.user, tipo_cliente: tipoCliente, nombre_empresa: clienteInfo?.nombre_empresa },
-            propiedades: propiedades || [],
-            tickets:     tickets     || [],
-            ticketsCalificados,
-            metricas: {
-                totalCompletados:      completados.length,
-                tecFavorito,
-                categoriaMasFrecuente,
-                ticketsPorMes:         JSON.stringify(ticketsPorMes)
-            }
+            title:              'Mi Panel | PropertyPulse',
+            cliente:            req.user,
+            propiedades:        propiedades        || [],
+            tickets:            tickets            || [],
+            ticketsCalificados
         });
     } catch (err) {
         console.error('[CLIENT DASHBOARD]', err);
         res.status(500).send('Error cargando el panel');
     }
 });
+
 // ── Crear ticket → notificar técnicos ─────────────────────────
 router.post('/tickets', upload.single('foto'), validate(schemas.crearTicket), async (req, res) => {
     try {
@@ -562,6 +532,50 @@ router.post('/cotizaciones/:id/rechazar', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('[RECHAZAR COT]', err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+
+// ── Historial: ticket individual con mensajes ────────────────
+router.get('/tickets/:id/historial', async (req, res) => {
+    try {
+        // Verificar ownership
+        const { data: ticket } = await supabase
+            .from('tickets')
+            .select('*, propiedades(direccion), tecnicos:tecnico_asignado(nombre)')
+            .eq('id', req.params.id)
+            .eq('cliente_id', req.user.id)
+            .single();
+
+        if (!ticket) return res.status(403).json({ error: 'No autorizado' });
+
+        // Mensajes del chat
+        const { data: mensajes } = await supabase
+            .from('ticket_mensajes')
+            .select('autor_nombre, autor_rol, mensaje, created_at')
+            .eq('ticket_id', req.params.id)
+            .order('created_at', { ascending: true });
+
+        res.json({ success: true, ticket, mensajes: mensajes || [] });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── Historial: todos los tickets del cliente ──────────────────
+router.get('/historial', async (req, res) => {
+    try {
+        const { data: tickets } = await supabase
+            .from('tickets')
+            .select('id, motivo, estado, categoria, foto_url, created_at, propiedades(direccion), tecnicos:tecnico_asignado(nombre)')
+            .eq('cliente_id', req.user.id)
+            .is('deleted_at', null)
+            .order('created_at', { ascending: false })
+            .limit(100);
+
+        res.json({ success: true, tickets: tickets || [] });
+    } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
