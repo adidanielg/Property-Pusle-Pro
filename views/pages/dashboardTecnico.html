@@ -331,6 +331,7 @@
                         </span>
                         <% if (ticket.estado === 'pendiente' && !tecnico.ocupado) { %>
                             <button class="tb tb-green tb-sm" onclick="cambiarEstado('<%= ticket.id %>','en_proceso')">✅ Aceptar trabajo</button>
+                            <button class="tb tb-sm" style="background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent)" onclick="abrirCotizar('<%= ticket.id %>','<%= ticket.motivo %>')">💰 Cotizar</button>
                         <% } else if (ticket.estado === 'pendiente' && tecnico.ocupado) { %>
                             <span style="font-size:.72rem;color:var(--text-3)">Completa tu trabajo actual primero</span>
                         <% } else if (ticket.estado === 'en_proceso' && esMio) { %>
@@ -752,11 +753,11 @@ if (tecParams.get('suscrito') === '1') {
 </script>
 
 <!-- Modal: Cotizar ticket -->
-<div id="cotizarModal" class="pp-modal-overlay">
-    <div class="pp-modal">
-        <div class="pp-modal-head">
+<div id="cotizarModal" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-header">
             <h3>💰 Enviar cotización</h3>
-            <button class="pp-modal-close" onclick="cerrarModal('cotizarModal')">✕</button>
+            <button class="modal-close" onclick="cerrarModal('cotizarModal')">✕</button>
         </div>
         <input type="hidden" id="cotizarTicketId">
         <p style="font-size:.85rem;color:var(--text-2);margin-bottom:1rem">
