@@ -297,6 +297,13 @@
                         data-empresa="<%= c.nombre_empresa %>" data-email="<%= c.email %>"
                         data-telefono="<%= c.telefono %>" data-tipo="<%= c.tipo_cliente %>"
                         onclick="abrirEditarCliente(this)">✏️ Editar</button>
+                    <button class="ab ab-sm"
+                        data-id="<%= c.id %>"
+                        style="background:<%= c.suscripcion_activa ? 'var(--green-soft)' : 'var(--surface-2)' %>;color:<%= c.suscripcion_activa ? 'var(--green)' : 'var(--text-2)' %>;border:1px solid <%= c.suscripcion_activa ? 'var(--green)' : 'var(--border)' %>"
+                        onclick="toggleSuscripcion(this,'cliente')"
+                        title="<%= c.suscripcion_activa ? 'Desactivar' : 'Activar' %> suscripción">
+                        <%= c.suscripcion_activa ? '✅ Activo' : '⭕ Free' %>
+                    </button>
                     <button class="ab ab-red ab-sm"
                         data-id="<%= c.id %>" data-nombre="<%= c.nombre_contacto %>" data-tipo="cliente"
                         onclick="confirmarEliminar(this)">🗑️</button>
@@ -594,6 +601,27 @@
 
 <script src="/js/admin.js"></script>
 
+
+<script>
+async function toggleSuscripcion(btn, tipo) {
+    const id  = btn.dataset.id;
+    const url = tipo === 'tecnico'
+        ? `/admin/tecnicos/${id}/toggle-suscripcion`
+        : `/admin/clientes/${id}/toggle-suscripcion`;
+    try {
+        const res  = await fetch(url, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            const activo = data.suscripcion_activa;
+            btn.textContent  = activo ? (tipo === 'tecnico' ? '✅ Pro' : '✅ Activo') : '⭕ Free';
+            btn.style.background = activo ? 'var(--green-soft)' : 'var(--surface-2)';
+            btn.style.color      = activo ? 'var(--green)'      : 'var(--text-2)';
+            btn.style.border     = `1px solid ${activo ? 'var(--green)' : 'var(--border)'}`;
+            showToast(activo ? '✅ Suscripción activada' : '⭕ Suscripción desactivada');
+        } else showToast(data.error || 'Error', 'error');
+    } catch { showToast('Error de conexión', 'error'); }
+}
+</script>
 <script src="/js/app.js"></script>
 <script src="/js/i18n.js"></script>
 </body>

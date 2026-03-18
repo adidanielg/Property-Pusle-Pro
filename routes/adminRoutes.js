@@ -249,4 +249,55 @@ router.delete('/codigos/:id', async (req, res) => {
     }
 });
 
+
+// ── Toggle suscripción cliente ────────────────────────────────
+router.post('/clientes/:id/toggle-suscripcion', async (req, res) => {
+    try {
+        const { data: cliente } = await supabase
+            .from('companias')
+            .select('suscripcion_activa, plan')
+            .eq('id', req.params.id)
+            .single();
+
+        if (!cliente) return res.status(404).json({ error: 'Cliente no encontrado' });
+
+        const nuevo = !cliente.suscripcion_activa;
+        await supabase.from('companias')
+            .update({
+                suscripcion_activa: nuevo,
+                plan: nuevo ? (cliente.plan || 'pro') : cliente.plan
+            })
+            .eq('id', req.params.id);
+
+        res.json({ success: true, suscripcion_activa: nuevo });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── Toggle suscripción técnico ────────────────────────────────
+router.post('/tecnicos/:id/toggle-suscripcion', async (req, res) => {
+    try {
+        const { data: tec } = await supabase
+            .from('tecnicos')
+            .select('suscripcion_activa, invitado')
+            .eq('id', req.params.id)
+            .single();
+
+        if (!tec) return res.status(404).json({ error: 'Técnico no encontrado' });
+
+        const nuevo = !tec.suscripcion_activa;
+        await supabase.from('tecnicos')
+            .update({
+                suscripcion_activa: nuevo,
+                invitado:           nuevo ? true : tec.invitado
+            })
+            .eq('id', req.params.id);
+
+        res.json({ success: true, suscripcion_activa: nuevo });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;
