@@ -93,6 +93,8 @@ const notificationService = {
             }
             console.error('[PUSH cliente]', err.message);
         }
+    },
+
     // ── Notificar al cliente con nombre del técnico ─────────
     async notificarClienteConTecnico(clienteId, nuevoEstado, ticket, tecNombre) {
         try {
