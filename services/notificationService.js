@@ -106,11 +106,22 @@ const notificationService = {
 
             if (!cliente?.push_subscription) return;
 
+            const mensajes = {
+                en_proceso: {
+                    title: '🔄 Técnico en camino',
+                    body:  `${tecNombre} aceptó tu trabajo y está en camino. (${ticket.motivo})`
+                },
+                cotizacion: {
+                    title: '💰 Nueva cotización recibida',
+                    body:  `${tecNombre} envió una cotización para: ${ticket.motivo}`
+                }
+            };
+            const msg = mensajes[nuevoEstado] || mensajes['en_proceso'];
             await webpush.sendNotification(
                 JSON.parse(cliente.push_subscription),
                 JSON.stringify({
-                    title: '🔄 Técnico en camino',
-                    body:  `${tecNombre} aceptó tu trabajo y está en camino. (${ticket.motivo})`,
+                    title: msg.title,
+                    body:  msg.body,
                     url:   '/cliente/dashboard'
                 })
             );

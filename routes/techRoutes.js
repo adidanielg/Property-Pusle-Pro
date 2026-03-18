@@ -197,18 +197,6 @@ router.post('/tickets/:id/cancelar', validate(schemas.cancelarTicket), async (re
 // ── Chat: obtener mensajes ────────────────────────────────────
 router.get('/tickets/:id/mensajes', async (req, res) => {
     try {
-        // Verificar que el ticket está asignado a este técnico o es pendiente
-        const { data: ticket } = await supabase
-            .from('tickets')
-            .select('id, tecnico_asignado, estado')
-            .eq('id', req.params.id)
-            .single();
-
-        if (!ticket) return res.status(404).json({ error: 'Ticket no encontrado' });
-
-        const puedeVer = ticket.tecnico_asignado === req.user.id || ticket.estado === 'pendiente';
-        if (!puedeVer) return res.status(403).json({ error: 'No tienes acceso a este ticket' });
-
         const { data } = await supabase
             .from('ticket_mensajes')
             .select('*')
@@ -245,25 +233,112 @@ router.post('/tickets/:id/mensajes', validate(schemas.mensajeChat), async (req, 
 router.delete('/cuenta', async (req, res) => {
     try {
         const id = req.user.id;
-
-        // Liberar tickets activos asignados al técnico
-        await supabase.from('tickets')
-            .update({ tecnico_asignado: null, estado: 'pendiente' })
-            .eq('tecnico_asignado', id)
-            .eq('estado', 'en_proceso');
-
-        // Soft delete — no borrar físicamente
-        await supabase.from('tecnicos')
-            .update({
-                push_subscription: null,
-                activo: false,
-                deleted_at: new Date().toISOString()
-            })
-            .eq('id', id);
-
+        await supabase.from('tecnicos').update({ push_subscription: null }).eq('id', id);
+        await supabase.from('tecnicos').delete().eq('id', id);
         res.clearCookie('jwt');
-        res.clearCookie('jwt_tecnico');
         res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+
+// ── Cotizaciones: enviar ──────────────────────────────────────
+router.post('/tickets/:id/cotizar', async (req, res) => {
+    try {
+        const { precio, descripcion } = req.body;
+
+        if (!precio || isNaN(precio) || precio <= 0)
+            return res.status(400).json({ error: 'Precio inválido' });
+        if (!descripcion || descripcion.trim().length < 5)
+            return res.status(400).json({ error: 'Descripción requerida' });
+
+        // Verificar que el ticket existe, es de su categoría y está pendiente
+        const { data: ticket } = await supabase
+            .from('tickets')
+            .select('id, estado, cliente_id, categoria, motivo')
+            .eq('id', req.params.id)
+            .single();
+
+        if (!ticket) return res.status(404).json({ error: 'Ticket no encontrado' });
+        if (!['pendiente'].includes(ticket.estado))
+            return res.status(400).json({ error: 'Este ticket ya no está disponible' });
+
+        // Verificar que no haya enviado cotización previa para este ticket
+        const { data: existente } = await supabase
+            .from('cotizaciones')
+            .select('id')
+            .eq('ticket_id', req.params.id)
+            .eq('tecnico_id', req.user.id)
+            .eq('estado', 'pendiente')
+            .single();
+
+        if (existente) return res.status(400).json({ error: 'Ya enviaste una cotización para este ticket' });
+
+        // Crear cotización
+        const { data: cotizacion, error } = await supabase
+            .from('cotizaciones')
+            .insert({
+                ticket_id:   req.params.id,
+                tecnico_id:  req.user.id,
+                cliente_id:  ticket.cliente_id,
+                precio:      parseFloat(precio),
+                descripcion: descripcion.trim()
+            })
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        // Cambiar estado del ticket a 'cotizando'
+        await supabase.from('tickets')
+            .update({ estado: 'cotizando', tecnico_asignado: req.user.id })
+            .eq('id', req.params.id);
+
+        // Notificar al cliente
+        const { data: tec } = await supabase
+            .from('tecnicos').select('nombre').eq('id', req.user.id).single();
+
+        const notificationService = require('../services/notificationService');
+        notificationService.notificarClienteConTecnico(
+            ticket.cliente_id, 'cotizacion', ticket, tec?.nombre || 'El técnico'
+        ).catch(() => {});
+
+        // Email al cliente
+        try {
+            const emailService = require('../services/emailService');
+            const { data: cliente } = await supabase
+                .from('companias').select('email, nombre_contacto').eq('id', ticket.cliente_id).single();
+            if (cliente?.email) {
+                emailService.enviarCotizacion({
+                    clienteNombre: cliente.nombre_contacto,
+                    clienteEmail:  cliente.email,
+                    tecnicoNombre: tec?.nombre || 'Técnico',
+                    motivo:        ticket.motivo,
+                    precio:        parseFloat(precio),
+                    descripcion:   descripcion.trim(),
+                    cotizacionId:  cotizacion.id
+                }).catch(() => {});
+            }
+        } catch {}
+
+        res.json({ success: true, cotizacion });
+    } catch (err) {
+        console.error('[COTIZAR]', err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── Cotizaciones: ver las del técnico ─────────────────────────
+router.get('/cotizaciones', async (req, res) => {
+    try {
+        const { data } = await supabase
+            .from('cotizaciones')
+            .select('*, tickets(motivo, categoria, propiedades(direccion))')
+            .eq('tecnico_id', req.user.id)
+            .order('created_at', { ascending: false })
+            .limit(50);
+        res.json({ success: true, cotizaciones: data || [] });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

@@ -53,19 +53,6 @@ router.post('/tickets', upload.single('foto'), validate(schemas.crearTicket), as
     try {
         const { propiedad_id, categoria, motivo, descripcion } = req.body;
 
-        // ── Verificar ownership de la propiedad ───────────────
-        const { data: propCheck } = await supabase
-            .from('propiedades')
-            .select('id')
-            .eq('id', propiedad_id)
-            .eq('compania_id', req.user.id)
-            .is('deleted_at', null)
-            .single();
-
-        if (!propCheck) {
-            return res.status(403).json({ error: 'No tienes permiso para crear tickets en esta propiedad' });
-        }
-
         // ── Verificar límite de tickets del plan ──────────────
         const limitCheck = await checkTicketLimit(req.user.id);
         if (!limitCheck.allowed) {
@@ -427,6 +414,124 @@ router.delete('/cuenta', async (req, res) => {
         res.clearCookie('jwt');
         res.json({ success: true });
     } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+
+// ── Cotizaciones: ver las del ticket ─────────────────────────
+router.get('/tickets/:id/cotizaciones', async (req, res) => {
+    try {
+        // Verificar ownership del ticket
+        const { data: ticket } = await supabase
+            .from('tickets').select('id').eq('id', req.params.id).eq('cliente_id', req.user.id).single();
+        if (!ticket) return res.status(403).json({ error: 'No autorizado' });
+
+        const { data } = await supabase
+            .from('cotizaciones')
+            .select('*, tecnicos:tecnico_id(nombre, especialidad)')
+            .eq('ticket_id', req.params.id)
+            .order('created_at', { ascending: false });
+
+        res.json({ success: true, cotizaciones: data || [] });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── Cotizaciones: aprobar ─────────────────────────────────────
+router.post('/cotizaciones/:id/aprobar', async (req, res) => {
+    try {
+        // Verificar que la cotización pertenece a este cliente
+        const { data: cot } = await supabase
+            .from('cotizaciones')
+            .select('*, tickets(id, motivo)')
+            .eq('id', req.params.id)
+            .eq('cliente_id', req.user.id)
+            .eq('estado', 'pendiente')
+            .single();
+
+        if (!cot) return res.status(404).json({ error: 'Cotización no encontrada' });
+
+        // Aprobar cotización y activar ticket
+        await supabase.from('cotizaciones')
+            .update({ estado: 'aprobada', respondida_at: new Date().toISOString() })
+            .eq('id', req.params.id);
+
+        // Rechazar automáticamente otras cotizaciones del mismo ticket
+        await supabase.from('cotizaciones')
+            .update({ estado: 'rechazada', motivo_rechazo: 'Cliente aprobó otra cotización' })
+            .eq('ticket_id', cot.ticket_id)
+            .neq('id', req.params.id)
+            .eq('estado', 'pendiente');
+
+        // Pasar ticket a en_proceso
+        await supabase.from('tickets')
+            .update({ estado: 'en_proceso', tecnico_asignado: cot.tecnico_id })
+            .eq('id', cot.ticket_id);
+
+        // Notificar al técnico
+        const notificationService = require('../services/notificationService');
+        const { data: tec } = await supabase
+            .from('tecnicos').select('push_subscription, nombre').eq('id', cot.tecnico_id).single();
+
+        if (tec?.push_subscription) {
+            const webpush = require('web-push');
+            webpush.setVapidDetails('mailto:admin@propertypulse.com',
+                process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY);
+            webpush.sendNotification(JSON.parse(tec.push_subscription), JSON.stringify({
+                title: '✅ Cotización aprobada',
+                body:  `El cliente aprobó tu cotización para: ${cot.tickets?.motivo}`,
+                url:   '/tecnico/dashboard'
+            })).catch(() => {});
+        }
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('[APROBAR COT]', err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── Cotizaciones: rechazar ────────────────────────────────────
+router.post('/cotizaciones/:id/rechazar', async (req, res) => {
+    try {
+        const { motivo } = req.body;
+
+        const { data: cot } = await supabase
+            .from('cotizaciones')
+            .select('*, tickets(id, motivo)')
+            .eq('id', req.params.id)
+            .eq('cliente_id', req.user.id)
+            .eq('estado', 'pendiente')
+            .single();
+
+        if (!cot) return res.status(404).json({ error: 'Cotización no encontrada' });
+
+        // Rechazar cotización
+        await supabase.from('cotizaciones')
+            .update({
+                estado: 'rechazada',
+                motivo_rechazo: motivo || 'Sin motivo',
+                respondida_at:  new Date().toISOString()
+            })
+            .eq('id', req.params.id);
+
+        // Si no hay más cotizaciones pendientes, regresar ticket a pendiente
+        const { count } = await supabase.from('cotizaciones')
+            .select('*', { count: 'exact', head: true })
+            .eq('ticket_id', cot.ticket_id)
+            .eq('estado', 'pendiente');
+
+        if (!count || count === 0) {
+            await supabase.from('tickets')
+                .update({ estado: 'pendiente', tecnico_asignado: null })
+                .eq('id', cot.ticket_id);
+        }
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('[RECHAZAR COT]', err.message);
         res.status(500).json({ error: err.message });
     }
 });

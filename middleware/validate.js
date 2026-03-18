@@ -146,6 +146,11 @@ const schemas = {
         telefono:     { required: true, type: 'string', minLength: 7, maxLength: 20 },
         especialidad: { required: true, type: 'string', minLength: 2, maxLength: 100 },
     },
+
+    cotizacion: {
+        precio:      { required: true,  min: 1, max: 99999 },
+        descripcion: { required: true,  type: 'string', minLength: 5, maxLength: 1000 },
+    },
 };
 
 module.exports = { validate, schemas };

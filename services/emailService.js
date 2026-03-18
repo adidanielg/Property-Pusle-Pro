@@ -73,7 +73,7 @@ const emailService = {
     </a>
 
     <p style="color:#55557a;font-size:.78rem;text-align:center;margin:0">
-      ¿Preguntas? Escríbenos a <a href="mailto:support@propertypulse.net" style="color:#7c6dfa">support@propertypulse.net</a>
+      ¿Preguntas? Escríbenos a <a href="mailto:support@propertypulse.app" style="color:#7c6dfa">support@propertypulse.app</a>
     </p>
   </div>
 
@@ -245,6 +245,56 @@ const emailService = {
             console.log(`[EMAIL] Ticket notificado al técnico ${tecnicoEmail}`);
         } catch (err) {
             console.error('[EMAIL] Error notificación técnico:', err.message);
+        }
+    },
+
+
+    // ── 6. Cotización al cliente ──────────────────────────────
+    async enviarCotizacion({ clienteNombre, clienteEmail, tecnicoNombre, motivo, precio, descripcion, cotizacionId }) {
+        try {
+            const dashUrl = `${APP_URL}/cliente/dashboard`;
+            await resend.emails.send({
+                from:    FROM,
+                to:      clienteEmail,
+                subject: `💰 Nueva cotización para: ${motivo} — PropertyPulse`,
+                html: `
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#08071a;font-family:system-ui,-apple-system,sans-serif">
+<div style="max-width:560px;margin:0 auto;padding:32px 16px">
+  <div style="text-align:center;margin-bottom:28px">
+    <span style="font-size:1.4rem;font-weight:800;color:#fff">Property<span style="color:#7c6dfa">Pulse</span></span>
+  </div>
+  <div style="background:#0f0d2a;border:1px solid #2a2560;border-radius:16px;padding:32px">
+    <div style="font-size:2rem;margin-bottom:8px">💰</div>
+    <h1 style="color:#eeeeff;font-size:1.3rem;font-weight:700;margin:0 0 8px">Nueva cotización recibida</h1>
+    <p style="color:#9490c8;font-size:.9rem;margin:0 0 24px">Hola ${clienteNombre}, ${tecnicoNombre} envió una cotización para tu solicitud.</p>
+
+    <div style="background:#16133a;border:1px solid #2a2560;border-radius:10px;padding:20px;margin-bottom:20px">
+      <div style="font-size:.75rem;color:#9490c8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Solicitud</div>
+      <div style="color:#eeeeff;font-weight:600;margin-bottom:16px">${motivo}</div>
+      <div style="font-size:.75rem;color:#9490c8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Técnico</div>
+      <div style="color:#eeeeff;font-weight:600;margin-bottom:16px">${tecnicoNombre}</div>
+      <div style="font-size:.75rem;color:#9490c8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Descripción del trabajo</div>
+      <div style="color:#9490c8;font-size:.875rem;margin-bottom:16px">${descripcion}</div>
+      <div style="font-size:.75rem;color:#9490c8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Precio cotizado</div>
+      <div style="color:#7c6dfa;font-size:1.8rem;font-weight:800">$${precio.toFixed(2)}</div>
+    </div>
+
+    <a href="${dashUrl}" style="display:block;background:#7c6dfa;color:#fff;text-decoration:none;text-align:center;padding:14px;border-radius:10px;font-weight:700;font-size:.95rem;margin-bottom:12px">
+      Ver cotización en mi panel →
+    </a>
+    <p style="color:#55557a;font-size:.78rem;text-align:center;margin:0">Tienes 48 horas para aprobar o rechazar esta cotización.</p>
+  </div>
+  <p style="color:#55557a;font-size:.75rem;text-align:center;margin-top:24px">© 2026 PropertyPulse · <a href="${APP_URL}/privacy" style="color:#55557a">Privacy</a></p>
+</div>
+</body>
+</html>`
+            });
+            console.log(`[EMAIL] Cotización enviada a ${clienteEmail}`);
+        } catch (err) {
+            console.error('[EMAIL] Error cotización:', err.message);
         }
     },
 
