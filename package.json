@@ -24,7 +24,7 @@
     "stripe": "^20.4.1",
     "web-push": "^3.6.7",
     "xss": "^1.0.15",
-    "html-pdf-node": "^1.0.8"
+    "pdfkit": "^0.14.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"

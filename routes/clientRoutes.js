@@ -580,15 +580,13 @@ router.get('/historial', async (req, res) => {
     }
 });
 
-
-// ── Reporte PDF mensual ───────────────────────────────────────
+module.exports = router;// ── Reporte PDF mensual ───────────────────────────────────────
 router.get('/reporte-pdf', async (req, res) => {
     try {
         const id  = req.user.id;
-        const mes = req.query.mes || new Date().getMonth() + 1;
-        const año = req.query.año || new Date().getFullYear();
+        const mes = parseInt(req.query.mes) || new Date().getMonth() + 1;
+        const año = parseInt(req.query.año) || new Date().getFullYear();
 
-        // Rango del mes
         const inicio = new Date(año, mes - 1, 1).toISOString();
         const fin    = new Date(año, mes, 0, 23, 59, 59).toISOString();
 
@@ -614,135 +612,149 @@ router.get('/reporte-pdf', async (req, res) => {
                        'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
         const nombreMes = meses[mes - 1];
 
-        const completados = (tickets || []).filter(t => t.estado === 'completado').length;
-        const pendientes  = (tickets || []).filter(t => t.estado === 'pendiente').length;
-        const enProceso   = (tickets || []).filter(t => t.estado === 'en_proceso').length;
+        const lista       = tickets || [];
+        const completados = lista.filter(t => t.estado === 'completado').length;
+        const pendientes  = lista.filter(t => t.estado === 'pendiente').length;
+        const enProceso   = lista.filter(t => t.estado === 'en_proceso').length;
 
-        const estadoColor = {
-            pendiente:  '#f59e0b',
-            en_proceso: '#3b82f6',
-            completado: '#10b981',
-            cancelado:  '#6b7280'
-        };
-
-        const estadoLabel = {
-            pendiente:  'Pendiente',
-            en_proceso: 'En proceso',
-            completado: 'Completado',
-            cancelado:  'Cancelado'
-        };
-
-        const ticketRows = (tickets || []).map(t => `
-        <tr>
-            <td>${t.motivo}</td>
-            <td>${t.categoria || '—'}</td>
-            <td>${t.propiedades?.direccion || '—'}</td>
-            <td>${t.tecnicos?.nombre || '—'}</td>
-            <td><span style="color:${estadoColor[t.estado]};font-weight:600">${estadoLabel[t.estado] || t.estado}</span></td>
-            <td>${new Date(t.created_at).toLocaleDateString('es', { day: 'numeric', month: 'short' })}</td>
-        </tr>`).join('');
-
-        const html = `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #1a1a2e; background: #fff; padding: 40px; font-size: 13px; }
-  .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; padding-bottom: 20px; border-bottom: 2px solid #7c6dfa; }
-  .logo { font-size: 22px; font-weight: 800; color: #1a1a2e; }
-  .logo span { color: #7c6dfa; }
-  .header-right { text-align: right; color: #666; font-size: 12px; line-height: 1.6; }
-  .title { font-size: 18px; font-weight: 700; margin-bottom: 4px; color: #1a1a2e; }
-  .subtitle { font-size: 12px; color: #888; margin-bottom: 28px; }
-  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
-  .stat { background: #f8f7ff; border: 1px solid #e8e6ff; border-radius: 10px; padding: 14px 16px; }
-  .stat-num { font-size: 28px; font-weight: 800; letter-spacing: -1px; color: #7c6dfa; }
-  .stat-label { font-size: 11px; color: #888; margin-top: 2px; text-transform: uppercase; letter-spacing: .04em; }
-  .section-title { font-size: 13px; font-weight: 700; color: #1a1a2e; margin-bottom: 10px; text-transform: uppercase; letter-spacing: .05em; }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  th { background: #7c6dfa; color: #fff; padding: 9px 12px; text-align: left; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
-  th:first-child { border-radius: 6px 0 0 6px; }
-  th:last-child  { border-radius: 0 6px 6px 0; }
-  td { padding: 9px 12px; border-bottom: 1px solid #f0f0f8; vertical-align: top; }
-  tr:last-child td { border-bottom: none; }
-  tr:nth-child(even) td { background: #fafaf8; }
-  .footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #eee; text-align: center; font-size: 11px; color: #aaa; }
-  .empty { text-align: center; padding: 32px; color: #aaa; font-style: italic; }
-</style>
-</head>
-<body>
-  <div class="header">
-    <div>
-      <div class="logo">Property<span>Pulse</span></div>
-      <div style="font-size:11px;color:#888;margin-top:4px">getpropertypulse.net</div>
-    </div>
-    <div class="header-right">
-      <div style="font-weight:700;color:#1a1a2e">${nombreCliente}</div>
-      <div>${clienteInfo?.email || ''}</div>
-      <div>Reporte generado: ${new Date().toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
-    </div>
-  </div>
-
-  <div class="title">Reporte Mensual — ${nombreMes} ${año}</div>
-  <div class="subtitle">Resumen de tickets de mantenimiento del período</div>
-
-  <div class="stats">
-    <div class="stat">
-      <div class="stat-num">${(tickets || []).length}</div>
-      <div class="stat-label">Total tickets</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num" style="color:#10b981">${completados}</div>
-      <div class="stat-label">Completados</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num" style="color:#3b82f6">${enProceso}</div>
-      <div class="stat-label">En proceso</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num" style="color:#f59e0b">${pendientes}</div>
-      <div class="stat-label">Pendientes</div>
-    </div>
-  </div>
-
-  <div class="section-title">Detalle de tickets</div>
-  ${(tickets || []).length === 0 ? '<div class="empty">No hay tickets para este período.</div>' : `
-  <table>
-    <thead>
-      <tr>
-        <th>Motivo</th>
-        <th>Categoría</th>
-        <th>Dirección</th>
-        <th>Técnico</th>
-        <th>Estado</th>
-        <th>Fecha</th>
-      </tr>
-    </thead>
-    <tbody>${ticketRows}</tbody>
-  </table>`}
-
-  <div class="footer">
-    PropertyPulse · Reporte ${nombreMes} ${año} · ${nombreCliente} · Generado automáticamente
-  </div>
-</body>
-</html>`;
-
-        // Generar PDF con html-pdf-node
-        const htmlPdf = require('html-pdf-node');
-        const options = { format: 'Letter', margin: { top: '0', bottom: '0', left: '0', right: '0' } };
-        const file    = { content: html };
-
-        const pdfBuffer = await htmlPdf.generatePdf(file, options);
+        // Generar PDF con pdfkit
+        const PDFDocument = require('pdfkit');
+        const doc = new PDFDocument({ margin: 50, size: 'LETTER' });
 
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename="reporte-${nombreMes}-${año}.pdf"`);
-        res.send(pdfBuffer);
+        doc.pipe(res);
+
+        // ── Header ──────────────────────────────────────────
+        doc.fontSize(22).font('Helvetica-Bold').fillColor('#7c6dfa')
+           .text('Property', 50, 50, { continued: true })
+           .fillColor('#1a1a2e').text('Pulse');
+
+        doc.fontSize(10).font('Helvetica').fillColor('#888888')
+           .text('getpropertypulse.net', 50, 78);
+
+        // Info cliente (derecha)
+        doc.fontSize(10).font('Helvetica-Bold').fillColor('#1a1a2e')
+           .text(nombreCliente, 400, 50, { align: 'right', width: 145 });
+        doc.fontSize(9).font('Helvetica').fillColor('#888888')
+           .text(clienteInfo?.email || '', 400, 65, { align: 'right', width: 145 })
+           .text(`Generado: ${new Date().toLocaleDateString('es')}`, 400, 78, { align: 'right', width: 145 });
+
+        // Línea separadora
+        doc.moveTo(50, 100).lineTo(562, 100).strokeColor('#7c6dfa').lineWidth(2).stroke();
+
+        // ── Título ──────────────────────────────────────────
+        doc.moveDown(1.5);
+        doc.fontSize(18).font('Helvetica-Bold').fillColor('#1a1a2e')
+           .text(`Reporte Mensual — ${nombreMes} ${año}`, 50);
+        doc.fontSize(10).font('Helvetica').fillColor('#888888')
+           .text('Resumen de tickets de mantenimiento del período');
+
+        doc.moveDown(1.5);
+
+        // ── Stats ────────────────────────────────────────────
+        const statY = doc.y;
+        const statW = 115;
+        const statGap = 10;
+
+        const stats = [
+            { label: 'Total tickets', value: lista.length,  color: '#7c6dfa' },
+            { label: 'Completados',   value: completados,   color: '#10b981' },
+            { label: 'En proceso',    value: enProceso,     color: '#3b82f6' },
+            { label: 'Pendientes',    value: pendientes,    color: '#f59e0b' }
+        ];
+
+        stats.forEach((s, i) => {
+            const x = 50 + i * (statW + statGap);
+            doc.roundedRect(x, statY, statW, 65, 8)
+               .fillColor('#f8f7ff').fill()
+               .roundedRect(x, statY, statW, 65, 8)
+               .strokeColor('#e8e6ff').lineWidth(1).stroke();
+            doc.fontSize(28).font('Helvetica-Bold').fillColor(s.color)
+               .text(String(s.value), x, statY + 10, { width: statW, align: 'center' });
+            doc.fontSize(9).font('Helvetica').fillColor('#888888')
+               .text(s.label, x, statY + 44, { width: statW, align: 'center' });
+        });
+
+        doc.moveDown(5.5);
+
+        // ── Tabla ────────────────────────────────────────────
+        doc.fontSize(11).font('Helvetica-Bold').fillColor('#1a1a2e')
+           .text('DETALLE DE TICKETS', 50);
+        doc.moveDown(0.4);
+
+        if (lista.length === 0) {
+            doc.fontSize(10).font('Helvetica').fillColor('#aaaaaa')
+               .text('No hay tickets para este período.', 50, doc.y + 10, { align: 'center', width: 512 });
+        } else {
+            const tableTop = doc.y;
+            const cols = [
+                { label: 'Motivo',     x: 50,  w: 150 },
+                { label: 'Categoría',  x: 205, w: 110 },
+                { label: 'Dirección',  x: 320, w: 120 },
+                { label: 'Técnico',    x: 445, w: 80  },
+                { label: 'Estado',     x: 490, w: 72  }
+            ];
+
+            // Header de tabla
+            doc.roundedRect(50, tableTop, 512, 22, 4).fillColor('#7c6dfa').fill();
+            cols.forEach(col => {
+                doc.fontSize(8).font('Helvetica-Bold').fillColor('#ffffff')
+                   .text(col.label, col.x, tableTop + 7, { width: col.w });
+            });
+
+            const estadoColor = {
+                pendiente: '#f59e0b', en_proceso: '#3b82f6',
+                completado: '#10b981', cancelado: '#6b7280'
+            };
+            const estadoLabel = {
+                pendiente: 'Pendiente', en_proceso: 'En proceso',
+                completado: 'Completado', cancelado: 'Cancelado'
+            };
+
+            lista.forEach((t, i) => {
+                const rowY  = tableTop + 22 + i * 24;
+                const bgCol = i % 2 === 0 ? '#ffffff' : '#fafaf8';
+
+                // Nueva página si es necesario
+                if (rowY > 700) { doc.addPage(); }
+
+                doc.rect(50, rowY, 512, 24).fillColor(bgCol).fill();
+
+                const rowData = [
+                    { x: 50,  w: 150, text: (t.motivo || '').substring(0, 22), color: '#1a1a2e', bold: false },
+                    { x: 205, w: 110, text: (t.categoria || '—').substring(0, 16), color: '#555', bold: false },
+                    { x: 320, w: 120, text: (t.propiedades?.direccion || '—').substring(0, 18), color: '#555', bold: false },
+                    { x: 445, w: 80,  text: (t.tecnicos?.nombre || '—').substring(0, 11), color: '#555', bold: false },
+                    { x: 490, w: 72,  text: estadoLabel[t.estado] || t.estado, color: estadoColor[t.estado] || '#555', bold: true }
+                ];
+
+                rowData.forEach(cell => {
+                    doc.fontSize(8)
+                       .font(cell.bold ? 'Helvetica-Bold' : 'Helvetica')
+                       .fillColor(cell.color)
+                       .text(cell.text, cell.x, rowY + 8, { width: cell.w });
+                });
+
+                // Línea inferior fila
+                doc.moveTo(50, rowY + 24).lineTo(562, rowY + 24)
+                   .strokeColor('#f0f0f8').lineWidth(0.5).stroke();
+            });
+        }
+
+        // ── Footer ───────────────────────────────────────────
+        doc.fontSize(9).font('Helvetica').fillColor('#bbbbbb')
+           .text(
+               `PropertyPulse · Reporte ${nombreMes} ${año} · ${nombreCliente} · Generado automáticamente`,
+               50, 730, { align: 'center', width: 512 }
+           );
+
+        doc.end();
 
     } catch (err) {
         console.error('[PDF]', err.message);
-        res.status(500).json({ error: 'Error generando el reporte' });
+        if (!res.headersSent) res.status(500).json({ error: 'Error generando el reporte' });
     }
 });
 
-module.exports = router;
+
