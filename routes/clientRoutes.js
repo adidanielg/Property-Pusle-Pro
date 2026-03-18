@@ -16,31 +16,62 @@ router.use(requireAuth(['cliente']));
 router.get('/dashboard', async (req, res) => {
     try {
         const id = req.user.id;
-        const [{ data: propiedades }, { data: tickets }, { data: misCalificaciones }] = await Promise.all([
-            supabase.from('propiedades')
-                .select('*')
-                .eq('compania_id', id)
-                .is('deleted_at', null)
-                .order('created_at', { ascending: false }),
-            supabase.from('tickets')
-                .select('*, propiedades(direccion), tecnicos:tecnico_asignado(nombre)')
-                .eq('cliente_id', id)
-                .is('deleted_at', null)
-                .order('created_at', { ascending: false }),
-            supabase.from('calificaciones')
-                .select('ticket_id')
-                .eq('cliente_id', id)
+
+        // Tipo de cliente
+        const { data: clienteInfo } = await supabase
+            .from('companias')
+            .select('tipo_cliente, nombre_empresa, nombre_contacto')
+            .eq('id', id).single();
+        const tipoCliente = clienteInfo?.tipo_cliente || 'Individual';
+
+        const [{ data: propiedades }, { data: tickets }, { data: misCalificaciones }, { data: todosTickets }] = await Promise.all([
+            supabase.from('propiedades').select('*').eq('compania_id', id).is('deleted_at', null).order('created_at', { ascending: false }),
+            supabase.from('tickets').select('*, propiedades(direccion), tecnicos:tecnico_asignado(nombre)').eq('cliente_id', id).neq('estado','cancelado').is('deleted_at', null).order('created_at', { ascending: false }),
+            supabase.from('calificaciones').select('ticket_id').eq('cliente_id', id),
+            supabase.from('tickets').select('id, estado, categoria, created_at, tecnicos:tecnico_asignado(nombre)').eq('cliente_id', id).is('deleted_at', null).order('created_at', { ascending: false }).limit(200)
         ]);
 
-        // IDs de tickets ya calificados
         const ticketsCalificados = new Set((misCalificaciones || []).map(c => c.ticket_id));
+        const completados = (todosTickets || []).filter(t => t.estado === 'completado');
+
+        // Técnico favorito
+        const tecCount = {};
+        completados.forEach(t => { const n = t.tecnicos?.nombre; if (n) tecCount[n] = (tecCount[n] || 0) + 1; });
+        const tecFavorito = Object.keys(tecCount).length > 0
+            ? Object.entries(tecCount).sort((a, b) => b[1] - a[1])[0][0] : null;
+
+        // Categoría más frecuente
+        const catCount = {};
+        (todosTickets || []).forEach(t => { if (t.categoria) catCount[t.categoria] = (catCount[t.categoria] || 0) + 1; });
+        const categoriaMasFrecuente = Object.keys(catCount).length > 0
+            ? Object.entries(catCount).sort((a, b) => b[1] - a[1])[0][0] : null;
+
+        // Tickets por mes (últimos 6 meses)
+        const ticketsPorMes = {};
+        const hoy = new Date();
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
+            const key = d.toLocaleDateString('es', { month: 'short', year: '2-digit' });
+            ticketsPorMes[key] = 0;
+        }
+        (todosTickets || []).forEach(t => {
+            const d = new Date(t.created_at);
+            const key = d.toLocaleDateString('es', { month: 'short', year: '2-digit' });
+            if (Object.prototype.hasOwnProperty.call(ticketsPorMes, key)) ticketsPorMes[key]++;
+        });
 
         res.render('dashboardCliente.html', {
-            title:              'Mi Panel | PropertyPulse',
-            cliente:            req.user,
-            propiedades:        propiedades        || [],
-            tickets:            tickets            || [],
-            ticketsCalificados
+            title:       'Mi Panel | PropertyPulse',
+            cliente:     { ...req.user, tipo_cliente: tipoCliente, nombre_empresa: clienteInfo?.nombre_empresa },
+            propiedades: propiedades || [],
+            tickets:     tickets     || [],
+            ticketsCalificados,
+            metricas: {
+                totalCompletados:      completados.length,
+                tecFavorito,
+                categoriaMasFrecuente,
+                ticketsPorMes:         JSON.stringify(ticketsPorMes)
+            }
         });
     } catch (err) {
         console.error('[CLIENT DASHBOARD]', err);
@@ -580,7 +611,8 @@ router.get('/historial', async (req, res) => {
     }
 });
 
-module.exports = router;// ── Reporte PDF mensual ───────────────────────────────────────
+
+// ── Reporte PDF mensual ───────────────────────────────────────
 router.get('/reporte-pdf', async (req, res) => {
     try {
         const id  = req.user.id;
@@ -591,8 +623,7 @@ router.get('/reporte-pdf', async (req, res) => {
         const fin    = new Date(año, mes, 0, 23, 59, 59).toISOString();
 
         const { data: clienteInfo } = await supabase
-            .from('companias')
-            .select('nombre_contacto, nombre_empresa, email, tipo_cliente')
+            .from('companias').select('nombre_contacto, nombre_empresa, email, tipo_cliente')
             .eq('id', id).single();
 
         const { data: tickets } = await supabase
@@ -605,19 +636,14 @@ router.get('/reporte-pdf', async (req, res) => {
             .order('created_at', { ascending: false });
 
         const nombreCliente = clienteInfo?.tipo_cliente === 'Compania'
-            ? clienteInfo.nombre_empresa
-            : clienteInfo?.nombre_contacto || 'Cliente';
-
-        const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
-                       'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+            ? clienteInfo.nombre_empresa : clienteInfo?.nombre_contacto || 'Cliente';
+        const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
         const nombreMes = meses[mes - 1];
-
-        const lista       = tickets || [];
+        const lista = tickets || [];
         const completados = lista.filter(t => t.estado === 'completado').length;
         const pendientes  = lista.filter(t => t.estado === 'pendiente').length;
         const enProceso   = lista.filter(t => t.estado === 'en_proceso').length;
 
-        // Generar PDF con pdfkit
         const PDFDocument = require('pdfkit');
         const doc = new PDFDocument({ margin: 50, size: 'LETTER' });
 
@@ -625,136 +651,85 @@ router.get('/reporte-pdf', async (req, res) => {
         res.setHeader('Content-Disposition', `attachment; filename="reporte-${nombreMes}-${año}.pdf"`);
         doc.pipe(res);
 
-        // ── Header ──────────────────────────────────────────
-        doc.fontSize(22).font('Helvetica-Bold').fillColor('#7c6dfa')
-           .text('Property', 50, 50, { continued: true })
-           .fillColor('#1a1a2e').text('Pulse');
-
-        doc.fontSize(10).font('Helvetica').fillColor('#888888')
-           .text('getpropertypulse.net', 50, 78);
-
-        // Info cliente (derecha)
-        doc.fontSize(10).font('Helvetica-Bold').fillColor('#1a1a2e')
-           .text(nombreCliente, 400, 50, { align: 'right', width: 145 });
+        // Header
+        doc.fontSize(22).font('Helvetica-Bold').fillColor('#7c6dfa').text('Property', 50, 50, { continued: true }).fillColor('#1a1a2e').text('Pulse');
+        doc.fontSize(10).font('Helvetica').fillColor('#888888').text('getpropertypulse.net', 50, 78);
+        doc.fontSize(10).font('Helvetica-Bold').fillColor('#1a1a2e').text(nombreCliente, 400, 50, { align: 'right', width: 145 });
         doc.fontSize(9).font('Helvetica').fillColor('#888888')
            .text(clienteInfo?.email || '', 400, 65, { align: 'right', width: 145 })
            .text(`Generado: ${new Date().toLocaleDateString('es')}`, 400, 78, { align: 'right', width: 145 });
-
-        // Línea separadora
         doc.moveTo(50, 100).lineTo(562, 100).strokeColor('#7c6dfa').lineWidth(2).stroke();
 
-        // ── Título ──────────────────────────────────────────
         doc.moveDown(1.5);
-        doc.fontSize(18).font('Helvetica-Bold').fillColor('#1a1a2e')
-           .text(`Reporte Mensual — ${nombreMes} ${año}`, 50);
-        doc.fontSize(10).font('Helvetica').fillColor('#888888')
-           .text('Resumen de tickets de mantenimiento del período');
-
+        doc.fontSize(18).font('Helvetica-Bold').fillColor('#1a1a2e').text(`Reporte Mensual — ${nombreMes} ${año}`, 50);
+        doc.fontSize(10).font('Helvetica').fillColor('#888888').text('Resumen de tickets de mantenimiento del período');
         doc.moveDown(1.5);
 
-        // ── Stats ────────────────────────────────────────────
+        // Stats
         const statY = doc.y;
-        const statW = 115;
-        const statGap = 10;
-
         const stats = [
-            { label: 'Total tickets', value: lista.length,  color: '#7c6dfa' },
-            { label: 'Completados',   value: completados,   color: '#10b981' },
-            { label: 'En proceso',    value: enProceso,     color: '#3b82f6' },
-            { label: 'Pendientes',    value: pendientes,    color: '#f59e0b' }
+            { label: 'Total tickets', value: lista.length, color: '#7c6dfa' },
+            { label: 'Completados',   value: completados,  color: '#10b981' },
+            { label: 'En proceso',    value: enProceso,    color: '#3b82f6' },
+            { label: 'Pendientes',    value: pendientes,   color: '#f59e0b' }
         ];
-
         stats.forEach((s, i) => {
-            const x = 50 + i * (statW + statGap);
-            doc.roundedRect(x, statY, statW, 65, 8)
-               .fillColor('#f8f7ff').fill()
-               .roundedRect(x, statY, statW, 65, 8)
-               .strokeColor('#e8e6ff').lineWidth(1).stroke();
-            doc.fontSize(28).font('Helvetica-Bold').fillColor(s.color)
-               .text(String(s.value), x, statY + 10, { width: statW, align: 'center' });
-            doc.fontSize(9).font('Helvetica').fillColor('#888888')
-               .text(s.label, x, statY + 44, { width: statW, align: 'center' });
+            const x = 50 + i * 125;
+            doc.roundedRect(x, statY, 115, 65, 8).fillColor('#f8f7ff').fill()
+               .roundedRect(x, statY, 115, 65, 8).strokeColor('#e8e6ff').lineWidth(1).stroke();
+            doc.fontSize(28).font('Helvetica-Bold').fillColor(s.color).text(String(s.value), x, statY + 10, { width: 115, align: 'center' });
+            doc.fontSize(9).font('Helvetica').fillColor('#888888').text(s.label, x, statY + 44, { width: 115, align: 'center' });
         });
 
         doc.moveDown(5.5);
-
-        // ── Tabla ────────────────────────────────────────────
-        doc.fontSize(11).font('Helvetica-Bold').fillColor('#1a1a2e')
-           .text('DETALLE DE TICKETS', 50);
+        doc.fontSize(11).font('Helvetica-Bold').fillColor('#1a1a2e').text('DETALLE DE TICKETS', 50);
         doc.moveDown(0.4);
 
         if (lista.length === 0) {
-            doc.fontSize(10).font('Helvetica').fillColor('#aaaaaa')
-               .text('No hay tickets para este período.', 50, doc.y + 10, { align: 'center', width: 512 });
+            doc.fontSize(10).font('Helvetica').fillColor('#aaaaaa').text('No hay tickets para este período.', 50, doc.y + 10, { align: 'center', width: 512 });
         } else {
             const tableTop = doc.y;
             const cols = [
-                { label: 'Motivo',     x: 50,  w: 150 },
-                { label: 'Categoría',  x: 205, w: 110 },
-                { label: 'Dirección',  x: 320, w: 120 },
-                { label: 'Técnico',    x: 445, w: 80  },
-                { label: 'Estado',     x: 490, w: 72  }
+                { label: 'Motivo',    x: 50,  w: 145 },
+                { label: 'Categoría', x: 200, w: 110 },
+                { label: 'Técnico',   x: 315, w: 95  },
+                { label: 'Estado',    x: 415, w: 80  },
+                { label: 'Fecha',     x: 500, w: 62  }
             ];
-
-            // Header de tabla
             doc.roundedRect(50, tableTop, 512, 22, 4).fillColor('#7c6dfa').fill();
             cols.forEach(col => {
-                doc.fontSize(8).font('Helvetica-Bold').fillColor('#ffffff')
-                   .text(col.label, col.x, tableTop + 7, { width: col.w });
+                doc.fontSize(8).font('Helvetica-Bold').fillColor('#ffffff').text(col.label, col.x, tableTop + 7, { width: col.w });
             });
 
-            const estadoColor = {
-                pendiente: '#f59e0b', en_proceso: '#3b82f6',
-                completado: '#10b981', cancelado: '#6b7280'
-            };
-            const estadoLabel = {
-                pendiente: 'Pendiente', en_proceso: 'En proceso',
-                completado: 'Completado', cancelado: 'Cancelado'
-            };
+            const estadoColor = { pendiente:'#f59e0b', en_proceso:'#3b82f6', completado:'#10b981', cancelado:'#6b7280' };
+            const estadoLabel = { pendiente:'Pendiente', en_proceso:'En proceso', completado:'Completado', cancelado:'Cancelado' };
 
             lista.forEach((t, i) => {
-                const rowY  = tableTop + 22 + i * 24;
-                const bgCol = i % 2 === 0 ? '#ffffff' : '#fafaf8';
-
-                // Nueva página si es necesario
-                if (rowY > 700) { doc.addPage(); }
-
-                doc.rect(50, rowY, 512, 24).fillColor(bgCol).fill();
-
-                const rowData = [
-                    { x: 50,  w: 150, text: (t.motivo || '').substring(0, 22), color: '#1a1a2e', bold: false },
-                    { x: 205, w: 110, text: (t.categoria || '—').substring(0, 16), color: '#555', bold: false },
-                    { x: 320, w: 120, text: (t.propiedades?.direccion || '—').substring(0, 18), color: '#555', bold: false },
-                    { x: 445, w: 80,  text: (t.tecnicos?.nombre || '—').substring(0, 11), color: '#555', bold: false },
-                    { x: 490, w: 72,  text: estadoLabel[t.estado] || t.estado, color: estadoColor[t.estado] || '#555', bold: true }
-                ];
-
-                rowData.forEach(cell => {
-                    doc.fontSize(8)
-                       .font(cell.bold ? 'Helvetica-Bold' : 'Helvetica')
-                       .fillColor(cell.color)
-                       .text(cell.text, cell.x, rowY + 8, { width: cell.w });
+                const rowY = tableTop + 22 + i * 24;
+                if (rowY > 700) doc.addPage();
+                doc.rect(50, rowY, 512, 24).fillColor(i % 2 === 0 ? '#ffffff' : '#fafaf8').fill();
+                [
+                    { x: 50,  w: 145, text: (t.motivo||'').substring(0,22),                  color: '#1a1a2e', bold: false },
+                    { x: 200, w: 110, text: (t.categoria||'—').substring(0,16),               color: '#555555', bold: false },
+                    { x: 315, w: 95,  text: (t.tecnicos?.nombre||'—').substring(0,13),        color: '#555555', bold: false },
+                    { x: 415, w: 80,  text: estadoLabel[t.estado]||t.estado,                  color: estadoColor[t.estado]||'#555', bold: true },
+                    { x: 500, w: 62,  text: new Date(t.created_at).toLocaleDateString('es',{day:'numeric',month:'short'}), color: '#888888', bold: false }
+                ].forEach(cell => {
+                    doc.fontSize(8).font(cell.bold?'Helvetica-Bold':'Helvetica').fillColor(cell.color).text(cell.text, cell.x, rowY + 8, { width: cell.w });
                 });
-
-                // Línea inferior fila
-                doc.moveTo(50, rowY + 24).lineTo(562, rowY + 24)
-                   .strokeColor('#f0f0f8').lineWidth(0.5).stroke();
+                doc.moveTo(50, rowY+24).lineTo(562, rowY+24).strokeColor('#f0f0f8').lineWidth(0.5).stroke();
             });
         }
 
-        // ── Footer ───────────────────────────────────────────
         doc.fontSize(9).font('Helvetica').fillColor('#bbbbbb')
-           .text(
-               `PropertyPulse · Reporte ${nombreMes} ${año} · ${nombreCliente} · Generado automáticamente`,
-               50, 730, { align: 'center', width: 512 }
-           );
+           .text(`PropertyPulse · Reporte ${nombreMes} ${año} · ${nombreCliente}`, 50, 730, { align: 'center', width: 512 });
 
         doc.end();
 
     } catch (err) {
         console.error('[PDF]', err.message);
-        if (!res.headersSent) res.status(500).json({ error: 'Error generando el reporte' });
+        if (!res.headersSent) res.status(500).json({ error: 'Error generando el reporte: ' + err.message });
     }
 });
 
-
+module.exports = router;
