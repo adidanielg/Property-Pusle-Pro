@@ -1385,9 +1385,9 @@
 
     window.filtrarTecs = function(btn, esp) {
         document.querySelectorAll('.tec-pill').forEach(b => {
-            b.style.background = 'transparent';
+            b.style.background  = 'transparent';
             b.style.borderColor = 'var(--border-2)';
-            b.style.color = 'var(--text-2)';
+            b.style.color       = 'var(--text-2)';
         });
         btn.style.background   = 'var(--accent-soft)';
         btn.style.borderColor  = 'var(--accent)';
@@ -1401,14 +1401,14 @@
             grid.innerHTML = '<div style="color:var(--text-3);text-align:center;padding:2rem;grid-column:1/-1">No hay técnicos para esta especialidad.</div>';
             return;
         }
-        // Mostrar máximo 8
         const muestra = lista.slice(0, 8);
         grid.innerHTML = muestra.map(t => {
             const ini = t.nombre.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
             return `
             <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.25rem;transition:border-color .15s,transform .15s;cursor:pointer"
                  onmouseover="this.style.borderColor='var(--accent)';this.style.transform='translateY(-3px)'"
-                 onmouseout="this.style.borderColor='var(--border)';this.style.transform=''">
+                 onmouseout="this.style.borderColor='var(--border)';this.style.transform=''"
+                 onclick="window.verPerfilTec('${t.id}')">
                 <div style="display:flex;align-items:center;gap:.65rem;margin-bottom:.85rem">
                     <div style="width:40px;height:40px;border-radius:50%;background:rgba(124,109,250,.15);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:var(--accent);flex-shrink:0">${ini}</div>
                     <div>
@@ -1426,21 +1426,100 @@
                         <div style="font-size:.62rem;color:var(--text-3)">rating</div>
                     </div>
                 </div>
-                <span style="font-size:.65rem;font-weight:700;padding:.2rem .55rem;border-radius:99px;background:${!t.ocupado?'rgba(16,185,129,.15)':'rgba(255,255,255,.06)'};color:${!t.ocupado?'#34d399':'var(--text-3)'}">
+                <span style="font-size:.65rem;font-weight:700;padding:.2rem .55rem;border-radius:99px;background:${!t.ocupado?'rgba(124,109,250,.15)':'rgba(255,255,255,.06)'};color:${!t.ocupado?'var(--accent-2)':'var(--text-3)'}">
                     ${!t.ocupado?'● Disponible':'○ Ocupado'}
                 </span>
             </div>`;
         }).join('');
     }
 
-    // Cargar cuando la sección esté visible
+    window.verPerfilTec = async function(id) {
+        const t = tecLanding.find(t => t.id === id);
+        if (!t) return;
+
+        const ini = t.nombre.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+        const stars = t.promedio ? Math.round(parseFloat(t.promedio)) : 0;
+
+        let reseñasHtml = '<p style="color:var(--text-3);font-size:.82rem;text-align:center;padding:.75rem">Sin reseñas aún.</p>';
+        try {
+            const res  = await fetch('/pub/tecnicos/' + id + '/resenas');
+            const data = await res.json();
+            if (data.resenas?.length) {
+                reseñasHtml = data.resenas.map(r => `
+                <div style="padding:.7rem 0;border-bottom:1px solid rgba(255,255,255,.08)">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:.2rem">
+                        <span style="font-size:.82rem">${'⭐'.repeat(r.estrellas)}</span>
+                        <span style="font-size:.7rem;color:var(--text-3)">${new Date(r.created_at).toLocaleDateString('es',{month:'short',year:'numeric'})}</span>
+                    </div>
+                    ${r.comentario ? `<p style="font-size:.8rem;color:var(--text-2);margin:0">${r.comentario}</p>` : ''}
+                </div>`).join('');
+            }
+        } catch {}
+
+        document.getElementById('tecPerfilBody').innerHTML = `
+        <div style="text-align:center;margin-bottom:1.5rem">
+            <div style="width:64px;height:64px;border-radius:50%;background:rgba(124,109,250,.15);border:3px solid var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.2rem;color:var(--accent);margin:0 auto .85rem">${ini}</div>
+            <div style="font-weight:800;font-size:1.15rem;color:var(--text-1)">${t.nombre}</div>
+            <div style="font-size:.85rem;color:var(--text-3);margin:.25rem 0 .6rem">${t.especialidad}</div>
+            <span style="font-size:.7rem;font-weight:700;padding:.25rem .7rem;border-radius:99px;background:${!t.ocupado?'rgba(124,109,250,.15)':'rgba(255,255,255,.06)'};color:${!t.ocupado?'var(--accent-2)':'var(--text-3)'}">
+                ${!t.ocupado ? '● Disponible ahora' : '○ Ocupado'}
+            </span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.65rem;margin-bottom:1.5rem">
+            <div style="background:var(--surface-2);border-radius:10px;padding:.85rem;text-align:center">
+                <div style="font-size:1.5rem;font-weight:800;color:var(--accent-2)">${t.trabajos_completados||0}</div>
+                <div style="font-size:.68rem;color:var(--text-3);margin-top:.2rem">Trabajos</div>
+            </div>
+            <div style="background:var(--surface-2);border-radius:10px;padding:.85rem;text-align:center">
+                <div style="font-size:1.5rem;font-weight:800;color:#f5c842">${t.promedio?parseFloat(t.promedio).toFixed(1):'—'}</div>
+                <div style="font-size:.68rem;color:var(--text-3);margin-top:.2rem">Rating</div>
+            </div>
+            <div style="background:var(--surface-2);border-radius:10px;padding:.85rem;text-align:center">
+                <div style="font-size:1.5rem;font-weight:800;color:var(--text-1)">${t.totalCalif||0}</div>
+                <div style="font-size:.68rem;color:var(--text-3);margin-top:.2rem">Reseñas</div>
+            </div>
+        </div>
+
+        ${stars > 0 ? `<div style="text-align:center;font-size:.85rem;margin-bottom:1rem;color:#f5c842">${'⭐'.repeat(stars)} <span style="color:var(--text-2)">${t.totalCalif} reseña${t.totalCalif!==1?'s':''}</span></div>` : ''}
+
+        <div style="font-size:.75rem;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.65rem">Reseñas recientes</div>
+        <div style="max-height:180px;overflow-y:auto;margin-bottom:1.5rem">${reseñasHtml}</div>
+
+        <a href="/auth/register-cliente" style="display:block;background:var(--accent);color:#fff;text-align:center;padding:.9rem;border-radius:10px;font-weight:700;font-size:.95rem;text-decoration:none;transition:background .15s"
+           onmouseover="this.style.background='var(--accent-2)'"
+           onmouseout="this.style.background='var(--accent)'">
+            Contratar a través de PropertyPulse →
+        </a>`;
+
+        document.getElementById('tecPerfilModal').style.display = 'flex';
+    };
+
+    window.cerrarTecModal = function() {
+        document.getElementById('tecPerfilModal').style.display = 'none';
+    };
+
+    // Cerrar al click fuera
+    document.getElementById('tecPerfilModal').addEventListener('click', function(e) {
+        if (e.target === this) window.cerrarTecModal();
+    });
+
+    // Cargar cuando visible
     const obs = new IntersectionObserver(entries => {
         if (entries[0].isIntersecting) { cargarTecLanding(); obs.disconnect(); }
     }, { threshold: 0.1 });
     const sec = document.getElementById('tecLandingGrid');
     if (sec) obs.observe(sec);
-})();
-</script>
+})();>
+
+
+<!-- Modal: Perfil técnico -->
+<div id="tecPerfilModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);z-index:9999;align-items:center;justify-content:center;padding:1rem">
+    <div style="background:var(--bg);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:2rem;width:100%;max-width:400px;max-height:85vh;overflow-y:auto;position:relative">
+        <button onclick="cerrarTecModal()" style="position:absolute;top:1rem;right:1rem;background:rgba(255,255,255,.08);border:none;color:var(--text-2);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center">✕</button>
+        <div id="tecPerfilBody"></div>
+    </div>
+</div>
 
 </body>
 </html>
