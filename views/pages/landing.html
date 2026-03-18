@@ -1368,8 +1368,7 @@
 <script src="/js/i18n.js"></script>
 
 <script>
-(function() {
-    let tecLanding = [];
+let tecLanding = [];
 
     async function cargarTecLanding() {
         try {
@@ -1383,7 +1382,7 @@
         }
     }
 
-    window.filtrarTecs = function(btn, esp) {
+    function filtrarTecs(btn, esp) {
         document.querySelectorAll('.tec-pill').forEach(b => {
             b.style.background  = 'transparent';
             b.style.borderColor = 'var(--border-2)';
@@ -1433,7 +1432,7 @@
         }).join('');
     }
 
-    window.verPerfilTec = async function(id) {
+    async function verPerfilTec(id) {
         const t = tecLanding.find(t => t.id === id);
         if (!t) return;
 
@@ -1495,7 +1494,7 @@
         document.getElementById('tecPerfilModal').style.display = 'flex';
     };
 
-    window.cerrarTecModal = function() {
+    function cerrarTecModal() {
         document.getElementById('tecPerfilModal').style.display = 'none';
     };
 
@@ -1509,8 +1508,7 @@
         if (entries[0].isIntersecting) { cargarTecLanding(); obs.disconnect(); }
     }, { threshold: 0.1 });
     const sec = document.getElementById('tecLandingGrid');
-    if (sec) obs.observe(sec);
-})();>
+    if (sec) obs.observe(sec);>
 
 
 <!-- Modal: Perfil técnico -->
