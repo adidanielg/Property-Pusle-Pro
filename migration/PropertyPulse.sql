@@ -363,3 +363,27 @@ ALTER TABLE cotizaciones DISABLE ROW LEVEL SECURITY;
 ALTER TABLE tickets DROP CONSTRAINT IF EXISTS tickets_estado_check;
 ALTER TABLE tickets ADD CONSTRAINT tickets_estado_check
     CHECK (estado IN ('pendiente','cotizando','en_proceso','completado','cancelado'));
+
+    -- ── Migración: Sistema de cotizaciones ───────────────────────
+-- Ejecutar en Supabase → SQL Editor → Run
+
+CREATE TABLE IF NOT EXISTS cotizaciones (
+    id              UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
+    ticket_id       UUID        NOT NULL REFERENCES tickets(id) ON DELETE CASCADE,
+    tecnico_id      UUID        NOT NULL REFERENCES tecnicos(id) ON DELETE CASCADE,
+    cliente_id      UUID        NOT NULL REFERENCES companias(id) ON DELETE CASCADE,
+    precio          DECIMAL(10,2) NOT NULL,
+    descripcion     TEXT        NOT NULL,
+    estado          TEXT        NOT NULL DEFAULT 'pendiente'
+                                CHECK (estado IN ('pendiente','aprobada','rechazada')),
+    motivo_rechazo  TEXT,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    respondida_at   TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS idx_cotizaciones_ticket  ON cotizaciones(ticket_id);
+CREATE INDEX IF NOT EXISTS idx_cotizaciones_tecnico ON cotizaciones(tecnico_id);
+CREATE INDEX IF NOT EXISTS idx_cotizaciones_cliente ON cotizaciones(cliente_id);
+CREATE INDEX IF NOT EXISTS idx_cotizaciones_estado  ON cotizaciones(estado);
+
+ALTER TABLE cotizaciones DISABLE ROW LEVEL SECURITY;

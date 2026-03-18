@@ -332,6 +332,7 @@
                         <% if (ticket.estado === 'pendiente' && !tecnico.ocupado) { %>
                             <button class="tb tb-green tb-sm" onclick="cambiarEstado('<%= ticket.id %>','en_proceso')">✅ Aceptar trabajo</button>
                             <button class="tb tb-sm" style="background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent)" onclick="abrirCotizar('<%= ticket.id %>','<%= ticket.motivo %>')">💰 Cotizar</button>
+                            <button class="tb tb-sm" style="background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent)" onclick="abrirCotizar('<%= ticket.id %>','<%= ticket.motivo %>')">💰 Cotizar</button>
                         <% } else if (ticket.estado === 'pendiente' && tecnico.ocupado) { %>
                             <span style="font-size:.72rem;color:var(--text-3)">Completa tu trabajo actual primero</span>
                         <% } else if (ticket.estado === 'en_proceso' && esMio) { %>
@@ -776,5 +777,65 @@ if (tecParams.get('suscrito') === '1') {
         </button>
     </div>
 </div>
+
+<!-- Modal: Cotizar -->
+<div id="cotizarModal" class="modal-overlay">
+    <div class="modal" style="max-width:420px">
+        <div class="modal-header">
+            <h2>💰 Enviar cotización</h2>
+            <button class="modal-close" onclick="cerrarModal('cotizarModal')">✕</button>
+        </div>
+        <p id="cotizarMotivoText" style="font-size:.85rem;color:var(--text-2);margin-bottom:1rem"></p>
+        <input type="hidden" id="cotizarTicketId">
+        <div class="form-group">
+            <label class="form-label">Precio estimado (USD)</label>
+            <input type="number" id="cotizarPrecio" class="form-input" placeholder="150.00" min="1" step="0.01">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Descripción del trabajo</label>
+            <textarea id="cotizarDesc" class="form-textarea" rows="3" placeholder="Qué trabajo vas a realizar, materiales, tiempo..."></textarea>
+        </div>
+        <button id="btnEnviarCot" class="btn btn-primary btn-full" onclick="enviarCotizacion()">Enviar cotización →</button>
+    </div>
+</div>
+
+<script>
+function abrirCotizar(id, motivo) {
+    document.getElementById('cotizarTicketId').value = id;
+    document.getElementById('cotizarMotivoText').textContent = 'Ticket: ' + motivo;
+    document.getElementById('cotizarPrecio').value = '';
+    document.getElementById('cotizarDesc').value   = '';
+    document.getElementById('cotizarModal').classList.add('open');
+}
+
+async function enviarCotizacion() {
+    const id     = document.getElementById('cotizarTicketId').value;
+    const precio = parseFloat(document.getElementById('cotizarPrecio').value);
+    const desc   = document.getElementById('cotizarDesc').value.trim();
+    const btn    = document.getElementById('btnEnviarCot');
+
+    if (!precio || precio <= 0) return showToast('Ingresa un precio válido', 'error');
+    if (desc.length < 5)        return showToast('Describe el trabajo a realizar', 'error');
+
+    const done = btnLoading(btn, 'Enviando...');
+    try {
+        const res  = await fetch('/tecnico/tickets/' + id + '/cotizar', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ precio, descripcion: desc })
+        });
+        const data = await res.json();
+        if (data.success) {
+            cerrarModal('cotizarModal');
+            showToast('✅ Cotización enviada — el cliente la revisará');
+            setTimeout(() => location.reload(), 1200);
+        } else {
+            showToast(data.error || 'Error al enviar', 'error');
+        }
+    } catch { showToast('Error de conexión', 'error'); }
+    finally { done(); }
+}
+</script>
+
 </body>
 </html>
