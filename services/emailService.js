@@ -16,8 +16,10 @@ const emailService = {
         const loginUrl  = isCliente ? `${APP_URL}/auth/login` : `${APP_URL}/auth/login-tecnico`;
         const dashUrl   = isCliente ? `${APP_URL}/cliente/dashboard` : `${APP_URL}/tecnico/dashboard`;
 
+        console.log(`[EMAIL] Enviando bienvenida a ${email} | FROM: ${FROM} | KEY: ${process.env.RESEND_API_KEY?.slice(0,8)}...`);
+
         try {
-            await resend.emails.send({
+            const result = await resend.emails.send({
                 from:    FROM,
                 to:      email,
                 subject: `¡Bienvenido a PropertyPulse, ${nombre}! 🏢`,
@@ -83,7 +85,7 @@ const emailService = {
 </body>
 </html>`
             });
-            console.log(`[EMAIL] Bienvenida enviada a ${email}`);
+            console.log(`[EMAIL] Bienvenida enviada a ${email} | ID: ${result?.data?.id} | Error: ${result?.error?.message}`);
         } catch (err) {
             console.error('[EMAIL] Error bienvenida:', err.message);
         }
