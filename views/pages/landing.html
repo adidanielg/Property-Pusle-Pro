@@ -855,13 +855,13 @@
     <div class="nav-links">
         <a href="#how-it-works" data-i18n="landing.howItWorks">How it works</a>
         <a href="#pricing" data-i18n="landing.pricing">Pricing</a>
-        <a href="#tecnicos">Our Technicians</a>
+        <a href="#pricing-tech">For Technicians</a>
         <a href="#faq" data-i18n="landing.faq">FAQ</a>
         <div id="lang-toggle" style="display:flex;gap:.2rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.2rem">
     <button id="lang-es" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)">ES</button>
     <button id="lang-en" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)">EN</button>
 </div>
-        <a href="/auth/register-cliente" class="nav-cta">Register as client</a>
+        <a href="/app" class="nav-cta">Get started free</a>
     </div>
 </nav>
 
@@ -877,7 +877,7 @@
     </p>
 
     <div class="hero-actions">
-        <a href="/auth/register-cliente" class="btn-hero-primary" data-i18n="landing.getStarted">Get started free →</a>
+        <a href="/app" class="btn-hero-primary" data-i18n="landing.getStarted">Get started free →</a>
         <a href="#how-it-works" class="btn-hero-secondary" data-i18n="landing.seeHow">See how it works</a>
     </div>
     <p class="hero-note">No credit card required &nbsp;·&nbsp; Setup in 5 minutes &nbsp;·&nbsp; Cancel anytime</p>
@@ -1048,7 +1048,7 @@
                 <li><span class="x">✗</span><span style="color:var(--text-3)">Performance reports</span></li>
                 <li><span class="x">✗</span><span style="color:var(--text-3)">Priority support</span></li>
             </ul>
-            <a href="/auth/register-cliente" class="btn-plan btn-plan-outline">Get started free →</a>
+            <a href="/app" class="btn-plan btn-plan-outline">Get started free →</a>
         </div>
 
         <!-- Pro (featured) -->
@@ -1071,7 +1071,7 @@
                 <li><span class="check">✓</span><span>Performance reports</span></li>
                 <li><span class="x">✗</span><span style="color:var(--text-3)">Priority support</span></li>
             </ul>
-            <a href="/auth/register-cliente" class="btn-plan btn-plan-primary">Get started →</a>
+            <a href="/app" class="btn-plan btn-plan-primary">Get started →</a>
         </div>
 
         <!-- Business -->
@@ -1150,41 +1150,6 @@
             </ul>
             <a href="/auth/register-tecnico" class="btn-plan btn-plan-primary">Get started →</a>
         </div>
-    </div>
-</div>
-
-<!-- ── Directorio de técnicos ──────────────────────────── -->
-<div id="tecnicos" class="section" style="padding-top:0">
-    <p class="section-label reveal">Nuestros técnicos</p>
-    <h2 class="section-title reveal" style="max-width:520px">Profesionales verificados<br>listos para tu propiedad</h2>
-    <p class="section-sub reveal">Conoce al equipo de técnicos antes de contratar. Filtra por especialidad y ve sus ratings reales.</p>
-
-    <!-- Filtros -->
-    <div class="reveal" style="display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;margin-bottom:1.75rem">
-        <button class="tec-pill active" onclick="filtrarTecs(this,'')" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);cursor:pointer;transition:all .15s">Todos</button>
-        <button class="tec-pill" onclick="filtrarTecs(this,'Climatización (HVAC)')" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;border:1px solid var(--border-2);background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s">❄️ HVAC</button>
-        <button class="tec-pill" onclick="filtrarTecs(this,'Electricidad')" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;border:1px solid var(--border-2);background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s">⚡ Electricidad</button>
-        <button class="tec-pill" onclick="filtrarTecs(this,'Plomería')" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;border:1px solid var(--border-2);background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s">🔧 Plomería</button>
-        <button class="tec-pill" onclick="filtrarTecs(this,'Piscina')" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;border:1px solid var(--border-2);background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s">🏊 Piscina</button>
-        <button class="tec-pill" onclick="filtrarTecs(this,'Jardinería / Landscaping')" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;border:1px solid var(--border-2);background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s">🌿 Jardinería</button>
-        <button class="tec-pill" onclick="filtrarTecs(this,'Irrigation / Sistema de riego')" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;border:1px solid var(--border-2);background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s">💧 Irrigation</button>
-        <button class="tec-pill" onclick="filtrarTecs(this,'Pest Control')" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;border:1px solid var(--border-2);background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s">🐛 Pest Control</button>
-        <button class="tec-pill" onclick="filtrarTecs(this,'Limpieza / Pressure Washing')" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;border:1px solid var(--border-2);background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s">🧹 Pressure Washing</button>
-        <button class="tec-pill" onclick="filtrarTecs(this,'Electrodomésticos')" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;border:1px solid var(--border-2);background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s">🏠 Electrodomésticos</button>
-        <button class="tec-pill" onclick="filtrarTecs(this,'Estructura / Reparaciones')" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;border:1px solid var(--border-2);background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s">🏗️ Estructura</button>
-        <button class="tec-pill" onclick="filtrarTecs(this,'Seguridad')" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;border:1px solid var(--border-2);background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s">🔒 Seguridad</button>
-        <button class="tec-pill" onclick="filtrarTecs(this,'Bajo voltaje / Cámaras')" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;border:1px solid var(--border-2);background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s">📹 Cámaras</button>
-        <button class="tec-pill" onclick="filtrarTecs(this,'Handyman')" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;border:1px solid var(--border-2);background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s">🛠️ Handyman</button>
-        <button class="tec-pill" onclick="filtrarTecs(this,'General')" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;border:1px solid var(--border-2);background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s">⚙️ General</button>
-    </div>
-
-    <!-- Grid -->
-    <div id="tecLandingGrid" class="reveal" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;margin-bottom:.5rem">
-        <div style="color:var(--text-3);text-align:center;padding:2rem;grid-column:1/-1;font-size:.9rem">Cargando técnicos...</div>
-    </div>
-
-    <div class="reveal" style="text-align:center;margin-top:1.25rem">
-        <a href="/auth/register-tecnico" class="btn-hero-secondary" style="font-size:.85rem;padding:.6rem 1.5rem">Aplicar como técnico →</a>
     </div>
 </div>
 
@@ -1287,7 +1252,7 @@
     <h2>Ready to take control of your<br><em>property maintenance?</em></h2>
     <p>Join property managers across the US who use PropertyPulse to save time, reduce chaos, and close tickets faster.</p>
     <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
-        <a href="/auth/register-cliente" class="btn-hero-primary">Get started free →</a>
+        <a href="/app" class="btn-hero-primary">Get started free →</a>
         <a href="#pricing" class="btn-hero-secondary">View pricing</a>
     </div>
     <p style="margin-top:1rem;font-size:.8rem;color:var(--text-3)">No credit card required &nbsp;·&nbsp; Cancel anytime</p>
@@ -1302,9 +1267,7 @@
     <p>© 2026 PropertyPulse. All rights reserved.</p>
     <div class="footer-links">
         <a href="/auth/login">Client Login</a>
-        <a href="/auth/register-cliente">Register as Client</a>
         <a href="/auth/login-tecnico">Technician Login</a>
-        <a href="/auth/register-tecnico">Apply as Technician</a>
         <a href="#pricing" data-i18n="landing.pricing">Pricing</a>
     </div>
 </footer>
@@ -1366,183 +1329,5 @@
 </script>
 
 <script src="/js/i18n.js"></script>
-
-<script>
-
-let tecLanding = [];
-
-    async function cargarTecLanding() {
-        try {
-            const res  = await fetch('/pub/tecnicos');
-            const data = await res.json();
-            tecLanding = data.tecnicos || [];
-            renderTecLanding(tecLanding);
-        } catch {
-            document.getElementById('tecLandingGrid').innerHTML =
-                '<div style="color:var(--text-3);text-align:center;padding:2rem;grid-column:1/-1">Error cargando técnicos.</div>';
-        }
-    }
-
-    function filtrarTecs(btn, esp) {
-        document.querySelectorAll('.tec-pill').forEach(b => {
-            b.style.background  = 'transparent';
-            b.style.borderColor = 'var(--border-2)';
-            b.style.color       = 'var(--text-2)';
-        });
-        btn.style.background   = 'var(--accent-soft)';
-        btn.style.borderColor  = 'var(--accent)';
-        btn.style.color        = 'var(--accent)';
-        renderTecLanding(esp ? tecLanding.filter(t => t.especialidad === esp) : tecLanding);
-    };
-
-    function renderTecLanding(lista) {
-        const grid = document.getElementById('tecLandingGrid');
-        if (!lista.length) {
-            grid.innerHTML = '<div style="color:var(--text-3);text-align:center;padding:2rem;grid-column:1/-1">No hay técnicos para esta especialidad.</div>';
-            return;
-        }
-        const muestra = lista.slice(0, 8);
-        grid.innerHTML = muestra.map(t => {
-            const ini = t.nombre.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
-            return `
-            <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.25rem;transition:border-color .15s,transform .15s;cursor:pointer"
-                 onmouseover="this.style.borderColor='var(--accent)';this.style.transform='translateY(-3px)'"
-                 onmouseout="this.style.borderColor='var(--border)';this.style.transform=''"
-                 onclick="window.verPerfilTec('${t.id}')">
-                <div style="display:flex;align-items:center;gap:.65rem;margin-bottom:.85rem">
-                    <div style="width:40px;height:40px;border-radius:50%;background:rgba(124,109,250,.15);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:var(--accent);flex-shrink:0">${ini}</div>
-                    <div>
-                        <div style="font-weight:700;color:var(--text-1);font-size:.88rem">${t.nombre}</div>
-                        <div style="font-size:.7rem;color:var(--text-3)">${t.especialidad}</div>
-                    </div>
-                </div>
-                <div style="display:flex;gap:.4rem;margin-bottom:.6rem">
-                    <div style="flex:1;background:var(--surface-2);border-radius:8px;padding:.5rem;text-align:center">
-                        <div style="font-size:1.1rem;font-weight:800;color:var(--accent-2)">${t.trabajos_completados||0}</div>
-                        <div style="font-size:.62rem;color:var(--text-3)">trabajos</div>
-                    </div>
-                    <div style="flex:1;background:var(--surface-2);border-radius:8px;padding:.5rem;text-align:center">
-                        <div style="font-size:1.1rem;font-weight:800;color:#f5c842">${t.promedio?parseFloat(t.promedio).toFixed(1):'—'}</div>
-                        <div style="font-size:.62rem;color:var(--text-3)">rating</div>
-                    </div>
-                </div>
-                <span style="font-size:.65rem;font-weight:700;padding:.2rem .55rem;border-radius:99px;background:${!t.ocupado?'rgba(124,109,250,.15)':'rgba(255,255,255,.06)'};color:${!t.ocupado?'var(--accent-2)':'var(--text-3)'}">
-                    ${!t.ocupado?'● Disponible':'○ Ocupado'}
-                </span>
-            </div>`;
-        }).join('');
-    }
-
-    async function verPerfilTec(id) {
-        const t = tecLanding.find(t => t.id === id);
-        if (!t) return;
-
-        const ini = t.nombre.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
-        const stars = t.promedio ? Math.round(parseFloat(t.promedio)) : 0;
-
-        let reseñasHtml = '<p style="color:var(--text-3);font-size:.82rem;text-align:center;padding:.75rem">Sin reseñas aún.</p>';
-        try {
-            const res  = await fetch('/pub/tecnicos/' + id + '/resenas');
-            const data = await res.json();
-            if (data.resenas?.length) {
-                reseñasHtml = data.resenas.map(r => `
-                <div style="padding:.7rem 0;border-bottom:1px solid rgba(255,255,255,.08)">
-                    <div style="display:flex;justify-content:space-between;margin-bottom:.2rem">
-                        <span style="font-size:.82rem">${'⭐'.repeat(r.estrellas)}</span>
-                        <span style="font-size:.7rem;color:var(--text-3)">${new Date(r.created_at).toLocaleDateString('es',{month:'short',year:'numeric'})}</span>
-                    </div>
-                    ${r.comentario ? `<p style="font-size:.8rem;color:var(--text-2);margin:0">${r.comentario}</p>` : ''}
-                </div>`).join('');
-            }
-        } catch {}
-
-        document.getElementById('tecPerfilBody').innerHTML = `
-        <div style="text-align:center;margin-bottom:1.5rem">
-            <div style="width:64px;height:64px;border-radius:50%;background:rgba(124,109,250,.15);border:3px solid var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.2rem;color:var(--accent);margin:0 auto .85rem">${ini}</div>
-            <div style="font-weight:800;font-size:1.15rem;color:var(--text-1)">${t.nombre}</div>
-            <div style="font-size:.85rem;color:var(--text-3);margin:.25rem 0 .6rem">${t.especialidad}</div>
-            <span style="font-size:.7rem;font-weight:700;padding:.25rem .7rem;border-radius:99px;background:${!t.ocupado?'rgba(124,109,250,.15)':'rgba(255,255,255,.06)'};color:${!t.ocupado?'var(--accent-2)':'var(--text-3)'}">
-                ${!t.ocupado ? '● Disponible ahora' : '○ Ocupado'}
-            </span>
-        </div>
-
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.65rem;margin-bottom:1.5rem">
-            <div style="background:var(--surface-2);border-radius:10px;padding:.85rem;text-align:center">
-                <div style="font-size:1.5rem;font-weight:800;color:var(--accent-2)">${t.trabajos_completados||0}</div>
-                <div style="font-size:.68rem;color:var(--text-3);margin-top:.2rem">Trabajos</div>
-            </div>
-            <div style="background:var(--surface-2);border-radius:10px;padding:.85rem;text-align:center">
-                <div style="font-size:1.5rem;font-weight:800;color:#f5c842">${t.promedio?parseFloat(t.promedio).toFixed(1):'—'}</div>
-                <div style="font-size:.68rem;color:var(--text-3);margin-top:.2rem">Rating</div>
-            </div>
-            <div style="background:var(--surface-2);border-radius:10px;padding:.85rem;text-align:center">
-                <div style="font-size:1.5rem;font-weight:800;color:var(--text-1)">${t.totalCalif||0}</div>
-                <div style="font-size:.68rem;color:var(--text-3);margin-top:.2rem">Reseñas</div>
-            </div>
-        </div>
-
-        ${stars > 0 ? `<div style="text-align:center;font-size:.85rem;margin-bottom:1rem;color:#f5c842">${'⭐'.repeat(stars)} <span style="color:var(--text-2)">${t.totalCalif} reseña${t.totalCalif!==1?'s':''}</span></div>` : ''}
-
-        <div style="font-size:.75rem;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.65rem">Reseñas recientes</div>
-        <div style="max-height:180px;overflow-y:auto;margin-bottom:1.5rem">${reseñasHtml}</div>
-
-        <a href="/auth/register-cliente" style="display:block;background:var(--accent);color:#fff;text-align:center;padding:.9rem;border-radius:10px;font-weight:700;font-size:.95rem;text-decoration:none;transition:background .15s"
-           onmouseover="this.style.background='var(--accent-2)'"
-           onmouseout="this.style.background='var(--accent)'">
-            Contratar a través de PropertyPulse →
-        </a>`;
-
-        document.getElementById('tecPerfilModal').style.display = 'flex';
-    };
-
-    function cerrarTecModal() {
-        document.getElementById('tecPerfilModal').style.display = 'none';
-    };
-
-    // Cerrar al click fuera
-    document.getElementById('tecPerfilModal').addEventListener('click', function(e) {
-        if (e.target === this) window.cerrarTecModal();
-    });
-
-    // Cargar cuando visible
-    const obs = new IntersectionObserver(entries => {
-        if (entries[0].isIntersecting) { cargarTecLanding(); obs.disconnect(); }
-    }, { threshold: 0.1 });
-    const sec = document.getElementById('tecLandingGrid');
-    if (sec) obs.observe(sec);>
-</script>
-
-
-<!-- Modal: Perfil técnico -->
-<div id="tecPerfilModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);z-index:9999;align-items:center;justify-content:center;padding:1rem">
-    <div style="background:var(--bg);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:2rem;width:100%;max-width:400px;max-height:85vh;overflow-y:auto;position:relative">
-        <button onclick="cerrarTecModal()" style="position:absolute;top:1rem;right:1rem;background:rgba(255,255,255,.08);border:none;color:var(--text-2);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center">✕</button>
-        <div id="tecPerfilBody"></div>
-    </div>
-</div>
 </body>
-</html
-    // ── Inicialización ──────────────────────────────────────
-    document.addEventListener('DOMContentLoaded', function() {
-        // Listeners para filtros
-        document.querySelectorAll('.tec-pill').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                filtrarTecs(this, this.dataset.esp || '');
-            });
-        });
-
-        // Carga lazy cuando la sección es visible
-        const tecGrid = document.getElementById('tecLandingGrid');
-        if (tecGrid && 'IntersectionObserver' in window) {
-            const tecObs = new IntersectionObserver(function(entries) {
-                if (entries[0].isIntersecting) {
-                    cargarTecLanding();
-                    tecObs.disconnect();
-                }
-            }, { threshold: 0.1 });
-            tecObs.observe(tecGrid);
-        } else if (tecGrid) {
-            cargarTecLanding();
-        }
-    });
->
+</html>
