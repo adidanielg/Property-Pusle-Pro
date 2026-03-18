@@ -371,10 +371,7 @@
                         <%}else if(ticket.estado==='pendiente'){%>
                             <button class="ppb ppb-sm" style="background:var(--accent-soft);color:var(--accent);border:1px solid rgba(124,109,250,.3)" onclick="verCotizaciones('<%= ticket.id %>','<%= ticket.motivo %>')">💰 Ver cotizaciones</button>
                             <button class="ppb ppb-danger ppb-sm" onclick="cancelarTicket('<%= ticket.id %>')">❌ Cancelar</button>
-                        <%}else if(ticket.estado==='completado'){%>
-                            <button class="ppb ppb-ghost ppb-sm" onclick="verHistorial('<%= ticket.id %>')">📋 Historial</button>
-                        <%}%>
-                        <%if(ticket.estado==='completado'&&ticket.tecnico_asignado&&!ticketsCalificados.has(ticket.id)){%>
+                        <%}else if(ticket.estado==='completado'&&ticket.tecnico_asignado&&!ticketsCalificados.has(ticket.id)){%>
                             <button class="ppb ppb-primary ppb-sm" data-ticket="<%= ticket.id %>" data-tecnico="<%= ticket.tecnicos?ticket.tecnicos.nombre:'el técnico' %>" onclick="abrirCalificar(this)">⭐ Calificar</button>
                         <%}else if(ticket.estado==='completado'&&ticketsCalificados.has(ticket.id)){%>
                             <span style="font-size:.73rem;color:var(--green);font-weight:600">✅ Calificado</span>
@@ -1043,131 +1040,28 @@ async function responderCot(cotId, accion) {
 </script>
 
 
-<!-- Modal: Historial de ticket -->
-<div id="historialModal" class="modal-overlay">
-    <div class="modal" style="max-width:520px;max-height:85vh;overflow-y:auto">
-        <div class="modal-header" style="position:sticky;top:0;background:var(--surface);z-index:1;padding-bottom:.75rem;border-bottom:1px solid var(--border)">
-            <h2>📋 Historial del ticket</h2>
-            <button class="modal-close" onclick="cerrarModal('historialModal')">✕</button>
-        </div>
-        <div id="historialBody" style="padding-top:1rem">
-            <p style="color:var(--text-2);text-align:center;padding:2rem">Cargando...</p>
-        </div>
-    </div>
-</div>
-
 <script>
-async function verHistorial(ticketId) {
-    document.getElementById('historialBody').innerHTML = '<p style="color:var(--text-2);text-align:center;padding:2rem">Cargando...</p>';
-    document.getElementById('historialModal').classList.add('open');
-
+async function descargarPDF() {
+    const btn  = document.getElementById('btnPDF');
+    const done = btnLoading(btn, 'Generando...');
     try {
-        const res  = await fetch('/cliente/tickets/' + ticketId + '/historial');
-        const data = await res.json();
-        if (!data.success) { document.getElementById('historialBody').innerHTML = '<p style="color:var(--text-2);text-align:center;padding:2rem">Error cargando historial.</p>'; return; }
+        const hoy = new Date();
+        const mes = hoy.getMonth() + 1;
+        const año = hoy.getFullYear();
+        const url = `/cliente/reporte-pdf?mes=${mes}&año=${año}`;
 
-        const t = data.ticket;
-        const msgs = data.mensajes || [];
+        const res = await fetch(url);
+        if (!res.ok) { showToast('Error generando el PDF', 'error'); return; }
 
-        const estadoColor = { pendiente:'var(--yellow)', en_proceso:'var(--blue)', completado:'var(--green)', cancelado:'var(--text-3)' };
-        const estadoLabel = { pendiente:'Pendiente', en_proceso:'En proceso', completado:'Completado', cancelado:'Cancelado' };
-
-        let html = `
-        <div style="margin-bottom:1.25rem">
-            <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem;flex-wrap:wrap">
-                <span style="font-weight:700;font-size:1rem;color:var(--text-1)">${t.motivo}</span>
-                <span style="font-size:.72rem;font-weight:700;padding:.15rem .55rem;border-radius:99px;background:${estadoColor[t.estado]}22;color:${estadoColor[t.estado]}">${estadoLabel[t.estado]||t.estado}</span>
-            </div>
-            ${t.categoria ? `<span style="font-size:.72rem;background:var(--accent-soft);color:var(--accent);padding:.15rem .5rem;border-radius:99px">${t.categoria}</span>` : ''}
-            <div style="font-size:.8rem;color:var(--text-3);margin-top:.4rem">
-                📍 ${t.propiedades?.direccion || '—'}
-                ${t.tecnicos ? ` &nbsp;·&nbsp; 🔧 ${t.tecnicos.nombre}` : ''}
-            </div>
-        </div>
-
-        <div style="position:relative;padding-left:1.5rem">
-            <div style="position:absolute;left:.45rem;top:0;bottom:0;width:2px;background:var(--border);border-radius:2px"></div>
-
-            <!-- Evento: Creado -->
-            <div style="position:relative;margin-bottom:1.25rem">
-                <div style="position:absolute;left:-1.1rem;top:.15rem;width:10px;height:10px;border-radius:50%;background:var(--accent);border:2px solid var(--surface)"></div>
-                <div style="font-size:.72rem;color:var(--text-3);margin-bottom:.2rem">${new Date(t.created_at).toLocaleDateString('es',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
-                <div style="font-size:.85rem;font-weight:600;color:var(--text-1)">🎫 Ticket creado</div>
-                ${t.descripcion ? `<div style="font-size:.78rem;color:var(--text-2);margin-top:.25rem;line-height:1.5">${t.descripcion}</div>` : ''}
-                ${t.foto_url ? `<a href="${t.foto_url}" target="_blank" style="display:inline-block;margin-top:.5rem"><img src="${t.foto_url}" style="max-width:100%;border-radius:8px;max-height:140px;object-fit:cover;border:1px solid var(--border)"></a>` : ''}
-            </div>
-
-            ${t.tecnicos ? `
-            <div style="position:relative;margin-bottom:1.25rem">
-                <div style="position:absolute;left:-1.1rem;top:.15rem;width:10px;height:10px;border-radius:50%;background:var(--blue);border:2px solid var(--surface)"></div>
-                <div style="font-size:.72rem;color:var(--text-3);margin-bottom:.2rem">Asignado</div>
-                <div style="font-size:.85rem;font-weight:600;color:var(--text-1)">🔧 ${t.tecnicos.nombre} aceptó el trabajo</div>
-            </div>` : ''}
-
-            ${msgs.length > 0 ? `
-            <div style="position:relative;margin-bottom:1.25rem">
-                <div style="position:absolute;left:-1.1rem;top:.15rem;width:10px;height:10px;border-radius:50%;background:var(--yellow);border:2px solid var(--surface)"></div>
-                <div style="font-size:.72rem;color:var(--text-3);margin-bottom:.4rem">Chat del ticket (${msgs.length} mensajes)</div>
-                <div style="background:var(--surface-2);border-radius:8px;padding:.75rem;max-height:150px;overflow-y:auto">
-                    ${msgs.map(m => `
-                    <div style="margin-bottom:.5rem">
-                        <span style="font-size:.7rem;font-weight:700;color:${m.autor_rol==='tecnico'?'var(--blue)':'var(--accent)'}">${m.autor_nombre}</span>
-                        <span style="font-size:.7rem;color:var(--text-3);margin-left:.3rem">${new Date(m.created_at).toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'})}</span>
-                        <div style="font-size:.8rem;color:var(--text-2);margin-top:.1rem">${m.mensaje}</div>
-                    </div>`).join('')}
-                </div>
-            </div>` : ''}
-
-            ${t.estado === 'completado' ? `
-            <div style="position:relative;margin-bottom:1rem">
-                <div style="position:absolute;left:-1.1rem;top:.15rem;width:10px;height:10px;border-radius:50%;background:var(--green);border:2px solid var(--surface)"></div>
-                <div style="font-size:.72rem;color:var(--text-3);margin-bottom:.2rem">Finalizado</div>
-                <div style="font-size:.85rem;font-weight:600;color:var(--green)">✅ Trabajo completado</div>
-            </div>` : ''}
-        </div>`;
-
-        document.getElementById('historialBody').innerHTML = html;
-    } catch (e) {
-        document.getElementById('historialBody').innerHTML = '<p style="color:var(--text-2);text-align:center;padding:2rem">Error de conexión.</p>';
-    }
-}
-
-async function verHistorialCompleto() {
-    document.getElementById('historialBody').innerHTML = '<p style="color:var(--text-2);text-align:center;padding:2rem">Cargando historial completo...</p>';
-    document.getElementById('historialModal').querySelector('h2').textContent = '📋 Historial completo';
-    document.getElementById('historialModal').classList.add('open');
-
-    try {
-        const res  = await fetch('/cliente/historial');
-        const data = await res.json();
-        if (!data.tickets?.length) {
-            document.getElementById('historialBody').innerHTML = '<p style="color:var(--text-2);text-align:center;padding:2rem">No hay tickets completados aún.</p>';
-            return;
-        }
-
-        const estadoColor = { completado:'var(--green)', cancelado:'var(--text-3)', en_proceso:'var(--blue)', pendiente:'var(--yellow)' };
-
-        document.getElementById('historialBody').innerHTML = data.tickets.map(t => `
-        <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:.75rem;cursor:pointer" onclick="verHistorial('${t.id}')">
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem">
-                <div>
-                    <div style="font-weight:700;color:var(--text-1);font-size:.9rem;margin-bottom:.25rem">${t.motivo}</div>
-                    <div style="font-size:.75rem;color:var(--text-3)">
-                        📍 ${t.propiedades?.direccion || '—'}
-                        ${t.tecnicos ? ` &nbsp;·&nbsp; 🔧 ${t.tecnicos.nombre}` : ''}
-                    </div>
-                </div>
-                <div style="text-align:right;flex-shrink:0">
-                    <div style="font-size:.7rem;font-weight:700;color:${estadoColor[t.estado]||'var(--text-3)'}">●&nbsp;${t.estado}</div>
-                    <div style="font-size:.68rem;color:var(--text-3);margin-top:.15rem">${new Date(t.created_at).toLocaleDateString('es',{day:'numeric',month:'short',year:'numeric'})}</div>
-                </div>
-            </div>
-            ${t.foto_url ? `<img src="${t.foto_url}" style="width:100%;max-height:100px;object-fit:cover;border-radius:6px;margin-top:.5rem;border:1px solid var(--border)">` : ''}
-        </div>
-        `).join('');
-    } catch {
-        document.getElementById('historialBody').innerHTML = '<p style="color:var(--text-2);text-align:center;padding:2rem">Error de conexión.</p>';
-    }
+        const blob = await res.blob();
+        const link = document.createElement('a');
+        link.href  = URL.createObjectURL(blob);
+        link.download = `reporte-${mes}-${año}.pdf`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+        showToast('✅ Reporte descargado');
+    } catch { showToast('Error de conexión', 'error'); }
+    finally { done(); }
 }
 </script>
 

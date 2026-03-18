@@ -580,4 +580,169 @@ router.get('/historial', async (req, res) => {
     }
 });
 
+
+// ── Reporte PDF mensual ───────────────────────────────────────
+router.get('/reporte-pdf', async (req, res) => {
+    try {
+        const id  = req.user.id;
+        const mes = req.query.mes || new Date().getMonth() + 1;
+        const año = req.query.año || new Date().getFullYear();
+
+        // Rango del mes
+        const inicio = new Date(año, mes - 1, 1).toISOString();
+        const fin    = new Date(año, mes, 0, 23, 59, 59).toISOString();
+
+        const { data: clienteInfo } = await supabase
+            .from('companias')
+            .select('nombre_contacto, nombre_empresa, email, tipo_cliente')
+            .eq('id', id).single();
+
+        const { data: tickets } = await supabase
+            .from('tickets')
+            .select('*, propiedades(direccion), tecnicos:tecnico_asignado(nombre)')
+            .eq('cliente_id', id)
+            .gte('created_at', inicio)
+            .lte('created_at', fin)
+            .is('deleted_at', null)
+            .order('created_at', { ascending: false });
+
+        const nombreCliente = clienteInfo?.tipo_cliente === 'Compania'
+            ? clienteInfo.nombre_empresa
+            : clienteInfo?.nombre_contacto || 'Cliente';
+
+        const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                       'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+        const nombreMes = meses[mes - 1];
+
+        const completados = (tickets || []).filter(t => t.estado === 'completado').length;
+        const pendientes  = (tickets || []).filter(t => t.estado === 'pendiente').length;
+        const enProceso   = (tickets || []).filter(t => t.estado === 'en_proceso').length;
+
+        const estadoColor = {
+            pendiente:  '#f59e0b',
+            en_proceso: '#3b82f6',
+            completado: '#10b981',
+            cancelado:  '#6b7280'
+        };
+
+        const estadoLabel = {
+            pendiente:  'Pendiente',
+            en_proceso: 'En proceso',
+            completado: 'Completado',
+            cancelado:  'Cancelado'
+        };
+
+        const ticketRows = (tickets || []).map(t => `
+        <tr>
+            <td>${t.motivo}</td>
+            <td>${t.categoria || '—'}</td>
+            <td>${t.propiedades?.direccion || '—'}</td>
+            <td>${t.tecnicos?.nombre || '—'}</td>
+            <td><span style="color:${estadoColor[t.estado]};font-weight:600">${estadoLabel[t.estado] || t.estado}</span></td>
+            <td>${new Date(t.created_at).toLocaleDateString('es', { day: 'numeric', month: 'short' })}</td>
+        </tr>`).join('');
+
+        const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #1a1a2e; background: #fff; padding: 40px; font-size: 13px; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; padding-bottom: 20px; border-bottom: 2px solid #7c6dfa; }
+  .logo { font-size: 22px; font-weight: 800; color: #1a1a2e; }
+  .logo span { color: #7c6dfa; }
+  .header-right { text-align: right; color: #666; font-size: 12px; line-height: 1.6; }
+  .title { font-size: 18px; font-weight: 700; margin-bottom: 4px; color: #1a1a2e; }
+  .subtitle { font-size: 12px; color: #888; margin-bottom: 28px; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
+  .stat { background: #f8f7ff; border: 1px solid #e8e6ff; border-radius: 10px; padding: 14px 16px; }
+  .stat-num { font-size: 28px; font-weight: 800; letter-spacing: -1px; color: #7c6dfa; }
+  .stat-label { font-size: 11px; color: #888; margin-top: 2px; text-transform: uppercase; letter-spacing: .04em; }
+  .section-title { font-size: 13px; font-weight: 700; color: #1a1a2e; margin-bottom: 10px; text-transform: uppercase; letter-spacing: .05em; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { background: #7c6dfa; color: #fff; padding: 9px 12px; text-align: left; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+  th:first-child { border-radius: 6px 0 0 6px; }
+  th:last-child  { border-radius: 0 6px 6px 0; }
+  td { padding: 9px 12px; border-bottom: 1px solid #f0f0f8; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: #fafaf8; }
+  .footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #eee; text-align: center; font-size: 11px; color: #aaa; }
+  .empty { text-align: center; padding: 32px; color: #aaa; font-style: italic; }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <div class="logo">Property<span>Pulse</span></div>
+      <div style="font-size:11px;color:#888;margin-top:4px">getpropertypulse.net</div>
+    </div>
+    <div class="header-right">
+      <div style="font-weight:700;color:#1a1a2e">${nombreCliente}</div>
+      <div>${clienteInfo?.email || ''}</div>
+      <div>Reporte generado: ${new Date().toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+    </div>
+  </div>
+
+  <div class="title">Reporte Mensual — ${nombreMes} ${año}</div>
+  <div class="subtitle">Resumen de tickets de mantenimiento del período</div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num">${(tickets || []).length}</div>
+      <div class="stat-label">Total tickets</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" style="color:#10b981">${completados}</div>
+      <div class="stat-label">Completados</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" style="color:#3b82f6">${enProceso}</div>
+      <div class="stat-label">En proceso</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" style="color:#f59e0b">${pendientes}</div>
+      <div class="stat-label">Pendientes</div>
+    </div>
+  </div>
+
+  <div class="section-title">Detalle de tickets</div>
+  ${(tickets || []).length === 0 ? '<div class="empty">No hay tickets para este período.</div>' : `
+  <table>
+    <thead>
+      <tr>
+        <th>Motivo</th>
+        <th>Categoría</th>
+        <th>Dirección</th>
+        <th>Técnico</th>
+        <th>Estado</th>
+        <th>Fecha</th>
+      </tr>
+    </thead>
+    <tbody>${ticketRows}</tbody>
+  </table>`}
+
+  <div class="footer">
+    PropertyPulse · Reporte ${nombreMes} ${año} · ${nombreCliente} · Generado automáticamente
+  </div>
+</body>
+</html>`;
+
+        // Generar PDF con html-pdf-node
+        const htmlPdf = require('html-pdf-node');
+        const options = { format: 'Letter', margin: { top: '0', bottom: '0', left: '0', right: '0' } };
+        const file    = { content: html };
+
+        const pdfBuffer = await htmlPdf.generatePdf(file, options);
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="reporte-${nombreMes}-${año}.pdf"`);
+        res.send(pdfBuffer);
+
+    } catch (err) {
+        console.error('[PDF]', err.message);
+        res.status(500).json({ error: 'Error generando el reporte' });
+    }
+});
+
 module.exports = router;
