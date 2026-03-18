@@ -16,24 +16,41 @@ const ticketService = {
 
         const especialidad = tec?.especialidad;
 
-        let query = supabase
+        // Consulta 1: tickets pendientes de su categoría
+        let pendientesQuery = supabase
             .from('tickets')
             .select('*, propiedades(direccion), companias(nombre_empresa, nombre_contacto)')
+            .eq('estado', 'pendiente')
             .is('deleted_at', null)
             .order('created_at', { ascending: false });
 
-        // Tickets pendientes de su categoría O tickets que ya tiene asignados
         if (especialidad) {
-            query = query.or(
-                `and(estado.eq.pendiente,categoria.eq.${especialidad}),tecnico_asignado.eq.${tecnicoId}`
-            );
-        } else {
-            query = query.or(`estado.eq.pendiente,tecnico_asignado.eq.${tecnicoId}`);
+            pendientesQuery = pendientesQuery.eq('categoria', especialidad);
         }
 
-        const { data, error } = await query;
-        if (error) throw error;
-        return data;
+        // Consulta 2: tickets ya asignados a este técnico (cualquier estado)
+        const asignadosQuery = supabase
+            .from('tickets')
+            .select('*, propiedades(direccion), companias(nombre_empresa, nombre_contacto)')
+            .eq('tecnico_asignado', tecnicoId)
+            .neq('estado', 'pendiente')
+            .is('deleted_at', null)
+            .order('created_at', { ascending: false });
+
+        const [{ data: pendientes, error: e1 }, { data: asignados, error: e2 }] = await Promise.all([
+            pendientesQuery,
+            asignadosQuery
+        ]);
+
+        if (e1) throw e1;
+        if (e2) throw e2;
+
+        // Combinar y eliminar duplicados por id
+        const todos = [...(pendientes || []), ...(asignados || [])];
+        const unicos = Array.from(new Map(todos.map(t => [t.id, t])).values());
+        unicos.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        return unicos;
     },
 
     // Cambiar estado del ticket
