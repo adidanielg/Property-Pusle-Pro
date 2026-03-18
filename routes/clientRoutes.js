@@ -35,12 +35,31 @@ router.get('/dashboard', async (req, res) => {
         // IDs de tickets ya calificados
         const ticketsCalificados = new Set((misCalificaciones || []).map(c => c.ticket_id));
 
+        // Métricas
+        const completados = (tickets || []).filter(t => t.estado === 'completado');
+        const tecCount = {};
+        completados.forEach(t => { const n = t.tecnicos?.nombre; if (n) tecCount[n] = (tecCount[n]||0)+1; });
+        const tecFavorito = Object.keys(tecCount).length > 0 ? Object.entries(tecCount).sort((a,b)=>b[1]-a[1])[0][0] : null;
+        const catCount = {};
+        (tickets||[]).forEach(t => { if(t.categoria) catCount[t.categoria]=(catCount[t.categoria]||0)+1; });
+        const categoriaMasFrecuente = Object.keys(catCount).length > 0 ? Object.entries(catCount).sort((a,b)=>b[1]-a[1])[0][0] : null;
+        const ticketsPorMes = {};
+        const hoy = new Date();
+        for(let i=5;i>=0;i--){const d=new Date(hoy.getFullYear(),hoy.getMonth()-i,1);ticketsPorMes[d.toLocaleDateString('es',{month:'short',year:'2-digit'})]=0;}
+        (tickets||[]).forEach(t=>{const k=new Date(t.created_at).toLocaleDateString('es',{month:'short',year:'2-digit'});if(k in ticketsPorMes)ticketsPorMes[k]++;});
+
         res.render('dashboardCliente.html', {
             title:              'Mi Panel | PropertyPulse',
             cliente:            req.user,
             propiedades:        propiedades        || [],
             tickets:            tickets            || [],
-            ticketsCalificados
+            ticketsCalificados,
+            metricas: {
+                totalCompletados:      completados.length,
+                tecFavorito,
+                categoriaMasFrecuente,
+                ticketsPorMes:         JSON.stringify(ticketsPorMes)
+            }
         });
     } catch (err) {
         console.error('[CLIENT DASHBOARD]', err);
