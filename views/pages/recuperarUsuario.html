@@ -11,8 +11,8 @@
     <div class="auth-card">
         <div style="text-align:center;margin-bottom:1.5rem">
             <div style="font-size:2rem;margin-bottom:.5rem">🔑</div>
-            <h1 style="font-size:1.2rem;font-weight:800;color:var(--text-1);margin-bottom:.25rem">¿Olvidaste tu usuario?</h1>
-            <p style="font-size:.85rem;color:var(--text-2)">Ingresa tu email y te enviamos tu nombre de usuario.</p>
+            <h1 style="font-size:1.2rem;font-weight:800;color:var(--text-1);margin-bottom:.25rem" data-i18n="rec.title">¿Olvidaste tu usuario?</h1>
+            <p style="font-size:.85rem;color:var(--text-2)" data-i18n="rec.sub">Ingresa tu email y te enviamos tu nombre de usuario.</p>
         </div>
 
         <% if (success) { %>
@@ -29,14 +29,14 @@
 
         <form action="/auth/recuperar-usuario" method="POST">
             <div class="form-group">
-                <label class="form-label">Email de tu cuenta</label>
+                <label class="form-label" data-i18n="rec.email">Email de tu cuenta</label>
                 <input type="email" name="email" class="form-input" placeholder="tu@email.com" required autofocus>
             </div>
-            <button type="submit" class="btn btn-primary btn-full mt-2">Enviar mi usuario →</button>
+            <button type="submit" class="btn btn-primary btn-full mt-2" data-i18n="rec.send">Enviar mi usuario →</button>
         </form>
 
         <div style="margin-top:1.25rem;text-align:center;font-size:.82rem;color:var(--text-3)">
-            <a href="/auth/login" style="color:var(--accent)">← Volver al login</a>
+            <a href="/auth/login" style="color:var(--accent)" data-i18n="rec.back">← Volver al login</a>
         </div>
     </div>
 </div>

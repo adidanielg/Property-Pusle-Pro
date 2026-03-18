@@ -221,6 +221,74 @@ const translations = {
         'admin.resolved':       'Resueltos',
     },
 
+
+        // Admin extra
+        'admin.tecnicos':     'Técnicos',
+        'admin.clientes':     'Clientes',
+        'admin.ticketsOpen':  'Tickets abiertos',
+        'admin.resolved':     'Resueltos',
+        'admin.email':        'Email',
+        'admin.availability': 'Disponibilidad',
+        'admin.subscription': 'Suscripción',
+        'admin.noProps':      'No ha agregado propiedades aún.',
+        'admin.motivo':       'Motivo / Categoría',
+        'admin.address':      'Dirección',
+        'admin.contact':      'Contacto',
+
+        // Status
+        'status.pending':    'Pendiente',
+        'status.inProgress': 'En proceso',
+        'status.completed':  'Completado',
+        'status.cancelled':  'Cancelado',
+        'status.available':  'Disponible',
+        'status.busy':       'Ocupado',
+
+        // 404
+        '404.title': 'Página no encontrada',
+        '404.sub':   'La dirección que buscas no existe o fue movida. Verifica la URL o regresa al inicio.',
+        '404.home':  'Ir al inicio',
+        '404.back':  'Volver',
+
+        // Recuperar usuario
+        'rec.title': '¿Olvidaste tu usuario?',
+        'rec.sub':   'Ingresa tu email y te enviamos tu nombre de usuario.',
+        'rec.email': 'Email de tu cuenta',
+        'rec.send':  'Enviar mi usuario →',
+        'rec.back':  '← Volver al login',
+
+        // Reset password
+        'reset.title':   'Nueva contraseña',
+        'reset.sub':     'Ingresa tu nueva contraseña.',
+        'reset.new':     'Nueva contraseña',
+        'reset.confirm': 'Confirmar contraseña',
+        'reset.save':    'Guardar nueva contraseña →',
+        'reset.goLogin': 'Ir al login →',
+
+        // Modales login
+        'modal.recUser':    'Recuperar usuario',
+        'modal.recUserSub': 'Ingresa tu email y te enviamos tu nombre de usuario.',
+        'modal.sendUser':   'Enviar mi usuario →',
+        'modal.recPass':    'Recuperar contraseña',
+        'modal.recPassSub': 'Ingresa tu email y usuario para recibir un link de reset.',
+        'modal.sendReset':  'Enviar link de reset →',
+        'modal.forgotUser': '¿Olvidaste tu usuario?',
+        'modal.forgotPass': '¿Olvidaste tu contraseña?',
+
+        // Tech dashboard
+        'tech.myJobs':    'Mis trabajos',
+        'tech.pending':   'Pendientes',
+        'tech.inProgress':'En proceso',
+        'tech.completed': 'Completados',
+        'tech.noJobs':    'No hay trabajos asignados.',
+        'tech.ratings':   'Mis calificaciones',
+        'tech.noRatings': 'Sin calificaciones aún.',
+        'tech.avgRating': 'Promedio',
+
+        // Cliente dashboard
+        'dash.plan':           'Tu Plan',
+        'dash.editProfile':    'Editar perfil',
+        'dash.changePassword': 'Cambiar contraseña',
+        'dash.newTicket':      'Nuevo reporte',
     en: {
         // Nav / Sidebar
         'nav.dashboard':        'Dashboard',
@@ -495,6 +563,106 @@ const i18n = {
         esBtn.style.color      = this.lang === 'es' ? '#fff'  : 'var(--text-3, #9aa0ab)';
         enBtn.style.background = this.lang === 'en' ? accent : 'transparent';
         enBtn.style.color      = this.lang === 'en' ? '#fff'  : 'var(--text-3, #9aa0ab)';
+        // Admin extra
+        'admin.tecnicos':     'Technicians',
+        'admin.clientes':     'Clients',
+        'admin.ticketsOpen':  'Open Tickets',
+        'admin.resolved':     'Resolved',
+        'admin.email':        'Email',
+        'admin.availability': 'Availability',
+        'admin.subscription': 'Subscription',
+        'admin.noProps':      'No properties added yet.',
+        'admin.motivo':       'Reason / Category',
+        'admin.address':      'Address',
+        'admin.contact':      'Contact',
+
+        // Status
+        'status.pending':    'Pending',
+        'status.inProgress': 'In Progress',
+        'status.completed':  'Completed',
+        'status.cancelled':  'Cancelled',
+        'status.available':  'Available',
+        'status.busy':       'Busy',
+
+        // 404
+        '404.title': 'Page not found',
+        '404.sub':   "The address you're looking for doesn't exist or was moved. Check the URL or go back to home.",
+        '404.home':  'Go home',
+        '404.back':  'Go back',
+
+        // Recover username
+        'rec.title': 'Forgot your username?',
+        'rec.sub':   "Enter your email and we'll send your username.",
+        'rec.email': 'Your account email',
+        'rec.send':  'Send my username →',
+        'rec.back':  '← Back to login',
+
+        // Reset password
+        'reset.title':   'New password',
+        'reset.sub':     'Enter your new password.',
+        'reset.new':     'New password',
+        'reset.confirm': 'Confirm password',
+        'reset.save':    'Save new password →',
+        'reset.goLogin': 'Go to login →',
+
+        // Login modals
+        'modal.recUser':    'Recover username',
+        'modal.recUserSub': "Enter your email and we'll send your username.",
+        'modal.sendUser':   'Send my username →',
+        'modal.recPass':    'Recover password',
+        'modal.recPassSub': 'Enter your email and username to receive a reset link.',
+        'modal.sendReset':  'Send reset link →',
+        'modal.forgotUser': 'Forgot your username?',
+        'modal.forgotPass': 'Forgot your password?',
+
+        // Tech dashboard
+        'tech.myJobs':     'My Jobs',
+        'tech.pending':    'Pending',
+        'tech.inProgress': 'In Progress',
+        'tech.completed':  'Completed',
+        'tech.noJobs':     'No jobs assigned.',
+        'tech.ratings':    'My Ratings',
+        'tech.noRatings':  'No ratings yet.',
+        'tech.avgRating':  'Average',
+
+        // Client dashboard
+        'dash.plan':           'Your Plan',
+        'dash.editProfile':    'Edit profile',
+        'dash.changePassword': 'Change password',
+        'dash.newTicket':      'New report',
+
+        // Admin dashboard (missing)
+        'admin.subtitle':       'Global metrics, client and technician management.',
+        'admin.individuals':    'Individual Clients',
+        'admin.companies':      'Companies',
+        'admin.ticketsSystem':  'System Tickets',
+        'admin.allCategories':  'All categories',
+        'admin.allStatuses':    'All statuses',
+        'admin.noTecnicos':     'No technicians registered.',
+        'admin.noIndividuals':  'No individual clients.',
+        'admin.noCompanies':    'No companies registered.',
+        'admin.noTickets':      'No tickets registered.',
+        'admin.noReviews':      'No reviews',
+        'admin.active':         'Active',
+        'admin.inactive':       'Inactive',
+        'admin.unassigned':     'Unassigned',
+        'admin.editTech':       'Edit Technician',
+        'admin.editClient':     'Edit Client',
+        'admin.saveChanges':    'Save changes',
+        'admin.deleteConfirm':  'Delete record?',
+        'admin.deleteWarning':  'This action cannot be undone.',
+        'admin.deleteConfirmBtn':'Yes, delete',
+        'admin.col.name':       'Name',
+        'admin.col.specialty':  'Specialty',
+        'admin.col.phone':      'Phone',
+        'admin.col.rating':     'Rating',
+        'admin.col.status':     'Status',
+        'admin.col.actions':    'Actions',
+        'admin.col.user':       'User',
+        'admin.col.registered': 'Registered',
+        'admin.col.company':    'Company',
+        'admin.col.contact':    'Contact',
+
     }
 };
 
