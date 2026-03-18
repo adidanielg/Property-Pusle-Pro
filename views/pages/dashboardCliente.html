@@ -250,10 +250,7 @@
         <a href="#perfil" data-i18n="nav.profile">👤 Perfil</a>
     </nav>
     <div class="pp-nav-right">
-        <div id="lang-toggle" style="display:flex;gap:.2rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.2rem">
-    <button id="lang-es" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)">ES</button>
-    <button id="lang-en" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)">EN</button>
-</div>
+        <div id="lang-toggle" style="display:flex;gap:.2rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.2rem"></div>
         
         <div class="pp-avatar" title="<%= cliente.username %>"><%= cliente.username.charAt(0).toUpperCase() %></div>
         <a href="/auth/logout" class="pp-nav-logout">Salir →</a>
@@ -283,13 +280,13 @@
             <div class="pp-stat-stripe" style="background:var(--yellow)"></div>
             <div class="pp-stat-icon">⏳</div>
             <div class="pp-stat-num"><%= tickets.filter(t=>t.estado==='pendiente').length %></div>
-            <div class="pp-stat-lbl" data-i18n="tech.pending" data-i18n="tech.pending">Pendientes</div>
+            <div class="pp-stat-lbl" data-i18n="tech.pending">Pendientes</div>
         </div>
         <div class="pp-stat">
             <div class="pp-stat-stripe" style="background:var(--green)"></div>
             <div class="pp-stat-icon">✅</div>
             <div class="pp-stat-num"><%= tickets.filter(t=>t.estado==='completado').length %></div>
-            <div class="pp-stat-lbl" data-i18n="dash.completed" data-i18n="dash.completed">Completados</div>
+            <div class="pp-stat-lbl" data-i18n="dash.completed">Completados</div>
         </div>
     </div>
 
@@ -336,7 +333,7 @@
                 <button class="ppb ppb-ghost ppb-sm" disabled>🔒 Sin propiedades</button>
             <% } else { %>
                 <button class="ppb ppb-ghost ppb-sm" onclick="abrirModal('pdfModal')" style="margin-right:.35rem">📄 Reporte PDF</button>
-                <button class="ppb ppb-primary ppb-sm" onclick="abrirModal('ticketModal')" data-i18n="dash.newTicket">+ Nuevo reporte</button>
+                <button class="ppb ppb-primary ppb-sm" onclick="abrirModal('ticketModal')">+ Nuevo reporte</button>
             <% } %>
         </div>
         <% if (tickets.length === 0) { %>
@@ -361,7 +358,7 @@
                     <% if(ticket.descripcion){%><div style="font-size:.78rem;color:var(--text-3);margin-bottom:.4rem;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden"><%= ticket.descripcion %></div><%}%>
                     <div class="pp-t-actions">
                         <span class="pp-badge pp-b-<%= ticket.estado %>">
-                            <%if(ticket.estado==='pendiente'){% data-i18n="status.pending">Pendiente<%}else if(ticket.estado==='en_proceso'){% data-i18n="status.inProgress">En proceso<%}else if(ticket.estado==='completado'){% data-i18n="status.completed">Completado<%}else{% data-i18n="status.cancelled">Cancelado<%}%>
+                            <%if(ticket.estado==='pendiente'){%>Pendiente<%}else if(ticket.estado==='en_proceso'){%>En proceso<%}else if(ticket.estado==='completado'){%>Completado<%}else{%>Cancelado<%}%>
                         </span>
                         <%if(ticket.estado==='en_proceso'){%>
                             <button class="ppb ppb-blue ppb-sm" data-ticket-id="<%= ticket.id %>" data-ticket-titulo="<%= ticket.motivo %>" onclick="abrirChat(this.dataset.ticketId,this.dataset.ticketTitulo)">💬 Chat</button>
@@ -394,7 +391,7 @@
 
     <!-- Plan -->
     <div class="pp-widget">
-        <div class="pp-widget-lbl" data-i18n="dash.plan" data-i18n="dash.plan">Tu Plan</div>
+        <div class="pp-widget-lbl" data-i18n="dash.plan">Tu Plan</div>
         <div id="planNombre" style="font-size:1.5rem;font-weight:800;letter-spacing:-.5px;color:var(--text-1);text-transform:capitalize;margin-bottom:.75rem">Starter</div>
         <div>
             <div style="display:flex;justify-content:space-between;font-size:.73rem">
@@ -413,7 +410,7 @@
 
     <!-- Quick action -->
     <div class="pp-widget" style="background:linear-gradient(135deg,var(--accent-soft),var(--surface));border-color:var(--accent)">
-        <div class="pp-widget-lbl" style="color:var(--accent)" data-i18n="dash.newTicket" data-i18n="dash.newTicket">Nuevo reporte</div>
+        <div class="pp-widget-lbl" style="color:var(--accent)" data-i18n="dash.newTicket">Nuevo reporte</div>
         <p style="font-size:.82rem;color:var(--text-2);margin-bottom:1rem;line-height:1.6">¿Problema en tu propiedad? Repórtalo ahora.</p>
         <% if (propiedades.length > 0) { %>
             <button class="ppb ppb-primary ppb-full" onclick="abrirModal('ticketModal')">🎫 Crear reporte</button>

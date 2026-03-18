@@ -201,10 +201,7 @@
         <a href="#perfil" data-i18n="nav.profile">👤 Perfil</a>
     </nav>
     <div class="tec-nav-right">
-        <div id="lang-toggle" style="display:flex;gap:.2rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.2rem">
-    <button id="lang-es" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)">ES</button>
-    <button id="lang-en" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)">EN</button>
-</div>
+        <div id="lang-toggle" style="display:flex;gap:.2rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.2rem"></div>
         
         <div class="tec-avatar" title="<%= tecnico.username %>"><%= tecnico.username.charAt(0).toUpperCase() %></div>
     </div>
@@ -261,19 +258,19 @@
             <div class="tec-stat-stripe" style="background:var(--yellow)"></div>
             <div class="tec-stat-icon">⏳</div>
             <div class="tec-stat-num"><%= tickets.filter(t=>t.estado==='pendiente').length %></div>
-            <div class="tec-stat-lbl" data-i18n="tech.pending" data-i18n="status.available">Disponibles</div>
+            <div class="tec-stat-lbl" data-i18n="tech.pending">Disponibles</div>
         </div>
         <div class="tec-stat">
             <div class="tec-stat-stripe" style="background:var(--blue)"></div>
             <div class="tec-stat-icon">🔄</div>
             <div class="tec-stat-num"><%= tickets.filter(t=>t.estado==='en_proceso'&&t.tecnico_asignado===tecnico.id).length %></div>
-            <div class="tec-stat-lbl" data-i18n="tech.inProgress" data-i18n="status.inProgress">En proceso</div>
+            <div class="tec-stat-lbl" data-i18n="tech.inProgress">En proceso</div>
         </div>
         <div class="tec-stat">
             <div class="tec-stat-stripe" style="background:var(--green)"></div>
             <div class="tec-stat-icon">✅</div>
             <div class="tec-stat-num"><%= tickets.filter(t=>t.estado==='completado').length %></div>
-            <div class="tec-stat-lbl" data-i18n="tech.completed" data-i18n="tech.completed">Completados</div>
+            <div class="tec-stat-lbl" data-i18n="tech.completed">Completados</div>
         </div>
         <div class="tec-stat">
             <div class="tec-stat-stripe" style="background:var(--yellow)"></div>
@@ -286,13 +283,13 @@
     <!-- Trabajos -->
     <section id="trabajos">
         <div class="tec-head">
-            <h2 data-i18n="tech.myJobs">Tickets disponibles y activos</h2>
+            <h2>Tickets disponibles y activos</h2>
         </div>
 
         <% if (tickets.length === 0) { %>
         <div class="tec-empty">
             <div style="font-size:2rem;opacity:.4;margin-bottom:.75rem">🎉</div>
-            <p style="font-size:.875rem" data-i18n="tech.noTickets" data-i18n="tech.noJobs">No hay tickets pendientes. ¡Buen trabajo!</p>
+            <p style="font-size:.875rem" data-i18n="tech.noTickets">No hay tickets pendientes. ¡Buen trabajo!</p>
         </div>
         <% } else { %>
         <div class="tec-tickets">
@@ -327,7 +324,7 @@
                     <% if (ticket.descripcion) { %><div class="tec-t-desc"><%= ticket.descripcion %></div><% } %>
                     <div class="tec-t-actions">
                         <span class="tec-badge tec-b-<%= ticket.estado %>">
-                            <%if(ticket.estado==='pendiente'){% data-i18n="status.pending">Pendiente<%}else if(ticket.estado==='en_proceso'){% data-i18n="status.inProgress">En proceso<%}else{% data-i18n="status.completed">Completado<%}%>
+                            <%if(ticket.estado==='pendiente'){%>Pendiente<%}else if(ticket.estado==='en_proceso'){%>En proceso<%}else{%>Completado<%}%>
                         </span>
                         <% if (ticket.estado === 'pendiente' && !tecnico.ocupado) { %>
                             <button class="tb tb-green tb-sm" onclick="cambiarEstado('<%= ticket.id %>','en_proceso')">✅ Aceptar trabajo</button>
@@ -370,12 +367,12 @@
     <!-- Calificaciones -->
     <section id="calificaciones">
         <div class="tec-head">
-            <h2 data-i18n="tech.ratings">Mis Calificaciones (<%= totalCalif %>)</h2>
+            <h2>Mis Calificaciones (<%= totalCalif %>)</h2>
         </div>
         <% if (calificaciones.length === 0) { %>
         <div class="tec-empty">
             <div style="font-size:2rem;opacity:.4;margin-bottom:.75rem">⭐</div>
-            <p style="font-size:.875rem" data-i18n="tech.noRatings">Aún no tienes calificaciones.</p>
+            <p style="font-size:.875rem">Aún no tienes calificaciones.</p>
         </div>
         <% } else { %>
         <div style="display:flex;flex-direction:column;gap:.5rem">
@@ -405,15 +402,15 @@
     <div class="tec-widget">
         <div class="tec-widget-lbl">Mis Estadísticas</div>
         <div class="tec-earn-row">
-            <span class="tec-earn-label" data-i18n="tech.completed">Total trabajos</span>
+            <span class="tec-earn-label">Total trabajos</span>
             <span class="tec-earn-value" id="statTotalTrabajos">—</span>
         </div>
         <div class="tec-earn-row">
-            <span class="tec-earn-label" data-i18n="tech.completed">Completados</span>
+            <span class="tec-earn-label">Completados</span>
             <span class="tec-earn-value" style="color:var(--green)" id="statCompletados">—</span>
         </div>
         <div class="tec-earn-row">
-            <span class="tec-earn-label" data-i18n="status.inProgress">En proceso</span>
+            <span class="tec-earn-label">En proceso</span>
             <span class="tec-earn-value" style="color:var(--accent)" id="statEnProceso">—</span>
         </div>
     </div>

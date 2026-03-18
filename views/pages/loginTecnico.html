@@ -33,9 +33,9 @@
             <span data-i18n="login.noAccount">¿No tienes cuenta?</span>
             <a href="/auth/register-tecnico" style="color:var(--accent);font-weight:600" data-i18n="reg.applyTech">Aplicar como técnico</a>
             <br>
-            <a href="#" style="color:var(--text-3);font-size:.8rem" onclick="document.getElementById('modalRecuperarUser').classList.add('open');return false"><span data-i18n="modal.forgotUser">¿Olvidaste tu usuario?</span></a>
+            <a href="#" style="color:var(--text-3);font-size:.8rem" onclick="document.getElementById('modalRecuperarUser').classList.add('open');return false">¿Olvidaste tu usuario?</a>
             &nbsp;·&nbsp;
-            <a href="#" style="color:var(--text-3);font-size:.8rem" onclick="document.getElementById('modalResetPass').classList.add('open');return false"><span data-i18n="modal.forgotPass">¿Olvidaste tu contraseña?</span></a>
+            <a href="#" style="color:var(--text-3);font-size:.8rem" onclick="document.getElementById('modalResetPass').classList.add('open');return false">¿Olvidaste tu contraseña?</a>
         </p>
         <p class="text-small text-muted mt-1" style="text-align:center">
             <span data-i18n="login.areClient">¿Eres cliente?</span>
@@ -61,25 +61,22 @@ if (new URLSearchParams(window.location.search).get('expired') === '1') {
 
 <script src="/js/app.js"></script>
 <script src="/js/i18n.js"></script>
-<div style="position:fixed;top:1rem;right:1rem;z-index:9999"><div id="lang-toggle" style="display:flex;gap:.2rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.2rem">
-    <button id="lang-es" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)">ES</button>
-    <button id="lang-en" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)">EN</button>
-</div></div>
+
 
 <!-- Modal: Recuperar Usuario -->
 <div id="modalRecuperarUser" class="modal-overlay">
     <div class="modal" style="max-width:420px">
         <div class="modal-header">
-            <h2>👤 <span data-i18n="modal.recUser">Recuperar usuario</span></h2>
+            <h2>👤 Recuperar usuario</h2>
             <button class="modal-close" onclick="document.getElementById('modalRecuperarUser').classList.remove('open')">✕</button>
         </div>
-        <p style="font-size:.875rem;color:var(--text-2);margin-bottom:1.25rem" data-i18n="modal.recUserSub">Ingresa tu email y te enviamos tu nombre de usuario.</p>
+        <p style="font-size:.875rem;color:var(--text-2);margin-bottom:1.25rem">Ingresa tu email y te enviamos tu nombre de usuario.</p>
         <div class="form-group">
-            <label class="form-label" data-i18n="rec.email">Email de tu cuenta</label>
+            <label class="form-label">Email de tu cuenta</label>
             <input type="email" id="recEmail" class="form-input" placeholder="tu@email.com">
         </div>
         <div id="recUserMsg" style="display:none;font-size:.82rem;padding:.5rem .75rem;border-radius:8px;margin-bottom:.75rem"></div>
-        <button class="btn btn-primary btn-full" onclick="enviarRecuperarUser()" data-i18n="modal.sendUser">Enviar mi usuario →</button>
+        <button class="btn btn-primary btn-full" onclick="enviarRecuperarUser()">Enviar mi usuario →</button>
     </div>
 </div>
 
@@ -87,10 +84,10 @@ if (new URLSearchParams(window.location.search).get('expired') === '1') {
 <div id="modalResetPass" class="modal-overlay">
     <div class="modal" style="max-width:420px">
         <div class="modal-header">
-            <h2>🔐 <span data-i18n="modal.recPass">Recuperar contraseña</span></h2>
+            <h2>🔐 Recuperar contraseña</h2>
             <button class="modal-close" onclick="document.getElementById('modalResetPass').classList.remove('open')">✕</button>
         </div>
-        <p style="font-size:.875rem;color:var(--text-2);margin-bottom:1.25rem" data-i18n="modal.recPassSub">Ingresa tu email y usuario para recibir un link de reset.</p>
+        <p style="font-size:.875rem;color:var(--text-2);margin-bottom:1.25rem">Ingresa tu email y usuario para recibir un link de reset.</p>
         <div class="form-group">
             <label class="form-label">Email</label>
             <input type="email" id="resetEmail" class="form-input" placeholder="tu@email.com">
@@ -100,7 +97,7 @@ if (new URLSearchParams(window.location.search).get('expired') === '1') {
             <input type="text" id="resetUser" class="form-input" placeholder="Tu nombre de usuario">
         </div>
         <div id="resetMsg" style="display:none;font-size:.82rem;padding:.5rem .75rem;border-radius:8px;margin-bottom:.75rem"></div>
-        <button class="btn btn-primary btn-full" onclick="enviarResetPass()" data-i18n="modal.sendReset">Enviar link de reset →</button>
+        <button class="btn btn-primary btn-full" onclick="enviarResetPass()">Enviar link de reset →</button>
     </div>
 </div>
 
