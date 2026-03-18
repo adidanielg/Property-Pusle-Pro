@@ -7,13 +7,31 @@ const ticketService = {
     // - Pendientes sin asignar (solo si el técnico está disponible, o los suyos propios)
     // - Los tickets que ya tiene asignados (en cualquier estado)
     async getTicketsParaTecnico(tecnicoId) {
-        const { data, error } = await supabase
+        // Obtener la especialidad del técnico para filtrar tickets
+        const { data: tec } = await supabase
+            .from('tecnicos')
+            .select('especialidad')
+            .eq('id', tecnicoId)
+            .single();
+
+        const especialidad = tec?.especialidad;
+
+        let query = supabase
             .from('tickets')
             .select('*, propiedades(direccion), companias(nombre_empresa, nombre_contacto)')
-            .or(`estado.eq.pendiente,tecnico_asignado.eq.${tecnicoId}`)
             .is('deleted_at', null)
             .order('created_at', { ascending: false });
 
+        // Tickets pendientes de su categoría O tickets que ya tiene asignados
+        if (especialidad) {
+            query = query.or(
+                `and(estado.eq.pendiente,categoria.eq.${especialidad}),tecnico_asignado.eq.${tecnicoId}`
+            );
+        } else {
+            query = query.or(`estado.eq.pendiente,tecnico_asignado.eq.${tecnicoId}`);
+        }
+
+        const { data, error } = await query;
         if (error) throw error;
         return data;
     },
@@ -61,12 +79,30 @@ const ticketService = {
                 .eq('id', tecnicoId);
         }
 
-        // Notificar al cliente
-        notificationService.notificarCliente(
-            ticketActual.cliente_id,
-            nuevoEstado,
-            ticketActual
-        ).catch(err => console.error('[PUSH]', err.message));
+        // Notificar al cliente con nombre del técnico
+        if (nuevoEstado === 'en_proceso') {
+            // Obtener nombre del técnico para el mensaje
+            const { data: tecData } = await supabase
+                .from('tecnicos')
+                .select('nombre')
+                .eq('id', tecnicoId)
+                .single();
+
+            const tecNombre = tecData?.nombre || 'El técnico';
+
+            notificationService.notificarClienteConTecnico(
+                ticketActual.cliente_id,
+                nuevoEstado,
+                ticketActual,
+                tecNombre
+            ).catch(err => console.error('[PUSH]', err.message));
+        } else {
+            notificationService.notificarCliente(
+                ticketActual.cliente_id,
+                nuevoEstado,
+                ticketActual
+            ).catch(err => console.error('[PUSH]', err.message));
+        }
 
         return ticket;
     }

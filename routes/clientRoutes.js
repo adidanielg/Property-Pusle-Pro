@@ -16,6 +16,16 @@ router.use(requireAuth(['cliente']));
 router.get('/dashboard', async (req, res) => {
     try {
         const id = req.user.id;
+
+        // Obtener tipo de cliente
+        const { data: clienteInfo } = await supabase
+            .from('companias')
+            .select('tipo_cliente, nombre_empresa, nombre_contacto')
+            .eq('id', id)
+            .single();
+
+        const tipoCliente = clienteInfo?.tipo_cliente || 'Individual';
+
         const [{ data: propiedades }, { data: tickets }, { data: misCalificaciones }] = await Promise.all([
             supabase.from('propiedades')
                 .select('*')
@@ -25,6 +35,7 @@ router.get('/dashboard', async (req, res) => {
             supabase.from('tickets')
                 .select('*, propiedades(direccion), tecnicos:tecnico_asignado(nombre)')
                 .eq('cliente_id', id)
+                .neq('estado', 'cancelado')
                 .is('deleted_at', null)
                 .order('created_at', { ascending: false }),
             supabase.from('calificaciones')
@@ -37,7 +48,7 @@ router.get('/dashboard', async (req, res) => {
 
         res.render('dashboardCliente.html', {
             title:              'Mi Panel | PropertyPulse',
-            cliente:            req.user,
+            cliente:            { ...req.user, tipo_cliente: tipoCliente, nombre_empresa: clienteInfo?.nombre_empresa },
             propiedades:        propiedades        || [],
             tickets:            tickets            || [],
             ticketsCalificados

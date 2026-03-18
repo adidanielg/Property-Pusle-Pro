@@ -93,6 +93,33 @@ const notificationService = {
             }
             console.error('[PUSH cliente]', err.message);
         }
+    // ── Notificar al cliente con nombre del técnico ─────────
+    async notificarClienteConTecnico(clienteId, nuevoEstado, ticket, tecNombre) {
+        try {
+            const { data: cliente } = await supabase
+                .from('companias')
+                .select('push_subscription')
+                .eq('id', clienteId)
+                .single();
+
+            if (!cliente?.push_subscription) return;
+
+            await webpush.sendNotification(
+                JSON.parse(cliente.push_subscription),
+                JSON.stringify({
+                    title: '🔄 Técnico en camino',
+                    body:  `${tecNombre} aceptó tu trabajo y está en camino. (${ticket.motivo})`,
+                    url:   '/cliente/dashboard'
+                })
+            );
+        } catch (err) {
+            if (err.statusCode === 410) {
+                await supabase.from('companias')
+                    .update({ push_subscription: null })
+                    .eq('id', clienteId);
+            }
+            console.error('[PUSH cliente técnico]', err.message);
+        }
     }
 };
 
