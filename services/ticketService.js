@@ -72,4 +72,32 @@ const ticketService = {
     }
 };
 
+// Notificar a técnicos disponibles por email cuando hay nuevo ticket
+ticketService.notificarTecnicosNuevoTicket = async function(ticket, propiedadDireccion, clienteNombre) {
+    try {
+        const emailService = require('./emailService');
+        const { data: tecnicos } = await supabase
+            .from('tecnicos')
+            .select('nombre, email')
+            .eq('activo', true)
+            .eq('ocupado', false);
+
+        if (!tecnicos?.length) return;
+
+        for (const tec of tecnicos) {
+            emailService.notificarTicketATecnico({
+                tecnicoNombre: tec.nombre,
+                tecnicoEmail:  tec.email,
+                motivo:        ticket.motivo,
+                categoria:     ticket.categoria,
+                direccion:     propiedadDireccion,
+                clienteNombre
+            }).catch(() => {});
+        }
+        console.log(`[EMAIL] Notificados ${tecnicos.length} técnicos`);
+    } catch (err) {
+        console.error('[EMAIL técnicos]', err.message);
+    }
+};
+
 module.exports = ticketService;
