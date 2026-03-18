@@ -861,7 +861,7 @@
     <button id="lang-es" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)">ES</button>
     <button id="lang-en" style="padding:.25rem .55rem;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)">EN</button>
 </div>
-        <a href="/app" class="nav-cta">Get started free</a>
+        <a href="/auth/register-cliente" class="nav-cta">Register as client</a>
     </div>
 </nav>
 
@@ -877,7 +877,7 @@
     </p>
 
     <div class="hero-actions">
-        <a href="/app" class="btn-hero-primary" data-i18n="landing.getStarted">Get started free →</a>
+        <a href="/auth/register-cliente" class="btn-hero-primary" data-i18n="landing.getStarted">Get started free →</a>
         <a href="#how-it-works" class="btn-hero-secondary" data-i18n="landing.seeHow">See how it works</a>
     </div>
     <p class="hero-note">No credit card required &nbsp;·&nbsp; Setup in 5 minutes &nbsp;·&nbsp; Cancel anytime</p>
@@ -1048,7 +1048,7 @@
                 <li><span class="x">✗</span><span style="color:var(--text-3)">Performance reports</span></li>
                 <li><span class="x">✗</span><span style="color:var(--text-3)">Priority support</span></li>
             </ul>
-            <a href="/app" class="btn-plan btn-plan-outline">Get started free →</a>
+            <a href="/auth/register-cliente" class="btn-plan btn-plan-outline">Get started free →</a>
         </div>
 
         <!-- Pro (featured) -->
@@ -1071,7 +1071,7 @@
                 <li><span class="check">✓</span><span>Performance reports</span></li>
                 <li><span class="x">✗</span><span style="color:var(--text-3)">Priority support</span></li>
             </ul>
-            <a href="/app" class="btn-plan btn-plan-primary">Get started →</a>
+            <a href="/auth/register-cliente" class="btn-plan btn-plan-primary">Get started →</a>
         </div>
 
         <!-- Business -->
@@ -1166,7 +1166,16 @@
         <button class="tec-pill" onclick="filtrarTecs(this,'Electricidad')" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;border:1px solid var(--border-2);background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s">⚡ Electricidad</button>
         <button class="tec-pill" onclick="filtrarTecs(this,'Plomería')" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;border:1px solid var(--border-2);background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s">🔧 Plomería</button>
         <button class="tec-pill" onclick="filtrarTecs(this,'Piscina')" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;border:1px solid var(--border-2);background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s">🏊 Piscina</button>
+        <button class="tec-pill" onclick="filtrarTecs(this,'Jardinería / Landscaping')" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;border:1px solid var(--border-2);background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s">🌿 Jardinería</button>
+        <button class="tec-pill" onclick="filtrarTecs(this,'Irrigation / Sistema de riego')" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;border:1px solid var(--border-2);background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s">💧 Irrigation</button>
+        <button class="tec-pill" onclick="filtrarTecs(this,'Pest Control')" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;border:1px solid var(--border-2);background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s">🐛 Pest Control</button>
+        <button class="tec-pill" onclick="filtrarTecs(this,'Limpieza / Pressure Washing')" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;border:1px solid var(--border-2);background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s">🧹 Pressure Washing</button>
+        <button class="tec-pill" onclick="filtrarTecs(this,'Electrodomésticos')" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;border:1px solid var(--border-2);background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s">🏠 Electrodomésticos</button>
+        <button class="tec-pill" onclick="filtrarTecs(this,'Estructura / Reparaciones')" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;border:1px solid var(--border-2);background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s">🏗️ Estructura</button>
+        <button class="tec-pill" onclick="filtrarTecs(this,'Seguridad')" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;border:1px solid var(--border-2);background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s">🔒 Seguridad</button>
+        <button class="tec-pill" onclick="filtrarTecs(this,'Bajo voltaje / Cámaras')" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;border:1px solid var(--border-2);background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s">📹 Cámaras</button>
         <button class="tec-pill" onclick="filtrarTecs(this,'Handyman')" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;border:1px solid var(--border-2);background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s">🛠️ Handyman</button>
+        <button class="tec-pill" onclick="filtrarTecs(this,'General')" style="padding:.35rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;border:1px solid var(--border-2);background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s">⚙️ General</button>
     </div>
 
     <!-- Grid -->
@@ -1175,7 +1184,7 @@
     </div>
 
     <div class="reveal" style="text-align:center;margin-top:1.25rem">
-        <a href="/app" class="btn-hero-secondary" style="font-size:.85rem;padding:.6rem 1.5rem">Ver todos los técnicos →</a>
+        <a href="/auth/register-tecnico" class="btn-hero-secondary" style="font-size:.85rem;padding:.6rem 1.5rem">Aplicar como técnico →</a>
     </div>
 </div>
 
@@ -1278,7 +1287,7 @@
     <h2>Ready to take control of your<br><em>property maintenance?</em></h2>
     <p>Join property managers across the US who use PropertyPulse to save time, reduce chaos, and close tickets faster.</p>
     <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
-        <a href="/app" class="btn-hero-primary">Get started free →</a>
+        <a href="/auth/register-cliente" class="btn-hero-primary">Get started free →</a>
         <a href="#pricing" class="btn-hero-secondary">View pricing</a>
     </div>
     <p style="margin-top:1rem;font-size:.8rem;color:var(--text-3)">No credit card required &nbsp;·&nbsp; Cancel anytime</p>
@@ -1293,7 +1302,9 @@
     <p>© 2026 PropertyPulse. All rights reserved.</p>
     <div class="footer-links">
         <a href="/auth/login">Client Login</a>
+        <a href="/auth/register-cliente">Register as Client</a>
         <a href="/auth/login-tecnico">Technician Login</a>
+        <a href="/auth/register-tecnico">Apply as Technician</a>
         <a href="#pricing" data-i18n="landing.pricing">Pricing</a>
     </div>
 </footer>
