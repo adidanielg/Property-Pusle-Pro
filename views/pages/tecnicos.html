@@ -84,24 +84,24 @@
 
 <div class="hero">
     <div class="badge">✦ Professional directory</div>
-    <h1>Nuestros <em>Técnicos</em></h1>
+    <h1>Our <em>Technicians</em></h1>
     <p class="sub">Verified professionals on PropertyPulse. Filter by specialty, check their history and real client reviews.</p>
 </div>
 
 <div class="filtros" id="filtros">
     <button class="pill active" data-esp="">All</button>
     <button class="pill" data-esp="Climatización (HVAC)">❄️ HVAC</button>
-    <button class="pill" data-esp="Electricidad">⚡ Electricidad</button>
-    <button class="pill" data-esp="Plomería">🔧 Plomería</button>
-    <button class="pill" data-esp="Piscina">🏊 Piscina</button>
-    <button class="pill" data-esp="Jardinería / Landscaping">🌿 Jardinería</button>
+    <button class="pill" data-esp="Electricidad">⚡ Electrical</button>
+    <button class="pill" data-esp="Plomería">🔧 Plumbing</button>
+    <button class="pill" data-esp="Piscina">🏊 Pool</button>
+    <button class="pill" data-esp="Jardinería / Landscaping">🌿 Landscaping</button>
     <button class="pill" data-esp="Irrigation / Sistema de riego">💧 Irrigation</button>
     <button class="pill" data-esp="Pest Control">🐛 Pest Control</button>
     <button class="pill" data-esp="Limpieza / Pressure Washing">🧹 Pressure Washing</button>
-    <button class="pill" data-esp="Electrodomésticos">🏠 Electrodomésticos</button>
-    <button class="pill" data-esp="Estructura / Reparaciones">🏗️ Estructura</button>
-    <button class="pill" data-esp="Seguridad">🔒 Seguridad</button>
-    <button class="pill" data-esp="Bajo voltaje / Cámaras">📹 Cámaras</button>
+    <button class="pill" data-esp="Electrodomésticos">🏠 Appliances</button>
+    <button class="pill" data-esp="Estructura / Reparaciones">🏗️ Structural</button>
+    <button class="pill" data-esp="Seguridad">🔒 Security</button>
+    <button class="pill" data-esp="Bajo voltaje / Cámaras">📹 Cameras</button>
     <button class="pill" data-esp="Handyman">🛠️ Handyman</button>
     <button class="pill" data-esp="General">⚙️ General</button>
 </div>
@@ -165,7 +165,7 @@ async function abrir(id){
     var stars=t.promedio?Math.round(parseFloat(t.promedio)):0;
     var d=!t.ocupado;
 
-    var rHtml='<p style="color:var(--text-3);font-size:.82rem;text-align:center;padding:.75rem">Sin reviews aún.</p>';
+    var rHtml='<p style="color:var(--text-3);font-size:.82rem;text-align:center;padding:.75rem">No reviews yet.</p>';
     try{
         var res=await fetch('/pub/tecnicos/'+id+'/resenas');
         var data=await res.json();
@@ -174,7 +174,7 @@ async function abrir(id){
                 return '<div class="ri">'
                     +'<div style="display:flex;justify-content:space-between;margin-bottom:.2rem">'
                     +'<span style="font-size:.85rem">'+'⭐'.repeat(r.estrellas)+'</span>'
-                    +'<span style="font-size:.7rem;color:var(--text-3)">'+new Date(r.created_at).toLocaleDateString('es',{month:'short',year:'numeric'})+'</span>'
+                    +'<span style="font-size:.7rem;color:var(--text-3)">'+new Date(r.created_at).toLocaleDateString('en',{month:'short',year:'numeric'})+'</span>'
                     +'</div>'
                     +(r.comentario?'<p style="font-size:.8rem;color:var(--text-2);margin:0;line-height:1.5">'+r.comentario+'</p>':'')
                     +'</div>';
@@ -192,7 +192,7 @@ async function abrir(id){
         +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.65rem;margin-bottom:1.5rem">'
         +'<div class="ms"><div class="ms-n" style="color:var(--accent)">'+(t.jobs_completados||0)+'</div><div class="ms-l">Jobs</div></div>'
         +'<div class="ms"><div class="ms-n" style="color:var(--yellow)">'+(t.promedio?parseFloat(t.promedio).toFixed(1):'—')+'</div><div class="ms-l">Rating</div></div>'
-        +'<div class="ms"><div class="ms-n">'+(t.totalCalif||0)+'</div><div class="ms-l">Reseñas</div></div>'
+        +'<div class="ms"><div class="ms-n">'+(t.totalCalif||0)+'</div><div class="ms-l">Reviews</div></div>'
         +'</div>'
         +(stars>0?'<div style="text-align:center;font-size:.95rem;margin-bottom:1rem">'+'⭐'.repeat(stars)+'</div>':'')
         +'<div style="font-size:.75rem;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.65rem">Recent reviews</div>'
