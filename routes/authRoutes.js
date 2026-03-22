@@ -1,8 +1,30 @@
 const express     = require('express');
 const router      = express.Router();
+const jwt         = require('jsonwebtoken');
 const authService = require('../services/authService');
+const supabase    = require('../services/supabaseClient');
 const { validate, schemas } = require('../middleware/validate');
 const { loginLimiter, registerLimiter } = require('../middleware/rateLimiter');
+
+// ── Helper: leer el token correcto según las cookies disponibles ──
+// FIX A-4: set-theme y set-lang usaban solo 'jwt', ignorando cookies por rol
+function getTokenFromCookies(cookies) {
+    return cookies?.jwt_admin
+        || cookies?.jwt_tecnico
+        || cookies?.jwt_cliente
+        || cookies?.jwt // fallback legacy
+        || null;
+}
+
+// ── Helper: opciones base para cookies JWT ────────────────────
+function jwtCookieOptions(maxAgeMs = 8 * 60 * 60 * 1000) {
+    return {
+        httpOnly: true,
+        secure:   process.env.NODE_ENV === 'production',
+        sameSite: 'strict', // FIX B-2: era 'lax', ahora 'strict'
+        maxAge:   maxAgeMs,
+    };
+}
 
 // ── Vistas login ──────────────────────────────────────────────
 router.get('/login',         (req, res) => res.render('loginCliente.html', { error: null }));
@@ -50,19 +72,14 @@ router.post('/login', loginLimiter, validate(schemas.login), async (req, res) =>
 
         // Cookie separada por rol — evita que múltiples sesiones se sobreescriban
         const cookieName = role === 'admin' ? 'jwt_admin' : role === 'tecnico' ? 'jwt_tecnico' : 'jwt_cliente';
-        res.cookie(cookieName, token, {
-            httpOnly: true,
-            secure:   process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            maxAge:   8 * 60 * 60 * 1000 // 8 horas
-        });
+        res.cookie(cookieName, token, jwtCookieOptions());
 
         // Sincronizar tema guardado en Supabase al browser
         if (user?.theme) {
             res.cookie('pp_theme', user.theme, {
                 httpOnly: false,
                 secure:   process.env.NODE_ENV === 'production',
-                sameSite: 'lax',
+                sameSite: 'lax', // pp_theme es leído por JS del browser — debe ser lax
                 maxAge:   365 * 24 * 60 * 60 * 1000
             });
         }
@@ -110,20 +127,20 @@ router.post('/login', loginLimiter, validate(schemas.login), async (req, res) =>
 });
 
 // ── POST /auth/set-theme ──────────────────────────────────────
+// FIX A-4: ahora lee cualquier cookie de sesión, no solo 'jwt'
 router.post('/set-theme', async (req, res) => {
     try {
-        const jwt = require('jsonwebtoken');
-        const token = req.cookies?.jwt;
+        const token = getTokenFromCookies(req.cookies);
         if (!token) return res.json({ success: false });
 
         const decoded = jwt.verify(token, process.env.SESSION_SECRET);
         const { theme } = req.body;
-        if (!['light', 'dark'].includes(theme)) return res.status(400).json({ error: 'Invalid theme' });
+        if (!['light', 'dark'].includes(theme))
+            return res.status(400).json({ error: 'Invalid theme' });
 
-        const supabase = require('../services/supabaseClient');
-        const table = decoded.role === 'tecnico' ? 'tecnicos' : 'companias';
-
+        // Guardar en DB (no para admin)
         if (decoded.role !== 'admin') {
+            const table = decoded.role === 'tecnico' ? 'tecnicos' : 'companias';
             await supabase.from(table).update({ theme }).eq('id', decoded.id);
         }
 
@@ -136,29 +153,32 @@ router.post('/set-theme', async (req, res) => {
 
         res.json({ success: true });
     } catch (err) {
+        console.error('[SET-THEME]', err.message);
         res.json({ success: false });
     }
 });
 
 // ── POST /auth/set-lang ───────────────────────────────────────
+// FIX A-4: ahora lee cualquier cookie de sesión, no solo 'jwt'
 router.post('/set-lang', async (req, res) => {
     try {
-        const jwt = require('jsonwebtoken');
-        const token = req.cookies?.jwt;
+        const token = getTokenFromCookies(req.cookies);
         if (!token) return res.json({ success: false });
 
         const decoded = jwt.verify(token, process.env.SESSION_SECRET);
         const { lang } = req.body;
-        if (!['es', 'en'].includes(lang)) return res.status(400).json({ error: 'Invalid lang' });
+        if (!['es', 'en'].includes(lang))
+            return res.status(400).json({ error: 'Invalid lang' });
 
-        const supabase = require('../services/supabaseClient');
-        const table = decoded.role === 'tecnico' ? 'tecnicos' : 'companias';
-
+        // Guardar en DB (no para admin)
         if (decoded.role !== 'admin') {
+            const table = decoded.role === 'tecnico' ? 'tecnicos' : 'companias';
             await supabase.from(table).update({ lang }).eq('id', decoded.id);
         }
+
         res.json({ success: true });
     } catch (err) {
+        console.error('[SET-LANG]', err.message);
         res.json({ success: false });
     }
 });
@@ -178,20 +198,24 @@ router.post('/recuperar-usuario', async (req, res) => {
     }
 
     try {
-        const supabase = require('../services/supabaseClient');
         const emailService = require('../services/emailService');
 
         // Buscar en clientes
-        let { data: user } = await supabase.from('companias').select('nombre_contacto, email, username').eq('email', email).single();
+        let { data: user } = await supabase.from('companias')
+            .select('nombre_contacto, email, username').eq('email', email).single();
         let role = 'cliente';
 
         // Si no está en clientes, buscar en técnicos
         if (!user) {
-            const { data: tec } = await supabase.from('tecnicos').select('nombre, email, username').eq('email', email).single();
-            if (tec) { user = { nombre_contacto: tec.nombre, email: tec.email, username: tec.username }; role = 'tecnico'; }
+            const { data: tec } = await supabase.from('tecnicos')
+                .select('nombre, email, username').eq('email', email).single();
+            if (tec) {
+                user = { nombre_contacto: tec.nombre, email: tec.email, username: tec.username };
+                role = 'tecnico';
+            }
         }
 
-        // Siempre mostrar el mismo mensaje por seguridad
+        // Siempre mostrar el mismo mensaje por seguridad (no revelar si el email existe)
         if (user) {
             emailService.enviarRecuperacionUsername({
                 nombre:   user.nombre_contacto,
@@ -213,7 +237,6 @@ router.post('/recuperar-usuario', async (req, res) => {
 });
 
 // ── POST /auth/solicitar-reset ───────────────────────────────
-// Solicitar reset de contraseña — genera token y envía email
 router.post('/solicitar-reset', async (req, res) => {
     const { email, username } = req.body;
     if (!email || !username) {
@@ -221,19 +244,17 @@ router.post('/solicitar-reset', async (req, res) => {
     }
 
     try {
-        const crypto   = require('crypto');
-        const supabase = require('../services/supabaseClient');
+        const crypto       = require('crypto');
         const emailService = require('../services/emailService');
 
-        // Buscar en clientes primero
         let user = null, role = 'cliente', nombre = '';
+
         const { data: cli } = await supabase.from('companias')
             .select('id, nombre_contacto, email, username')
             .eq('email', email).eq('username', username).single();
 
         if (cli) { user = cli; nombre = cli.nombre_contacto; }
 
-        // Si no, buscar en técnicos
         if (!user) {
             const { data: tec } = await supabase.from('tecnicos')
                 .select('id, nombre, email, username')
@@ -241,26 +262,24 @@ router.post('/solicitar-reset', async (req, res) => {
             if (tec) { user = tec; role = 'tecnico'; nombre = tec.nombre; }
         }
 
-        // Siempre responder igual por seguridad
         if (user) {
-            const token     = crypto.randomBytes(32).toString('hex');
+            const rawToken  = crypto.randomBytes(32).toString('hex');
             const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
 
-            // Invalidar tokens anteriores del usuario
+            // Invalidar tokens anteriores
             await supabase.from('password_reset_tokens')
                 .update({ used: true })
                 .eq('user_id', user.id).eq('used', false);
 
-            // Crear nuevo token
             await supabase.from('password_reset_tokens').insert({
                 user_id:    user.id,
                 user_role:  role,
-                token,
+                token:      rawToken,
                 expires_at: expiresAt.toISOString()
             });
 
             const baseUrl  = process.env.BASE_URL || 'https://www.getpropertypulse.net';
-            const resetUrl = `${baseUrl}/auth/reset-password?token=${token}`;
+            const resetUrl = `${baseUrl}/auth/reset-password?token=${rawToken}`;
 
             emailService.enviarResetPassword({ nombre, email: user.email, resetUrl });
         }
@@ -273,13 +292,11 @@ router.post('/solicitar-reset', async (req, res) => {
 });
 
 // ── GET /auth/reset-password ──────────────────────────────────
-// Página para ingresar nueva contraseña
 router.get('/reset-password', async (req, res) => {
     const { token } = req.query;
     if (!token) return res.redirect('/auth/login');
 
     try {
-        const supabase = require('../services/supabaseClient');
         const { data } = await supabase.from('password_reset_tokens')
             .select('*').eq('token', token).eq('used', false).single();
 
@@ -294,19 +311,19 @@ router.get('/reset-password', async (req, res) => {
 });
 
 // ── POST /auth/reset-password ─────────────────────────────────
-// Procesar nueva contraseña
 router.post('/reset-password', async (req, res) => {
     const { token, password, confirm_password } = req.body;
 
-    if (!token) return res.render('resetPassword.html', { error: 'Token inválido', token: null, success: null });
-    if (!password || password.length < 6) return res.render('resetPassword.html', { error: 'La contraseña debe tener al menos 6 caracteres', token, success: null });
-    if (password !== confirm_password) return res.render('resetPassword.html', { error: 'Las contraseñas no coinciden', token, success: null });
+    if (!token)
+        return res.render('resetPassword.html', { error: 'Token inválido', token: null, success: null });
+    if (!password || password.length < 6)
+        return res.render('resetPassword.html', { error: 'La contraseña debe tener al menos 6 caracteres', token, success: null });
+    if (password !== confirm_password)
+        return res.render('resetPassword.html', { error: 'Las contraseñas no coinciden', token, success: null });
 
     try {
-        const bcrypt   = require('bcryptjs');
-        const supabase = require('../services/supabaseClient');
+        const bcrypt = require('bcryptjs');
 
-        // Verificar token
         const { data: resetData } = await supabase.from('password_reset_tokens')
             .select('*').eq('token', token).eq('used', false).single();
 
@@ -314,13 +331,10 @@ router.post('/reset-password', async (req, res) => {
             return res.render('resetPassword.html', { error: 'El link ha expirado. Solicita uno nuevo.', token: null, success: null });
         }
 
-        // Actualizar contraseña
         const hashed = await bcrypt.hash(password, 10);
         const table  = resetData.user_role === 'tecnico' ? 'tecnicos' : 'companias';
 
         await supabase.from(table).update({ password: hashed }).eq('id', resetData.user_id);
-
-        // Marcar token como usado
         await supabase.from('password_reset_tokens').update({ used: true }).eq('token', token);
 
         res.render('resetPassword.html', { error: null, token: null, success: '✅ Contraseña actualizada. Ya puedes iniciar sesión.' });
@@ -332,10 +346,10 @@ router.post('/reset-password', async (req, res) => {
 
 // ── GET /auth/logout ──────────────────────────────────────────
 router.get('/logout', (req, res) => {
-    res.clearCookie('jwt');
-    res.clearCookie('jwt_cliente');
-    res.clearCookie('jwt_tecnico');
-    res.clearCookie('jwt_admin');
+    res.clearCookie('jwt',          { sameSite: 'strict' });
+    res.clearCookie('jwt_cliente',  { sameSite: 'strict' });
+    res.clearCookie('jwt_tecnico',  { sameSite: 'strict' });
+    res.clearCookie('jwt_admin',    { sameSite: 'strict' });
     res.redirect('/');
 });
 
