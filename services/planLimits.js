@@ -1,9 +1,9 @@
 const supabase = require('./supabaseClient');
 
 const PLANES = {
-    starter:  { propiedades: 3,        tickets: 10,       tecnicos: 1,        precio: 9  },
-    pro:      { propiedades: 15,       tickets: 50,       tecnicos: 5,        precio: 29 },
-    business: { propiedades: Infinity, tickets: Infinity, tecnicos: Infinity, precio: 79 }
+    starter:  { propiedades: 1,        tickets: 10,       tecnicos: 1,        precio: 19 },
+    pro:      { propiedades: 15,       tickets: 50,       tecnicos: 5,        precio: 49 },
+    business: { propiedades: Infinity, tickets: Infinity, tecnicos: Infinity, precio: 99 }
 };
 
 async function checkPropiedadLimit(companiaId) {

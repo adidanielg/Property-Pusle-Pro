@@ -1032,13 +1032,13 @@
             <div class="plan-name">Starter</div>
             <div class="plan-price">
                 <span class="currency">$</span>
-                <span class="amount">9</span>
+                <span class="amount" id="price-starter">19</span>
                 <span class="period">/mo</span>
             </div>
-            <p class="plan-desc">Perfect for independent landlords managing a few properties.</p>
+            <p class="plan-desc">Perfect for independent landlords starting out. Includes 1 property — upgrade anytime as you grow.</p>
             <hr class="plan-divider">
             <ul class="plan-features">
-                <li><span class="check">✓</span><span><strong>3 properties</strong></span></li>
+                <li><span class="check">✓</span><span><strong>1 property</strong></span></li>
                 <li><span class="check">✓</span><span><strong>10 active tickets</strong></span></li>
                 <li><span class="check">✓</span><span><strong>1 technician</strong></span></li>
                 <li><span class="check">✓</span><span>Push notifications</span></li>
@@ -1055,7 +1055,7 @@
             <div class="plan-name">Pro</div>
             <div class="plan-price">
                 <span class="currency">$</span>
-                <span class="amount">29</span>
+                <span class="amount" id="price-pro">49</span>
                 <span class="period">/mo</span>
             </div>
             <p class="plan-desc">For growing property managers who need more power and visibility.</p>
@@ -1077,7 +1077,7 @@
             <div class="plan-name">Business</div>
             <div class="plan-price">
                 <span class="currency">$</span>
-                <span class="amount">79</span>
+                <span class="amount" id="price-business">99</span>
                 <span class="period">/mo</span>
             </div>
             <p class="plan-desc">For property management companies running large portfolios.</p>
@@ -1301,7 +1301,7 @@
 
     // ── Billing toggle ────────────────────────────────────────
     let isAnnual = false;
-    const prices = { monthly:{starter:9,pro:29,business:79}, annual:{starter:7,pro:23,business:63} };
+    const prices = { monthly:{starter:19,pro:49,business:99}, annual:{starter:15,pro:39,business:79} };
     function toggleBilling() {
         isAnnual = !isAnnual;
         const knob = document.getElementById('toggleKnob');
@@ -1321,9 +1321,9 @@
         const ns = document.getElementById('annual-starter');
         const np = document.getElementById('annual-pro');
         const nb = document.getElementById('annual-business');
-        if (ns) ns.textContent = note(9,7);
-        if (np) np.textContent = note(29,23);
-        if (nb) nb.textContent = note(79,63);
+        if (ns) ns.textContent = note(19,15);
+        if (np) np.textContent = note(49,39);
+        if (nb) nb.textContent = note(99,79);
     }
 </script>
 

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es" data-theme="dark">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro Técnico | PropertyPulse</title>
+    <title>Technician Registration | PropertyPulse</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#6c63ff">
     <meta name="mobile-web-app-capable" content="yes">
@@ -22,37 +22,37 @@
         <div class="auth-logo">
             <div class="mark" style="background:var(--text-1)">🔧</div>
             <h1>Property<span>Pulse</span></h1>
-            <p data-i18n="reg.applyTech">Únete como técnico</p>
+            <p>Join as a technician</p>
         </div>
 
         <form id="registerForm" onsubmit="registrar(event)">
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label" data-i18n="reg.firstName">Nombre</label>
+                    <label class="form-label">First name</label>
                     <input type="text" name="nombre" class="form-input" required autocomplete="given-name">
                 </div>
                 <div class="form-group">
-                    <label class="form-label" data-i18n="reg.lastName">Apellido</label>
+                    <label class="form-label">Last name</label>
                     <input type="text" name="apellido" class="form-input" required autocomplete="family-name">
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label" data-i18n="reg.email">Email</label>
+                    <label class="form-label">Email</label>
                     <input type="email" name="email" class="form-input" required autocomplete="email">
                 </div>
                 <div class="form-group">
-                    <label class="form-label" data-i18n="reg.phone">Teléfono</label>
+                    <label class="form-label">Phone</label>
                     <input type="tel" name="telefono" class="form-input" required autocomplete="tel">
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="form-label" data-i18n="reg.specialty">Especialidad principal</label>
+                <label class="form-label">Main specialty</label>
                 <select name="especialidad" class="form-select" required>
-                    <option value="" data-i18n="reg.selectSpecialty">Selecciona una especialidad...</option>
+                    <option value="">Select a specialty...</option>
                     <option value="Climatización (HVAC)">❄️ Climatización (HVAC)</option>
                     <option value="Electricidad">⚡ Electricidad</option>
                     <option value="Plomería">🔧 Plomería</option>
@@ -70,11 +70,11 @@
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label" data-i18n="reg.password">Contraseña</label>
+                    <label class="form-label">Password</label>
                     <input type="password" name="password" class="form-input" required autocomplete="new-password" minlength="6">
                 </div>
                 <div class="form-group">
-                    <label class="form-label" data-i18n="reg.confirmPassword">Confirmar contraseña</label>
+                    <label class="form-label">Confirm password</label>
                     <input type="password" name="confirm_password" class="form-input" required autocomplete="new-password">
                 </div>
             </div>
@@ -83,24 +83,24 @@
 
             <div class="form-group">
                 <label class="form-label" style="display:flex;align-items:center;gap:.5rem">
-                    🎟️ <span>Código de invitación</span>
-                    <span style="font-size:.72rem;color:var(--text-3);font-weight:400">(opcional)</span>
+                    🎟️ <span>Invitation code</span>
+                    <span style="font-size:.72rem;color:var(--text-3);font-weight:400">(optional)</span>
                 </label>
                 <input type="text" name="codigo_invitacion" class="form-input"
                     placeholder="PP-XXXX-XXXX"
                     style="text-transform:uppercase;letter-spacing:.1em;font-family:var(--font-mono)"
                     oninput="this.value=this.value.toUpperCase()">
                 <p style="font-size:.72rem;color:var(--text-3);margin-top:.3rem">
-                    Si tienes un código de invitación ingrésalo aquí para acceso especial.
+                    If you have an invitation code, enter it here for special access.
                 </p>
             </div>
-            <button type="submit" class="btn btn-full mt-2" style="background:var(--accent);color:#fff" id="btnSubmit" data-i18n="reg.register">
-                Registrarme
+            <button type="submit" class="btn btn-full mt-2" style="background:var(--accent);color:#fff" id="btnSubmit">
+                Sign up
             </button>
 
             <p class="text-small text-muted mt-2" style="text-align:center">
-                <span data-i18n="reg.haveAccount">¿Ya tienes cuenta?</span>
-                <a href="/auth/login-tecnico" style="color:var(--accent);font-weight:600" data-i18n="reg.loginLink">Inicia sesión</a>
+                <span>Already have an account?</span>
+                <a href="/auth/login-tecnico" style="color:var(--accent);font-weight:600">Sign in</a>
             </p>
         </form>
 
@@ -113,33 +113,33 @@
 
         <div style="font-size:3.5rem;margin-bottom:1rem;animation:modalIn .3s ease">🎉</div>
 
-        <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:.4rem;letter-spacing:-.3px" data-i18n="reg.successTechTitle">
-            ¡Registro exitoso!
+        <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:.4rem;letter-spacing:-.3px">
+            Registration successful!
         </h2>
-        <p style="font-size:.875rem;color:var(--text-2);margin-bottom:1.5rem" data-i18n="reg.successMsg">
-            Este es tu nombre de usuario para iniciar sesión:
+        <p style="font-size:.875rem;color:var(--text-2);margin-bottom:1.5rem">
+            This is your username to sign in:
         </p>
 
         <!-- Username display -->
         <div style="background:var(--accent-soft);border:2px solid var(--accent);padding:1.25rem 1.5rem;border-radius:14px;margin-bottom:1rem">
             <div style="font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:.4rem;opacity:.7">
-                Tu usuario
+                Your username
             </div>
             <div id="usernameDisplay" style="font-size:1.5rem;font-weight:700;color:var(--accent);letter-spacing:.5px;font-family:var(--font-mono)"></div>
         </div>
 
         <button onclick="copiarUsername()" id="copyBtn" class="btn btn-secondary btn-full mb-2">
-            📋 Copiar nombre de usuario
+            📋 Copy username
         </button>
 
         <div style="background:var(--yellow-soft);border-left:3px solid var(--yellow);padding:.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1.5rem;text-align:left">
             <p style="font-size:.82rem;color:#92400e;font-weight:500">
-                ⚠️ <strong>Guárdalo ahora</strong> — lo necesitas para iniciar sesión. No usamos email como usuario.
+                ⚠️ <strong>Save it now</strong> — you need it to sign in. We do not use email as username.
             </p>
         </div>
 
-        <a href="/auth/login-tecnico" class="btn btn-primary btn-full" data-i18n="reg.goLogin">
-            Ir a iniciar sesión →
+        <a href="/auth/login-tecnico" class="btn btn-primary btn-full">
+            Go to sign in →
         </a>
 
     </div>
@@ -154,15 +154,15 @@
         const btn = document.getElementById('copyBtn');
 
         navigator.clipboard.writeText(username).then(() => {
-            btn.textContent = '✅ ¡Copiado!';
+            btn.textContent = '✅ ¡Copied!';
             btn.style.background = 'var(--green-soft)';
             btn.style.color = 'var(--green)';
             setTimeout(() => {
-                btn.textContent = '📋 Copiar nombre de usuario';
+                btn.textContent = '📋 Copy username';
                 btn.style.background = '';
                 btn.style.color = '';
             }, 2000);
-            showToast('✅ Nombre de usuario copiado');
+            showToast('✅ First name de usuario copiado');
         }).catch(() => {
             const el = document.createElement('textarea');
             el.value = username;
@@ -183,19 +183,19 @@
         errDiv.style.display = 'none';
 
         const btn  = document.getElementById('btnSubmit');
-        const done = btnLoading(btn, 'Procesando...');
+        const done = btnLoading(btn, 'Processing...');
         const data = Object.fromEntries(new FormData(e.target));
         data.role  = 'tecnico';
 
         if (data.password !== data.confirm_password) {
-            errDiv.textContent = '❌ Las contraseñas no coinciden';
+            errDiv.textContent = '❌ Passwords do not match';
             errDiv.style.display = 'block';
             done();
             return;
         }
 
         if (data.password.length < 6) {
-            errDiv.textContent = '❌ La contraseña debe tener al menos 6 caracteres';
+            errDiv.textContent = '❌ Password must be at least 6 characters';
             errDiv.style.display = 'block';
             done();
             return;
@@ -218,7 +218,7 @@
                 errDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         } catch (err) {
-            errDiv.textContent = '❌ Error de conexión. Intenta nuevamente.';
+            errDiv.textContent = '❌ Connection error. Please try again.';
             errDiv.style.display = 'block';
         } finally {
             done();

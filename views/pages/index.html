@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es" data-theme="dark">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PropertyPulse — Gestión de Mantenimiento</title>
+    <title>PropertyPulse — Property Maintenance Management</title>
     <!-- PWA -->
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#6c63ff">
@@ -25,7 +25,7 @@
         <h1>Property<span>Pulse</span></h1>
     </div>
 
-    <p class="landing-tagline" data-i18n="landing.tagline">
+    <p class="landing-tagline">
         Plataforma profesional de gestión de mantenimiento para propiedades.<br>
         Conecta clientes, técnicos y administradores en un solo lugar.
     </p>
@@ -34,29 +34,29 @@
 
         <div class="portal-card">
             <div class="portal-icon">👤</div>
-            <h2 data-i18n="landing.clientPortal">Portal de Clientes</h2>
-            <p data-i18n="landing.clientDesc">Gestiona tus propiedades y reporta problemas de mantenimiento fácilmente.</p>
+            <h2>Client Portal</h2>
+            <p>Manage your properties and report maintenance issues easily.</p>
             <div class="btns">
-                <a href="/auth/login" class="btn btn-primary" data-i18n="landing.login">Iniciar Sesión</a>
-                <a href="/auth/register-cliente" class="btn btn-secondary" data-i18n="landing.register">Crear Cuenta</a>
+                <a href="/auth/login" class="btn btn-primary">Sign In</a>
+                <a href="/auth/register-cliente" class="btn btn-secondary">Create Account</a>
             </div>
         </div>
 
         <div class="portal-card">
             <div class="portal-icon">🔧</div>
-            <h2 data-i18n="landing.techPortal">Portal de Técnicos</h2>
-            <p data-i18n="landing.techDesc">Recibe trabajos de mantenimiento y gestiona tus servicios en campo.</p>
+            <h2>Technician Portal</h2>
+            <p>Receive maintenance jobs and manage your services in the field.</p>
             <div class="btns">
-                <a href="/auth/login-tecnico" class="btn btn-primary" style="background:#6c63ff;color:#ffffff;border-color:#6c63ff" data-i18n="landing.techLogin">Entrar al Panel</a>
-                <a href="/auth/register-tecnico" class="btn btn-secondary" data-i18n="landing.techRegister">Aplicar como Técnico</a>
+                <a href="/auth/login-tecnico" class="btn btn-primary" style="background:#6c63ff;color:#ffffff;border-color:#6c63ff">Enter Dashboard</a>
+                <a href="/auth/register-tecnico" class="btn btn-secondary">Apply as Technician</a>
             </div>
         </div>
 
     </div>
 
     <p style="margin-top:2.5rem;font-size:.8rem;color:var(--text-3)">
-        <span data-i18n="landing.adminAccess">¿Eres administrador?</span>
-        <a href="/auth/login-admin" style="color:var(--accent)" data-i18n="landing.restricted">Acceso restringido →</a>
+        <span>Are you an admin?</span>
+        <a href="/auth/login-admin" style="color:var(--accent)">Restricted access →</a>
     </p>
 
 </div>

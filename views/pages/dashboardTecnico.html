@@ -56,7 +56,7 @@
 }
 .tec-topbar-btn:hover { border-color: var(--green); color: var(--green); }
 
-/* Estado banner */
+/* Status banner */
 .tec-status-bar {
     padding: .7rem 1.5rem;
     display: flex; align-items: center; gap: .75rem;
@@ -196,9 +196,9 @@
 <header class="tec-topbar">
     <a href="/tecnico/dashboard" class="tec-logo">🔧 Property<span>Pulse</span> <span class="tec-logo-role">Técnico</span></a>
     <nav class="tec-nav">
-        <a href="#trabajos" class="active" data-i18n="nav.myJobs">🎫 Trabajos</a>
+        <a href="#trabajos" class="active">🎫 Trabajos</a>
         <a href="#calificaciones">⭐ Calificaciones</a>
-        <a href="#perfil" data-i18n="nav.profile">👤 Perfil</a>
+        <a href="#perfil">👤 Perfil</a>
     </nav>
     <div class="tec-nav-right">
         <div id="lang-toggle" style="display:flex;gap:.2rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.2rem"></div>
@@ -216,7 +216,7 @@
 <% } else { %>
 <div class="tec-status-bar" style="background:var(--green-soft)">
     <div class="tec-status-dot" style="background:var(--green)"></div>
-    <span style="color:#065f46">Disponible — puedes aceptar nuevos trabajos</span>
+    <span style="color:#065f46">Available — puedes aceptar nuevos trabajos</span>
 </div>
 <% } %>
 
@@ -242,7 +242,7 @@
         <div style="display:flex;align-items:center;gap:.75rem">
             <div style="font-size:1.5rem">⚠️</div>
             <div>
-                <div style="font-weight:700;color:#f59e0b;font-size:.9rem">Suscripción requerida</div>
+                <div style="font-weight:700;color:#f59e0b;font-size:.9rem">Subscription required</div>
                 <div style="font-size:.78rem;color:var(--text-2);margin-top:.2rem">Ya usaste tu trabajo gratuito. Suscríbete para seguir recibiendo trabajos.</div>
             </div>
         </div>
@@ -258,38 +258,38 @@
             <div class="tec-stat-stripe" style="background:var(--yellow)"></div>
             <div class="tec-stat-icon">⏳</div>
             <div class="tec-stat-num"><%= tickets.filter(t=>t.estado==='pendiente').length %></div>
-            <div class="tec-stat-lbl" data-i18n="tech.pending">Disponibles</div>
+            <div class="tec-stat-lbl">Availables</div>
         </div>
         <div class="tec-stat">
             <div class="tec-stat-stripe" style="background:var(--blue)"></div>
             <div class="tec-stat-icon">🔄</div>
             <div class="tec-stat-num"><%= tickets.filter(t=>t.estado==='en_proceso'&&t.tecnico_asignado===tecnico.id).length %></div>
-            <div class="tec-stat-lbl" data-i18n="tech.inProgress">En proceso</div>
+            <div class="tec-stat-lbl">In Progress</div>
         </div>
         <div class="tec-stat">
             <div class="tec-stat-stripe" style="background:var(--green)"></div>
             <div class="tec-stat-icon">✅</div>
             <div class="tec-stat-num"><%= tickets.filter(t=>t.estado==='completado').length %></div>
-            <div class="tec-stat-lbl" data-i18n="tech.completed">Completados</div>
+            <div class="tec-stat-lbl">Completeds</div>
         </div>
         <div class="tec-stat">
             <div class="tec-stat-stripe" style="background:var(--yellow)"></div>
             <div class="tec-stat-icon">⭐</div>
             <div class="tec-stat-num" style="font-size:1.8rem"><%= promedio || '—' %></div>
-            <div class="tec-stat-lbl" data-i18n="tech.myRating">Calificación</div>
+            <div class="tec-stat-lbl">Rating</div>
         </div>
     </div>
 
     <!-- Trabajos -->
     <section id="trabajos">
         <div class="tec-head">
-            <h2>Tickets disponibles y activos</h2>
+            <h2>Available and active tickets</h2>
         </div>
 
         <% if (tickets.length === 0) { %>
         <div class="tec-empty">
             <div style="font-size:2rem;opacity:.4;margin-bottom:.75rem">🎉</div>
-            <p style="font-size:.875rem" data-i18n="tech.noTickets">No hay tickets pendientes. ¡Buen trabajo!</p>
+            <p style="font-size:.875rem">No pending tickets. Great job!</p>
         </div>
         <% } else { %>
         <div class="tec-tickets">
@@ -324,18 +324,18 @@
                     <% if (ticket.descripcion) { %><div class="tec-t-desc"><%= ticket.descripcion %></div><% } %>
                     <div class="tec-t-actions">
                         <span class="tec-badge tec-b-<%= ticket.estado %>">
-                            <%if(ticket.estado==='pendiente'){%>Pendiente<%}else if(ticket.estado==='en_proceso'){%>En proceso<%}else{%>Completado<%}%>
+                            <%if(ticket.estado==='pendiente'){%>Pending<%}else if(ticket.estado==='en_proceso'){%>In Progress<%}else{%>Completed<%}%>
                         </span>
                         <% if (ticket.estado === 'pendiente' && !tecnico.ocupado) { %>
-                            <button class="tb tb-green tb-sm" onclick="cambiarEstado('<%= ticket.id %>','en_proceso')">✅ Aceptar trabajo</button>
+                            <button class="tb tb-green tb-sm" onclick="cambiarStatus('<%= ticket.id %>','en_proceso')">✅ Accept job</button>
                             <button class="tb tb-sm" style="background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent)" onclick="abrirCotizar('<%= ticket.id %>','<%= ticket.motivo %>')">💰 Cotizar</button>
                             <button class="tb tb-sm" style="background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent)" onclick="abrirCotizar('<%= ticket.id %>','<%= ticket.motivo %>')">💰 Cotizar</button>
                         <% } else if (ticket.estado === 'pendiente' && tecnico.ocupado) { %>
-                            <span style="font-size:.72rem;color:var(--text-3)">Completa tu trabajo actual primero</span>
+                            <span style="font-size:.72rem;color:var(--text-3)">Complete your current job first</span>
                         <% } else if (ticket.estado === 'en_proceso' && esMio) { %>
-                            <button class="tb tb-green tb-sm" onclick="cambiarEstado('<%= ticket.id %>','completado')">🏁 Marcar completado</button>
+                            <button class="tb tb-green tb-sm" onclick="cambiarStatus('<%= ticket.id %>','completado')">🏁 Marcar completado</button>
                             <button class="tb tb-blue tb-sm" data-id="<%= ticket.id %>" data-titulo="<%= ticket.motivo %>" onclick="abrirChatTec(this.dataset.id,this.dataset.titulo)">💬 Chat</button>
-                            <button class="tb tb-danger tb-sm" onclick="cancelarTrabajo('<%= ticket.id %>')">❌ Cancelar</button>
+                            <button class="tb tb-danger tb-sm" onclick="cancelarTrabajo('<%= ticket.id %>')">❌ Cancel</button>
                         <% } %>
                         <% if (ticket.foto_url) { %>
                             <a href="<%= ticket.foto_url %>" target="_blank" class="tb tb-ghost tb-sm">📸 Foto</a>
@@ -367,7 +367,7 @@
     <!-- Calificaciones -->
     <section id="calificaciones">
         <div class="tec-head">
-            <h2>Mis Calificaciones (<%= totalCalif %>)</h2>
+            <h2>My Ratings (<%= totalCalif %>)</h2>
         </div>
         <% if (calificaciones.length === 0) { %>
         <div class="tec-empty">
@@ -400,58 +400,58 @@
 
     <!-- Earnings -->
     <div class="tec-widget">
-        <div class="tec-widget-lbl">Mis Estadísticas</div>
+        <div class="tec-widget-lbl">My Stats</div>
         <div class="tec-earn-row">
-            <span class="tec-earn-label">Total trabajos</span>
+            <span class="tec-earn-label">Total jobs</span>
             <span class="tec-earn-value" id="statTotalTrabajos">—</span>
         </div>
         <div class="tec-earn-row">
-            <span class="tec-earn-label">Completados</span>
-            <span class="tec-earn-value" style="color:var(--green)" id="statCompletados">—</span>
+            <span class="tec-earn-label">Completeds</span>
+            <span class="tec-earn-value" style="color:var(--green)" id="statCompleteds">—</span>
         </div>
         <div class="tec-earn-row">
-            <span class="tec-earn-label">En proceso</span>
+            <span class="tec-earn-label">In Progress</span>
             <span class="tec-earn-value" style="color:var(--accent)" id="statEnProceso">—</span>
         </div>
     </div>
 
     <!-- Ranking -->
     <div class="tec-widget">
-        <div class="tec-widget-lbl">Ranking de Técnicos</div>
+        <div class="tec-widget-lbl">Technician Ranking</div>
         <div id="rankingContainer">
-            <div style="text-align:center;color:var(--text-3);font-size:.8rem;padding:1rem">Cargando...</div>
+            <div style="text-align:center;color:var(--text-3);font-size:.8rem;padding:1rem">Loading...</div>
         </div>
     </div>
 
     <!-- Perfil -->
     <div class="tec-widget" id="perfil">
-        <div class="tec-widget-lbl" data-i18n="profile.title">Mi Perfil</div>
+        <div class="tec-widget-lbl">My Profile</div>
         <div style="margin-bottom:1rem">
             <div style="font-size:.875rem;font-weight:600;color:var(--text-1);margin-bottom:.2rem" id="perfil-nombre-display">—</div>
             <div style="font-size:.78rem;color:var(--text-3);margin-bottom:.15rem" id="perfil-email-display">—</div>
             <div style="font-size:.78rem;color:var(--text-3);margin-bottom:.15rem" id="perfil-tel-display">—</div>
             <div style="font-size:.78rem;color:var(--green);font-weight:600" id="perfil-esp-display">—</div>
         </div>
-        <button class="tb tb-green tb-full" onclick="abrirModal('perfilModal')" data-i18n="dash.editProfile">✏️ Editar perfil</button>
-        <button class="tb tb-ghost tb-full tb-sm" style="margin-top:.5rem" onclick="abrirModal('passwordModal')" data-i18n="dash.changePassword">🔑 Cambiar contraseña</button>
+        <button class="tb tb-green tb-full" onclick="abrirModal('perfilModal')">✏️ Edit profile</button>
+        <button class="tb tb-ghost tb-full tb-sm" style="margin-top:.5rem" onclick="abrirModal('passwordModal')">🔑 Change password</button>
         <div class="pp-div"></div>
-        <a href="/auth/logout" class="tb tb-danger tb-full" style="justify-content:center;text-align:center" data-i18n="nav.logout">🚪 Cerrar sesión</a>
-        <button class="tb tb-full tb-sm" style="margin-top:.35rem;background:transparent;color:var(--text-3);border:1px solid var(--border)" onclick="eliminarCuenta()">🗑️ Eliminar mi cuenta</button>
+        <a href="/auth/logout" class="tb tb-danger tb-full" style="justify-content:center;text-align:center">🚪 Sign out</a>
+        <button class="tb tb-full tb-sm" style="margin-top:.35rem;background:transparent;color:var(--text-3);border:1px solid var(--border)" onclick="eliminarCuenta()">🗑️ Delete my account</button>
     </div>
 
 </aside>
 </div>
 </div>
 
-<!-- Modal: Editar Perfil Técnico -->
+<!-- Modal: Edit Perfil Técnico -->
 <div id="perfilModal" class="modal-overlay">
     <div class="modal" style="max-width:460px">
         <div class="modal-header">
-            <h2>👤 Editar Perfil</h2>
+            <h2>👤 Edit Perfil</h2>
             <button class="modal-close" onclick="cerrarModal('perfilModal')">✕</button>
         </div>
         <div class="form-group">
-            <label class="form-label">Nombre completo</label>
+            <label class="form-label">First name completo</label>
             <input type="text" id="p_nombre" class="form-input" required>
         </div>
         <div class="form-group">
@@ -459,11 +459,11 @@
             <input type="email" id="p_email" class="form-input" required>
         </div>
         <div class="form-group">
-            <label class="form-label">Teléfono</label>
+            <label class="form-label">Phone</label>
             <input type="text" id="p_telefono" class="form-input" required>
         </div>
         <div class="form-group">
-            <label class="form-label">Especialidad</label>
+            <label class="form-label">Specialty</label>
             <select id="p_especialidad" class="form-select">
                 <option value="Climatización (HVAC)">❄️ Climatización (HVAC)</option>
                 <option value="Electricidad">⚡ Electricidad</option>
@@ -480,7 +480,7 @@
             </select>
         </div>
         <div id="perfilMsg" style="display:none;font-size:.8rem;padding:.5rem .75rem;border-radius:8px;margin-bottom:.75rem"></div>
-        <button class="btn btn-primary btn-full" onclick="guardarPerfil()">Guardar cambios</button>
+        <button class="btn btn-primary btn-full" onclick="guardarPerfil()">Save changes</button>
     </div>
 </div>
 
@@ -492,11 +492,11 @@
             <button class="modal-close" onclick="cerrarModal('passwordModal')">✕</button>
         </div>
         <div class="form-group">
-            <label class="form-label">Contraseña actual</label>
+            <label class="form-label">Current password</label>
             <input type="password" id="p_pass_actual" class="form-input" placeholder="••••••••">
         </div>
         <div class="form-group">
-            <label class="form-label">Nueva contraseña</label>
+            <label class="form-label">New password</label>
             <input type="password" id="p_pass_nueva" class="form-input" placeholder="Mínimo 6 caracteres">
         </div>
         <button class="btn btn-primary btn-full" onclick="cambiarPassword()">Actualizar contraseña</button>
@@ -506,15 +506,15 @@
 <!-- MODALES -->
 <div id="cancelTecModal" class="modal-overlay">
     <div class="modal">
-        <div class="modal-header"><h2>❌ Cancelar trabajo</h2><button class="modal-close" onclick="document.getElementById('cancelTecModal').classList.remove('open')">✕</button></div>
+        <div class="modal-header"><h2>❌ Cancel job</h2><button class="modal-close" onclick="document.getElementById('cancelTecModal').classList.remove('open')">✕</button></div>
         <p class="text-muted mb-3" style="font-size:.875rem">El ticket volverá a estar disponible para otros técnicos. Debes ingresar el motivo.</p>
         <div class="form-group">
             <label class="form-label">Motivo de cancelación</label>
-            <textarea id="cancelTecMotivo" class="form-textarea" placeholder="¿Por qué cancelas este trabajo?" rows="3" required></textarea>
+            <textarea id="cancelTecMotivo" class="form-textarea" placeholder="Por qué cancelas este trabajo?" rows="3" required></textarea>
         </div>
         <div style="display:flex;gap:.75rem;margin-top:1rem">
             <button class="btn btn-secondary" style="flex:1" onclick="document.getElementById('cancelTecModal').classList.remove('open')">Volver</button>
-            <button class="btn btn-danger" style="flex:1" onclick="confirmarCancelacionTec()">Confirmar cancelación</button>
+            <button class="btn btn-danger" style="flex:1" onclick="confirmarCancelacionTec()">Confirm cancelación</button>
         </div>
     </div>
 </div>
@@ -527,8 +527,8 @@
         </div>
         <div id="chatTecMensajes" class="tec-chat-box"></div>
         <div class="tec-chat-send">
-            <input type="text" id="chatTecInput" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter'){event.preventDefault();enviarMensajeTec()}">
-            <button class="tb tb-green" onclick="enviarMensajeTec()">Enviar</button>
+            <input type="text" id="chatTecInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter'){event.preventDefault();enviarMensajeTec()}">
+            <button class="tb tb-green" onclick="enviarMensajeTec()">Send</button>
         </div>
     </div>
 </div>
@@ -540,9 +540,9 @@ function cerrarModal(id) { document.getElementById(id).classList.remove('open');
 document.querySelectorAll('.modal-overlay').forEach(el => el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');}));
 
 // CAMBIAR ESTADO
-async function cambiarEstado(ticketId, nuevoEstado) {
+async function cambiarStatus(ticketId, nuevoStatus) {
     try {
-        const res  = await fetch(`/tecnico/tickets/${ticketId}/estado`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({estado:nuevoEstado}) });
+        const res  = await fetch(`/tecnico/tickets/${ticketId}/estado`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({estado:nuevoStatus}) });
         const data = await res.json();
         if (data.success) {
             location.reload();
@@ -551,23 +551,23 @@ async function cambiarEstado(ticketId, nuevoEstado) {
         } else {
             showToast('Error: ' + data.error, 'error');
         }
-    } catch { showToast('Error de conexión','error'); }
+    } catch { showToast('Connection error','error'); }
 }
 
 // CANCELAR
-let tecTicketACancelar=null;
-function cancelarTrabajo(id){ tecTicketACancelar=id; document.getElementById('cancelTecMotivo').value=''; abrirModal('cancelTecModal'); }
+let tecTicketACancel=null;
+function cancelarTrabajo(id){ tecTicketACancel=id; document.getElementById('cancelTecMotivo').value=''; abrirModal('cancelTecModal'); }
 async function confirmarCancelacionTec(){
-    if(!tecTicketACancelar)return;
+    if(!tecTicketACancel)return;
     const motivo=document.getElementById('cancelTecMotivo').value;
     if(!motivo?.trim()) return showToast('Debes ingresar un motivo','error');
-    try{ const res=await fetch(`/tecnico/tickets/${tecTicketACancelar}/cancelar`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({motivo})}); const data=await res.json(); if(data.success){cerrarModal('cancelTecModal');showToast('❌ Trabajo cancelado');setTimeout(()=>location.reload(),800);}else showToast('Error: '+data.error,'error'); }catch{showToast('Error de conexión','error');}
-    tecTicketACancelar=null;
+    try{ const res=await fetch(`/tecnico/tickets/${tecTicketACancel}/cancelar`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({motivo})}); const data=await res.json(); if(data.success){cerrarModal('cancelTecModal');showToast('❌ Trabajo cancelado');setTimeout(()=>location.reload(),800);}else showToast('Error: '+data.error,'error'); }catch{showToast('Connection error','error');}
+    tecTicketACancel=null;
 }
 
 // CHAT
 let chatTecId=null, chatTecInt=null;
-function abrirChatTec(id,titulo){ chatTecId=id; document.getElementById('chatTecTitulo').textContent=titulo; document.getElementById('chatTecMensajes').innerHTML='<div style="text-align:center;color:var(--text-3);font-size:.8rem;padding:1.5rem">Cargando...</div>'; document.getElementById('chatTecInput').value=''; abrirModal('chatTecModal'); cargarMensajesTec(); chatTecInt=setInterval(cargarMensajesTec,5000); }
+function abrirChatTec(id,titulo){ chatTecId=id; document.getElementById('chatTecTitulo').textContent=titulo; document.getElementById('chatTecMensajes').innerHTML='<div style="text-align:center;color:var(--text-3);font-size:.8rem;padding:1.5rem">Loading...</div>'; document.getElementById('chatTecInput').value=''; abrirModal('chatTecModal'); cargarMensajesTec(); chatTecInt=setInterval(cargarMensajesTec,5000); }
 function cerrarChatTec(){ clearInterval(chatTecInt);chatTecInt=null;cerrarModal('chatTecModal');chatTecId=null; }
 async function cargarMensajesTec(){
     if(!chatTecId)return;
@@ -630,7 +630,7 @@ async function guardarPerfil(){
         } else {
             mostrarMsgPerfil('error',data.error||'Error');
         }
-    }catch{mostrarMsgPerfil('error','Error de conexión');}
+    }catch{mostrarMsgPerfil('error','Connection error');}
 }
 
 async function cambiarPassword(){
@@ -641,14 +641,14 @@ async function cambiarPassword(){
         const body={nombre:document.getElementById('p_nombre').value,email:document.getElementById('p_email').value,telefono:document.getElementById('p_telefono').value,especialidad:document.getElementById('p_especialidad').value,password:a,nueva_password:n};
         const res=await fetch('/tecnico/perfil',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
         const data=await res.json();
-        if(data.success){showToast('✅ Contraseña actualizada');document.getElementById('p_pass_actual').value='';document.getElementById('p_pass_nueva').value='';}
+        if(data.success){showToast('✅ Current passwordizada');document.getElementById('p_pass_actual').value='';document.getElementById('p_pass_nueva').value='';}
         else showToast(data.error,'error');
     }catch{showToast('Error','error');}
 }
 
 async function eliminarCuenta(){
-    if(!confirm('¿Eliminar tu cuenta? Esta acción es irreversible.'))return;
-    if(!confirm('¿Estás seguro? Se borrarán todos tus datos.'))return;
+    if(!confirm('Delete tu cuenta? Esta acción es irreversible.'))return;
+    if(!confirm('Are you sure? Se borrarán todos tus datos.'))return;
     try{const res=await fetch('/tecnico/cuenta',{method:'DELETE'});const data=await res.json();if(data.success)window.location.href='/landing';}catch{showToast('Error','error');}
 }
 
@@ -660,16 +660,16 @@ cargarRanking();
 function abrirCotizar(ticketId, motivo) {
     document.getElementById('cotizarTicketId').value = ticketId;
     document.getElementById('cotizarMotivo').textContent = motivo;
-    document.getElementById('cotizarPrecio').value = '';
+    document.getElementById('cotizarPrice').value = '';
     document.getElementById('cotizarDesc').value = '';
     document.getElementById('cotizarModal').classList.add('open');
 }
 
 async function enviarCotizacion() {
     const id     = document.getElementById('cotizarTicketId').value;
-    const precio = document.getElementById('cotizarPrecio').value;
+    const precio = document.getElementById('cotizarPrice').value;
     const desc   = document.getElementById('cotizarDesc').value;
-    const btn    = document.getElementById('btnEnviarCot');
+    const btn    = document.getElementById('btnSendCot');
 
     if (!precio || precio <= 0) return showToast('Ingresa un precio válido', 'error');
     if (!desc || desc.trim().length < 5) return showToast('Describe el trabajo a realizar', 'error');
@@ -689,7 +689,7 @@ async function enviarCotizacion() {
         } else {
             showToast(data.error || 'Error', 'error');
         }
-    } catch { showToast('Error de conexión', 'error'); }
+    } catch { showToast('Connection error', 'error'); }
     finally { done(); }
 }
 </script>
@@ -698,11 +698,11 @@ async function enviarCotizacion() {
 <script src="/js/i18n.js"></script>
 <script src="/js/notifications.js"></script>
 
-<!-- Modal: Suscripción Técnico -->
+<!-- Modal: Subscription Técnico -->
 <div id="modalSuscripcionTec" class="modal-overlay">
     <div class="modal" style="max-width:460px">
         <div class="modal-header">
-            <h2>🔒 Suscripción requerida</h2>
+            <h2>🔒 Subscription required</h2>
             <button class="modal-close" onclick="cerrarModal('modalSuscripcionTec')">✕</button>
         </div>
         <div style="text-align:center;padding:1rem 0">
@@ -716,7 +716,7 @@ async function enviarCotizacion() {
                 <div style="font-size:.82rem;color:var(--text-2);display:flex;flex-direction:column;gap:.4rem">
                     <div>✅ Ver direcciones completas de los trabajos</div>
                     <div>✅ Acceso al GPS para llegar al cliente</div>
-                    <div>✅ Aceptar trabajos ilimitados</div>
+                    <div>✅ Accept jobs ilimitados</div>
                     <div>✅ Chat con clientes · Cancela cuando quieras</div>
                 </div>
             </div>
@@ -740,12 +740,12 @@ async function suscribirseTecnico(btn) {
             showToast(data.error || 'Error al iniciar el pago', 'error');
             if (btn) { btn.disabled = false; btn.textContent = '🚀 Suscribirme por $19.99/mes →'; }
         }
-    } catch { showToast('Error de conexión', 'error'); }
+    } catch { showToast('Connection error', 'error'); }
 }
 
 const tecParams = new URLSearchParams(window.location.search);
 if (tecParams.get('suscrito') === '1') {
-    showToast('🎉 ¡Suscripción activada! Ya puedes aceptar trabajos.');
+    showToast('🎉 ¡Subscription activada! Ya puedes aceptar trabajos.');
     history.replaceState({}, '', '/tecnico/dashboard');
 }
 </script>
@@ -754,7 +754,7 @@ if (tecParams.get('suscrito') === '1') {
 <div id="cotizarModal" class="modal-overlay">
     <div class="modal">
         <div class="modal-header">
-            <h3>💰 Enviar cotización</h3>
+            <h3>💰 Send cotización</h3>
             <button class="modal-close" onclick="cerrarModal('cotizarModal')">✕</button>
         </div>
         <input type="hidden" id="cotizarTicketId">
@@ -762,15 +762,15 @@ if (tecParams.get('suscrito') === '1') {
             Ticket: <strong id="cotizarMotivo" style="color:var(--text-1)"></strong>
         </p>
         <div class="form-group">
-            <label class="form-label">Precio estimado (USD)</label>
-            <input type="number" id="cotizarPrecio" class="form-input" placeholder="Ej: 150.00" min="1" step="0.01">
+            <label class="form-label">Price estimado (USD)</label>
+            <input type="number" id="cotizarPrice" class="form-input" placeholder="Ej: 150.00" min="1" step="0.01">
         </div>
         <div class="form-group">
-            <label class="form-label">Descripción del trabajo</label>
+            <label class="form-label">Description del trabajo</label>
             <textarea id="cotizarDesc" class="form-textarea" placeholder="Describe qué trabajo vas a realizar, materiales incluidos, tiempo estimado..." rows="4"></textarea>
         </div>
-        <button id="btnEnviarCot" class="btn btn-primary btn-full" onclick="enviarCotizacion()">
-            Enviar cotización →
+        <button id="btnSendCot" class="btn btn-primary btn-full" onclick="enviarCotizacion()">
+            Send cotización →
         </button>
     </div>
 </div>
@@ -779,20 +779,20 @@ if (tecParams.get('suscrito') === '1') {
 <div id="cotizarModal" class="modal-overlay">
     <div class="modal" style="max-width:420px">
         <div class="modal-header">
-            <h2>💰 Enviar cotización</h2>
+            <h2>💰 Send cotización</h2>
             <button class="modal-close" onclick="cerrarModal('cotizarModal')">✕</button>
         </div>
         <p id="cotizarMotivoText" style="font-size:.85rem;color:var(--text-2);margin-bottom:1rem"></p>
         <input type="hidden" id="cotizarTicketId">
         <div class="form-group">
-            <label class="form-label">Precio estimado (USD)</label>
-            <input type="number" id="cotizarPrecio" class="form-input" placeholder="150.00" min="1" step="0.01">
+            <label class="form-label">Price estimado (USD)</label>
+            <input type="number" id="cotizarPrice" class="form-input" placeholder="150.00" min="1" step="0.01">
         </div>
         <div class="form-group">
-            <label class="form-label">Descripción del trabajo</label>
+            <label class="form-label">Description del trabajo</label>
             <textarea id="cotizarDesc" class="form-textarea" rows="3" placeholder="Qué trabajo vas a realizar, materiales, tiempo..."></textarea>
         </div>
-        <button id="btnEnviarCot" class="btn btn-primary btn-full" onclick="enviarCotizacion()">Enviar cotización →</button>
+        <button id="btnSendCot" class="btn btn-primary btn-full" onclick="enviarCotizacion()">Send cotización →</button>
     </div>
 </div>
 
@@ -800,16 +800,16 @@ if (tecParams.get('suscrito') === '1') {
 function abrirCotizar(id, motivo) {
     document.getElementById('cotizarTicketId').value = id;
     document.getElementById('cotizarMotivoText').textContent = 'Ticket: ' + motivo;
-    document.getElementById('cotizarPrecio').value = '';
+    document.getElementById('cotizarPrice').value = '';
     document.getElementById('cotizarDesc').value   = '';
     document.getElementById('cotizarModal').classList.add('open');
 }
 
 async function enviarCotizacion() {
     const id     = document.getElementById('cotizarTicketId').value;
-    const precio = parseFloat(document.getElementById('cotizarPrecio').value);
+    const precio = parseFloat(document.getElementById('cotizarPrice').value);
     const desc   = document.getElementById('cotizarDesc').value.trim();
-    const btn    = document.getElementById('btnEnviarCot');
+    const btn    = document.getElementById('btnSendCot');
 
     if (!precio || precio <= 0) return showToast('Ingresa un precio válido', 'error');
     if (desc.length < 5)        return showToast('Describe el trabajo a realizar', 'error');
@@ -829,7 +829,7 @@ async function enviarCotizacion() {
         } else {
             showToast(data.error || 'Error al enviar', 'error');
         }
-    } catch { showToast('Error de conexión', 'error'); }
+    } catch { showToast('Connection error', 'error'); }
     finally { done(); }
 }
 </script>

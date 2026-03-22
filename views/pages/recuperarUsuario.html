@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es" data-theme="dark">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recuperar usuario — PropertyPulse</title>
+    <title>Recover Username — PropertyPulse</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -11,8 +11,8 @@
     <div class="auth-card">
         <div style="text-align:center;margin-bottom:1.5rem">
             <div style="font-size:2rem;margin-bottom:.5rem">🔑</div>
-            <h1 style="font-size:1.2rem;font-weight:800;color:var(--text-1);margin-bottom:.25rem">¿Olvidaste tu usuario?</h1>
-            <p style="font-size:.85rem;color:var(--text-2)">Ingresa tu email y te enviamos tu nombre de usuario.</p>
+            <h1 style="font-size:1.2rem;font-weight:800;color:var(--text-1);margin-bottom:.25rem">Forgot your username?</h1>
+            <p style="font-size:.85rem;color:var(--text-2)">Enter your email and we'll send your username.</p>
         </div>
 
         <% if (success) { %>
@@ -29,14 +29,14 @@
 
         <form action="/auth/recuperar-usuario" method="POST">
             <div class="form-group">
-                <label class="form-label">Email de tu cuenta</label>
+                <label class="form-label">Your account email</label>
                 <input type="email" name="email" class="form-input" placeholder="tu@email.com" required autofocus>
             </div>
-            <button type="submit" class="btn btn-primary btn-full mt-2">Enviar mi usuario →</button>
+            <button type="submit" class="btn btn-primary btn-full mt-2">Send my username →</button>
         </form>
 
         <div style="margin-top:1.25rem;text-align:center;font-size:.82rem;color:var(--text-3)">
-            <a href="/auth/login" style="color:var(--accent)">← Volver al login</a>
+            <a href="/auth/login" style="color:var(--accent)">← Back to login</a>
         </div>
     </div>
 </div>

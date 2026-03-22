@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -264,13 +264,13 @@
         <div class="pr-plan-icon" style="background:#ede9ff">🌱</div>
         <div class="pr-plan-name">Starter</div>
         <div class="pr-plan-price">
-            <span class="pr-price-num" id="price-starter">$9</span>
+            <span class="pr-price-num" id="price-starter">$19</span>
             <span class="pr-price-period">/mes</span>
         </div>
         <div class="pr-annual-note" id="annual-starter"></div>
-        <div class="pr-plan-desc">Perfecto para propietarios individuales que gestionan pocas propiedades.</div>
+        <div class="pr-plan-desc">Perfecto para propietarios individuales. Incluye 1 propiedad — upgrade fácil cuando escales.</div>
         <ul class="pr-features">
-            <li class="highlight"><span class="check yes">✓</span> 3 propiedades</li>
+            <li class="highlight"><span class="check yes">✓</span> 1 propiedad</li>
             <li class="highlight"><span class="check yes">✓</span> 10 tickets activos</li>
             <li class="highlight"><span class="check yes">✓</span> 1 técnico asignado</li>
             <li><span class="check yes">✓</span> Dashboard cliente y técnico</li>
@@ -292,7 +292,7 @@
         <div class="pr-plan-icon" style="background:var(--accent-soft)">🚀</div>
         <div class="pr-plan-name">Pro</div>
         <div class="pr-plan-price">
-            <span class="pr-price-num" id="price-pro">$29</span>
+            <span class="pr-price-num" id="price-pro">$49</span>
             <span class="pr-price-period">/mes</span>
         </div>
         <div class="pr-annual-note" id="annual-pro"></div>
@@ -319,7 +319,7 @@
         <div class="pr-plan-icon" style="background:#d1fae5">🏢</div>
         <div class="pr-plan-name">Business</div>
         <div class="pr-plan-price">
-            <span class="pr-price-num" id="price-business">$79</span>
+            <span class="pr-price-num" id="price-business">$99</span>
             <span class="pr-price-period">/mes</span>
         </div>
         <div class="pr-annual-note" id="annual-business"></div>
@@ -371,7 +371,7 @@
 
     <div class="pr-faq-item">
         <div class="pr-faq-q" onclick="toggleFaq(this)">
-            ¿Puedo cancelar en cualquier momento?
+            Puedo cancelar en cualquier momento?
             <span class="arrow">▾</span>
         </div>
         <div class="pr-faq-a">Sí, puedes cancelar tu suscripción en cualquier momento desde tu perfil. No hay contratos ni penalizaciones. Tu acceso continúa hasta el final del período de facturación actual.</div>
@@ -379,7 +379,7 @@
 
     <div class="pr-faq-item">
         <div class="pr-faq-q" onclick="toggleFaq(this)">
-            ¿Qué pasa con mis datos si cancelo?
+            Qué pasa con mis datos si cancelo?
             <span class="arrow">▾</span>
         </div>
         <div class="pr-faq-a">Tus datos permanecen disponibles por 30 días después de cancelar. Puedes exportarlos o reactivar tu cuenta. Después de 30 días los datos se eliminan permanentemente conforme a nuestra política de privacidad.</div>
@@ -387,7 +387,7 @@
 
     <div class="pr-faq-item">
         <div class="pr-faq-q" onclick="toggleFaq(this)">
-            ¿Puedo cambiar de plan en cualquier momento?
+            Can I change de plan en cualquier momento?
             <span class="arrow">▾</span>
         </div>
         <div class="pr-faq-a">Sí. Puedes subir de plan inmediatamente y el costo se prorratea. Para bajar de plan el cambio aplica al siguiente ciclo de facturación. Nunca se eliminan datos por bajar de plan.</div>
@@ -395,10 +395,10 @@
 
     <div class="pr-faq-item">
         <div class="pr-faq-q" onclick="toggleFaq(this)">
-            ¿Hay un período de prueba gratuita?
+            Is there a trial period de prueba gratuita?
             <span class="arrow">▾</span>
         </div>
-        <div class="pr-faq-a">El plan Starter a $9/mes es nuestro plan de entrada más accesible. Puedes crear tu cuenta y explorar todas las funcionalidades. Próximamente agregaremos una prueba gratuita de 14 días.</div>
+        <div class="pr-faq-a">El plan Starter a $19/mes te permite gestionar tu primera propiedad. Cuando agregues una segunda, se activa el paywall — puedes subir al plan Pro ($49/mes) para hasta 15 propiedades, o al Business ($99/mes) para propiedades ilimitadas.</div>
     </div>
 
     <div class="pr-faq-item">
@@ -407,7 +407,7 @@
 
     <div class="pr-faq-item">
         <div class="pr-faq-q" onclick="toggleFaq(this)">
-            ¿Los pagos son seguros?
+            Los pagos son seguros?
             <span class="arrow">▾</span>
         </div>
         <div class="pr-faq-a">Todos los pagos se procesan a través de Stripe, el estándar de la industria para pagos online. PropertyPulse nunca almacena números de tarjeta de crédito.</div>
@@ -435,8 +435,8 @@
 let isAnnual = false;
 
 const prices = {
-    monthly: { starter: 9,  pro: 29,  business: 79  },
-    annual:  { starter: 7,  pro: 23,  business: 63  }  // 20% descuento
+    monthly: { starter: 19, pro: 49,  business: 99  },
+    annual:  { starter: 15, pro: 39,  business: 79  }  // ~20% descuento
 };
 
 function toggleBilling() {
@@ -456,9 +456,9 @@ function toggleBilling() {
     const annualNote = (monthly, annual) =>
         isAnnual ? `$${annual * 12}/año · Ahorras $${(monthly - annual) * 12}` : '';
 
-    document.getElementById('annual-starter').textContent  = annualNote(9,  7);
-    document.getElementById('annual-pro').textContent      = annualNote(29, 23);
-    document.getElementById('annual-business').textContent = annualNote(79, 63);
+    document.getElementById('annual-starter').textContent  = annualNote(19, 15);
+    document.getElementById('annual-pro').textContent      = annualNote(49, 39);
+    document.getElementById('annual-business').textContent = annualNote(99, 79);
 }
 
 // ── FAQ accordion ─────────────────────────────────────────────
@@ -466,7 +466,7 @@ function toggleFaq(el) {
     const answer = el.nextElementSibling;
     const isOpen = answer.classList.contains('open');
 
-    // Cerrar todos
+    // Close todos
     document.querySelectorAll('.pr-faq-a').forEach(a => a.classList.remove('open'));
     document.querySelectorAll('.pr-faq-q').forEach(q => q.classList.remove('open'));
 

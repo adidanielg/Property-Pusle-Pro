@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es" data-theme="dark">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro Cliente | PropertyPulse</title>
+    <title>Client Registration | PropertyPulse</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#6c63ff">
     <meta name="mobile-web-app-capable" content="yes">
@@ -22,70 +22,69 @@
         <div class="auth-logo">
             <div class="mark">🏢</div>
             <h1>Property<span>Pulse</span></h1>
-            <p data-i18n="reg.createAccount">Crear cuenta de cliente</p>
+            <p>Create a client account</p>
         </div>
 
         <form id="registerForm" onsubmit="registrar(event)">
 
             <div class="form-group">
-                <label class="form-label" data-i18n="reg.accountType">Tipo de cuenta</label>
+                <label class="form-label">Account type</label>
                 <select name="tipo_cliente" id="tipo_cliente" class="form-select" onchange="toggleEmpresa(this)">
-                    <option value="Individual" data-i18n="reg.individual">👤 Cliente Individual</option>
-                    <option value="Compania"   data-i18n="reg.company">🏢 Compañía / Empresa</option>
+                    <option value="Individual">👤 Individual</option>
+                    <option value="Compania">🏢 Company / Business</option>
                 </select>
             </div>
 
             <!-- Campo empresa — se muestra/oculta según tipo -->
             <div id="campo_empresa" class="form-group" style="display:none;animation:modalIn .2s ease">
-                <label class="form-label" data-i18n="reg.companyName">Nombre de la Empresa</label>
+                <label class="form-label">Company Name</label>
                 <input type="text" name="nombre_empresa" id="nombre_empresa" class="form-input"
-                    data-i18n-placeholder="reg.companyPlaceholder"
-                    placeholder="Ej. Inmobiliaria Sur S.A.">
-                <p class="form-hint">📋 Este nombre aparecerá en tus tickets y reportes.</p>
+                    placeholder="e.g. South Properties LLC">
+                <p class="form-hint">📋 This name will appear on your tickets and reports.</p>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label" data-i18n="reg.firstName">Nombre</label>
+                    <label class="form-label">First name</label>
                     <input type="text" name="nombre" class="form-input" required autocomplete="given-name">
                 </div>
                 <div class="form-group">
-                    <label class="form-label" data-i18n="reg.lastName">Apellido</label>
+                    <label class="form-label">Last name</label>
                     <input type="text" name="apellido" class="form-input" required autocomplete="family-name">
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label" data-i18n="reg.email">Email</label>
+                    <label class="form-label">Email</label>
                     <input type="email" name="email" class="form-input" required autocomplete="email">
                 </div>
                 <div class="form-group">
-                    <label class="form-label" data-i18n="reg.phone">Teléfono</label>
+                    <label class="form-label">Phone</label>
                     <input type="tel" name="telefono" class="form-input" required autocomplete="tel">
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label" data-i18n="reg.password">Contraseña</label>
+                    <label class="form-label">Password</label>
                     <input type="password" name="password" id="pwd" class="form-input" required autocomplete="new-password" minlength="6">
                 </div>
                 <div class="form-group">
-                    <label class="form-label" data-i18n="reg.confirmPassword">Confirmar contraseña</label>
+                    <label class="form-label">Confirm password</label>
                     <input type="password" name="confirm_password" id="pwd2" class="form-input" required autocomplete="new-password">
                 </div>
             </div>
 
             <div id="registerError" class="form-error" style="display:none"></div>
 
-            <button type="submit" class="btn btn-primary btn-full mt-2" id="btnSubmit" data-i18n="reg.createAccount">
-                Crear mi cuenta
+            <button type="submit" class="btn btn-primary btn-full mt-2" id="btnSubmit">
+                Create my account
             </button>
 
             <p class="text-small text-muted mt-2" style="text-align:center">
-                <span data-i18n="reg.haveAccount">¿Ya tienes cuenta?</span>
-                <a href="/auth/login" style="color:var(--accent);font-weight:600" data-i18n="reg.loginLink">Inicia sesión</a>
+                <span>Already have an account?</span>
+                <a href="/auth/login" style="color:var(--accent);font-weight:600">Sign in</a>
             </p>
         </form>
 
@@ -98,33 +97,33 @@
 
         <div style="font-size:3.5rem;margin-bottom:1rem;animation:modalIn .3s ease">🎉</div>
 
-        <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:.4rem;letter-spacing:-.3px" data-i18n="reg.successTitle">
-            ¡Cuenta creada!
+        <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:.4rem;letter-spacing:-.3px">
+            Account created!
         </h2>
-        <p style="font-size:.875rem;color:var(--text-2);margin-bottom:1.5rem" data-i18n="reg.successMsg">
-            Este es tu nombre de usuario para iniciar sesión:
+        <p style="font-size:.875rem;color:var(--text-2);margin-bottom:1.5rem">
+            This is your username to sign in:
         </p>
 
         <!-- Username display -->
         <div style="background:var(--accent-soft);border:2px solid var(--accent);padding:1.25rem 1.5rem;border-radius:14px;margin-bottom:1rem;position:relative">
             <div style="font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:.4rem;opacity:.7">
-                Tu usuario
+                Your username
             </div>
             <div id="usernameDisplay" style="font-size:1.5rem;font-weight:700;color:var(--accent);letter-spacing:.5px;font-family:var(--font-mono)"></div>
         </div>
 
         <button onclick="copiarUsername()" id="copyBtn" class="btn btn-secondary btn-full mb-2">
-            📋 Copiar nombre de usuario
+            📋 Copy username
         </button>
 
         <div style="background:var(--yellow-soft);border-left:3px solid var(--yellow);padding:.75rem 1rem;border-radius:var(--radius-sm);margin-bottom:1.5rem;text-align:left">
             <p style="font-size:.82rem;color:#92400e;font-weight:500">
-                ⚠️ <strong>Guárdalo ahora</strong> — lo necesitas para iniciar sesión. No usamos email como usuario.
+                ⚠️ <strong>Save it now</strong> — you need it to sign in. We do not use email as username.
             </p>
         </div>
 
-        <a id="goLoginBtn" href="/auth/login" class="btn btn-primary btn-full" data-i18n="reg.goLogin" onclick="if(sessionStorage.getItem('plan_pendiente'))this.href='/auth/login?plan='+sessionStorage.getItem('plan_pendiente')">
-            Ir a iniciar sesión →
+        <a id="goLoginBtn" href="/auth/login" class="btn btn-primary btn-full" onclick="if(sessionStorage.getItem('plan_pendiente'))this.href='/auth/login?plan='+sessionStorage.getItem('plan_pendiente')">
+            Go to sign in →
         </a>
 
     </div>
@@ -164,7 +163,7 @@
     if (planElegido) {
         const badge = document.createElement('div');
         badge.style.cssText = 'background:var(--accent-soft);color:var(--accent);font-size:.78rem;font-weight:700;padding:.4rem 1rem;border-radius:99px;text-align:center;margin-bottom:1rem';
-        badge.textContent = '🎯 Plan seleccionado: ' + planElegido.charAt(0).toUpperCase() + planElegido.slice(1);
+        badge.textContent = '🎯 Selected plan: ' + planElegido.charAt(0).toUpperCase() + planElegido.slice(1);
         const form = document.querySelector('form') || document.querySelector('.auth-card');
         if (form) form.insertBefore(badge, form.firstChild);
     }
@@ -175,15 +174,15 @@
         const btn = document.getElementById('copyBtn');
 
         navigator.clipboard.writeText(username).then(() => {
-            btn.textContent = '✅ ¡Copiado!';
+            btn.textContent = '✅ ¡Copied!';
             btn.style.background = 'var(--green-soft)';
             btn.style.color = 'var(--green)';
             setTimeout(() => {
-                btn.textContent = '📋 Copiar nombre de usuario';
+                btn.textContent = '📋 Copy username';
                 btn.style.background = '';
                 btn.style.color = '';
             }, 2000);
-            showToast('✅ Nombre de usuario copiado');
+            showToast('✅ First name de usuario copiado');
         }).catch(() => {
             // Fallback para browsers sin clipboard API
             const el = document.createElement('textarea');
@@ -206,20 +205,20 @@
         errDiv.style.display = 'none';
 
         const btn  = document.getElementById('btnSubmit');
-        const done = btnLoading(btn, 'Creando cuenta...');
+        const done = btnLoading(btn, 'Creating account...');
         const data = Object.fromEntries(new FormData(e.target));
         data.role  = 'cliente';
 
         // Validar contraseñas
         if (data.password !== data.confirm_password) {
-            errDiv.textContent = '❌ Las contraseñas no coinciden';
+            errDiv.textContent = '❌ Passwords do not match';
             errDiv.style.display = 'block';
             done();
             return;
         }
 
         if (data.password.length < 6) {
-            errDiv.textContent = '❌ La contraseña debe tener al menos 6 caracteres';
+            errDiv.textContent = '❌ Password must be at least 6 characters';
             errDiv.style.display = 'block';
             done();
             return;
@@ -244,7 +243,7 @@
                 errDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         } catch (err) {
-            errDiv.textContent = '❌ Error de conexión. Intenta nuevamente.';
+            errDiv.textContent = '❌ Connection error. Please try again.';
             errDiv.style.display = 'block';
         } finally {
             done();
