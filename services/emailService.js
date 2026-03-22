@@ -142,9 +142,9 @@ const emailService = {
     // ── 3. Confirmación de pago / plan activado ───────────────
     async enviarConfirmacionPlan({ nombre, email, plan, proximaFactura }) {
         const planes = {
-            starter:  { nombre: 'Starter', precio: '$9/mes', color: '#7c6dfa' },
-            pro:      { nombre: 'Pro',     precio: '$29/mes', color: '#7c6dfa' },
-            business: { nombre: 'Business',precio: '$79/mes', color: '#22d3a0' }
+            starter:  { nombre: 'Starter', precio: '$19/mes', color: '#7c6dfa' },
+            pro:      { nombre: 'Pro',     precio: '$49/mes', color: '#7c6dfa' },
+            business: { nombre: 'Business',precio: '$99/mes', color: '#22d3a0' }
         };
         const planInfo = planes[plan] || planes.starter;
         const isStarter = plan === 'starter';

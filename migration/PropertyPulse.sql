@@ -387,3 +387,184 @@ CREATE INDEX IF NOT EXISTS idx_cotizaciones_cliente ON cotizaciones(cliente_id);
 CREATE INDEX IF NOT EXISTS idx_cotizaciones_estado  ON cotizaciones(estado);
 
 ALTER TABLE cotizaciones DISABLE ROW LEVEL SECURITY;
+
+-- ============================================================
+-- PropertyPulse — migracion_cotizaciones.sql
+-- Ejecutar en: Supabase → SQL Editor → Run
+-- SEGURO: usa IF NOT EXISTS / IF EXISTS en todo
+-- ============================================================
+
+-- ── 1. Tabla de cotizaciones ──────────────────────────────────
+CREATE TABLE IF NOT EXISTS cotizaciones (
+    id              UUID          PRIMARY KEY DEFAULT uuid_generate_v4(),
+    ticket_id       UUID          NOT NULL REFERENCES tickets(id)    ON DELETE CASCADE,
+    tecnico_id      UUID          NOT NULL REFERENCES tecnicos(id)   ON DELETE CASCADE,
+    cliente_id      UUID          NOT NULL REFERENCES companias(id)  ON DELETE CASCADE,
+    precio          DECIMAL(10,2) NOT NULL CHECK (precio > 0),
+    descripcion     TEXT          NOT NULL,
+    estado          TEXT          NOT NULL DEFAULT 'pendiente'
+                                  CHECK (estado IN ('pendiente','aprobada','rechazada')),
+    motivo_rechazo  TEXT,
+    respondida_at   TIMESTAMPTZ,
+    created_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+);
+
+-- ── 2. Índices ────────────────────────────────────────────────
+CREATE INDEX IF NOT EXISTS idx_cotizaciones_ticket   ON cotizaciones(ticket_id);
+CREATE INDEX IF NOT EXISTS idx_cotizaciones_tecnico  ON cotizaciones(tecnico_id);
+CREATE INDEX IF NOT EXISTS idx_cotizaciones_cliente  ON cotizaciones(cliente_id);
+CREATE INDEX IF NOT EXISTS idx_cotizaciones_estado   ON cotizaciones(estado);
+
+-- Índice compuesto: buscar cotización pendiente de un técnico en un ticket
+CREATE INDEX IF NOT EXISTS idx_cotizaciones_ticket_tecnico_estado
+    ON cotizaciones(ticket_id, tecnico_id, estado);
+
+-- ── 3. Deshabilitar RLS ───────────────────────────────────────
+ALTER TABLE cotizaciones DISABLE ROW LEVEL SECURITY;
+
+-- ── 4. Ampliar constraint de estado en tickets ────────────────
+-- Agrega 'cotizando' si no existe ya
+ALTER TABLE tickets DROP CONSTRAINT IF EXISTS tickets_estado_check;
+ALTER TABLE tickets ADD CONSTRAINT tickets_estado_check
+    CHECK (estado IN ('pendiente','cotizando','en_proceso','completado','cancelado'));
+
+-- ── 5. Verificar resultado ────────────────────────────────────
+SELECT
+    table_name,
+    column_name,
+    data_type
+FROM information_schema.columns
+WHERE table_name = 'cotizaciones'
+ORDER BY ordinal_position;
+
+-- ============================================================
+-- PropertyPulse — migracion_security.sql
+-- Ejecutar en: Supabase → SQL Editor → Run
+-- SEGURO: usa IF NOT EXISTS / IF EXISTS en todo
+-- ============================================================
+
+-- ── 1. Soft delete en tecnicos ────────────────────────────────
+ALTER TABLE tecnicos
+    ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ DEFAULT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_tecnicos_deleted
+    ON tecnicos(deleted_at) WHERE deleted_at IS NULL;
+
+-- ── 2. Tabla de tokens de reset de contraseña ────────────────
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id         UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id    UUID        NOT NULL,
+    user_role  TEXT        NOT NULL CHECK (user_role IN ('cliente','tecnico')),
+    token      TEXT        NOT NULL UNIQUE,
+    used       BOOLEAN     NOT NULL DEFAULT FALSE,
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_reset_tokens_token   ON password_reset_tokens(token);
+CREATE INDEX IF NOT EXISTS idx_reset_tokens_user    ON password_reset_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_reset_tokens_expires ON password_reset_tokens(expires_at);
+
+ALTER TABLE password_reset_tokens DISABLE ROW LEVEL SECURITY;
+
+-- ── 3. Tabla de códigos de invitación para técnicos ───────────
+CREATE TABLE IF NOT EXISTS codigos_invitacion (
+    id         UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
+    codigo     TEXT        NOT NULL UNIQUE,
+    usado      BOOLEAN     NOT NULL DEFAULT FALSE,
+    usado_por  UUID        REFERENCES tecnicos(id) ON DELETE SET NULL,
+    usado_at   TIMESTAMPTZ,
+    creado_por TEXT        NOT NULL DEFAULT 'admin',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_codigos_codigo ON codigos_invitacion(codigo);
+CREATE INDEX IF NOT EXISTS idx_codigos_usado  ON codigos_invitacion(usado);
+
+ALTER TABLE codigos_invitacion DISABLE ROW LEVEL SECURITY;
+
+-- ── 4. Columna invitado en tecnicos ───────────────────────────
+ALTER TABLE tecnicos
+    ADD COLUMN IF NOT EXISTS invitado BOOLEAN DEFAULT FALSE;
+
+-- ── 5. Stripe columns en tecnicos ─────────────────────────────
+ALTER TABLE tecnicos
+    ADD COLUMN IF NOT EXISTS suscripcion_activa     BOOLEAN DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS stripe_customer_id     TEXT,
+    ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT;
+
+CREATE INDEX IF NOT EXISTS idx_tecnicos_stripe_customer
+    ON tecnicos(stripe_customer_id);
+
+-- ── 6. Stripe columns en companias ────────────────────────────
+ALTER TABLE companias
+    ADD COLUMN IF NOT EXISTS stripe_customer_id     TEXT,
+    ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT,
+    ADD COLUMN IF NOT EXISTS suscripcion_activa      BOOLEAN DEFAULT FALSE;
+
+CREATE INDEX IF NOT EXISTS idx_companias_stripe_customer
+    ON companias(stripe_customer_id);
+
+CREATE INDEX IF NOT EXISTS idx_companias_stripe_subscription
+    ON companias(stripe_subscription_id);
+
+-- ── 7. Plan en companias ──────────────────────────────────────
+ALTER TABLE companias
+    ADD COLUMN IF NOT EXISTS plan TEXT DEFAULT 'starter'
+    CHECK (plan IN ('starter','pro','business'));
+
+-- ── 8. Contador de trabajos completados en tecnicos ───────────
+ALTER TABLE tecnicos
+    ADD COLUMN IF NOT EXISTS trabajos_completados INT NOT NULL DEFAULT 0;
+
+-- Sincronizar con completados existentes (idempotente)
+UPDATE tecnicos t
+SET trabajos_completados = (
+    SELECT COUNT(*) FROM tickets tk
+    WHERE tk.tecnico_asignado = t.id
+      AND tk.estado = 'completado'
+)
+WHERE trabajos_completados = 0;
+
+-- ── 9. Función RPC para incrementar trabajos (atómica) ────────
+CREATE OR REPLACE FUNCTION incrementar_trabajos_completados(tecnico_uuid UUID)
+RETURNS void AS $$
+BEGIN
+    UPDATE tecnicos
+    SET trabajos_completados = trabajos_completados + 1
+    WHERE id = tecnico_uuid;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ── 10. Índice de disponibilidad de técnicos ──────────────────
+ALTER TABLE tecnicos
+    ADD COLUMN IF NOT EXISTS ocupado BOOLEAN NOT NULL DEFAULT FALSE;
+
+CREATE INDEX IF NOT EXISTS idx_tecnicos_disponible
+    ON tecnicos(activo, ocupado)
+    WHERE activo = TRUE AND ocupado = FALSE;
+
+-- Sincronizar ocupado con tickets en_proceso activos
+UPDATE tecnicos t
+SET ocupado = TRUE
+WHERE EXISTS (
+    SELECT 1 FROM tickets tk
+    WHERE tk.tecnico_asignado = t.id
+      AND tk.estado = 'en_proceso'
+)
+AND ocupado = FALSE;
+
+-- ── 11. Limpieza automática de tokens expirados (cron) ────────
+-- Ejecutar periódicamente o configurar en Supabase cron jobs:
+-- DELETE FROM password_reset_tokens WHERE expires_at < NOW();
+
+-- ── 12. Verificar resultado ────────────────────────────────────
+SELECT 'password_reset_tokens' AS tabla, COUNT(*) AS filas FROM password_reset_tokens
+UNION ALL
+SELECT 'codigos_invitacion',             COUNT(*) FROM codigos_invitacion
+UNION ALL
+SELECT 'tecnicos (columnas nuevas)' AS tabla,
+       COUNT(*) FROM information_schema.columns
+       WHERE table_name = 'tecnicos'
+         AND column_name IN ('deleted_at','invitado','suscripcion_activa',
+                             'stripe_customer_id','trabajos_completados','ocupado');

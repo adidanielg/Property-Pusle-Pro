@@ -162,7 +162,7 @@
                 btn.style.background = '';
                 btn.style.color = '';
             }, 2000);
-            showToast('✅ First name de usuario copiado');
+            showToast('✅ Username copied');
         }).catch(() => {
             const el = document.createElement('textarea');
             el.value = username;
@@ -172,7 +172,7 @@
             el.select();
             document.execCommand('copy');
             document.body.removeChild(el);
-            showToast('✅ Copiado');
+            showToast('✅ Copied');
         });
     }
 
