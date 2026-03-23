@@ -243,9 +243,9 @@
 
 <!-- Topbar -->
 <header class="pp-topbar">
-    <a href="/cliente/dashboard" class="pp-logo">🏢 Property<span>Pulse</span> <span class="pp-logo-role">Cliente</span></a>
+    <a href="/cliente/dashboard" class="pp-logo">🏢 Property<span>Pulse</span> <span class="pp-logo-role">Client</span></a>
     <nav class="pp-nav">
-        <a href="#propiedades" class="active">🏠 Propiedades</a>
+        <a href="#propiedades" class="active">🏠 Properties</a>
         <a href="#tickets">🎫 Tickets</a>
         <a href="#perfil">👤 Perfil</a>
     </nav>
@@ -268,7 +268,7 @@
             <div class="pp-stat-stripe" style="background:var(--accent)"></div>
             <div class="pp-stat-icon">🏠</div>
             <div class="pp-stat-num"><%= propiedades.length %></div>
-            <div class="pp-stat-lbl">Propiedades</div>
+            <div class="pp-stat-lbl">Properties</div>
         </div>
         <div class="pp-stat">
             <div class="pp-stat-stripe" style="background:var(--blue)"></div>
@@ -292,7 +292,7 @@
 
     <!-- Upgrade banner -->
     <div id="upgrade-banner" style="display:none;background:linear-gradient(90deg,rgba(245,200,66,.1),rgba(245,200,66,.05));border:1px solid rgba(245,200,66,.3);border-radius:12px;padding:.8rem 1rem;display:none;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap">
-        <span style="font-size:.85rem;color:#f5c842;font-weight:600">⚠️ Te acercas al límite de tu plan</span>
+        <span style="font-size:.85rem;color:#f5c842;font-weight:600">⚠️ You are approaching your plan limit</span>
         <a href="/pricing" class="ppb ppb-sm" style="background:#f5c842;color:#0a0a0f">Upgrade plan →</a>
     </div>
 
@@ -300,13 +300,13 @@
     <section id="propiedades">
         <div class="pp-head">
             <h2>My Properties</h2>
-            <button class="ppb ppb-ghost ppb-sm" onclick="abrirPropiedadOPlan()">+ Añadir</button>
+            <button class="ppb ppb-ghost ppb-sm" onclick="abrirPropiedadOPlan()">+ Add</button>
         </div>
         <% if (propiedades.length === 0) { %>
         <div class="pp-empty">
             <div style="font-size:2rem;margin-bottom:.75rem;opacity:.4">🏠</div>
-            <p style="font-size:.875rem">No tienes propiedades. Añade una para comenzar.</p>
-            <button class="ppb ppb-primary ppb-sm" style="margin-top:1rem" onclick="abrirPropiedadOPlan()">+ Añadir propiedad</button>
+            <p style="font-size:.875rem">You have no properties yet. Add one to get started.</p>
+            <button class="ppb ppb-primary ppb-sm" style="margin-top:1rem" onclick="abrirPropiedadOPlan()">+ Add property</button>
         </div>
         <% } else { %>
         <div class="pp-props">
@@ -370,7 +370,7 @@
                             <button class="ppb ppb-sm" style="background:var(--accent-soft);color:var(--accent);border:1px solid rgba(124,109,250,.3)" onclick="verCotizaciones('<%= ticket.id %>','<%= ticket.motivo %>')">💰 View quotes</button>
                             <button class="ppb ppb-danger ppb-sm" onclick="cancelarTicket('<%= ticket.id %>')">❌ Cancel</button>
                         <%}else if(ticket.estado==='completado'&&ticket.tecnico_asignado&&!ticketsCalificados.has(ticket.id)){%>
-                            <button class="ppb ppb-primary ppb-sm" data-ticket="<%= ticket.id %>" data-tecnico="<%= ticket.tecnicos?ticket.tecnicos.nombre:'el técnico' %>" onclick="abrirCalificar(this)">⭐ Calificar</button>
+                            <button class="ppb ppb-primary ppb-sm" data-ticket="<%= ticket.id %>" data-tecnico="<%= ticket.tecnicos?ticket.tecnicos.nombre:'the technician' %>" onclick="abrirCalificar(this)">⭐ Rate</button>
                         <%}else if(ticket.estado==='completado'&&ticketsCalificados.has(ticket.id)){%>
                             <span style="font-size:.73rem;color:var(--green);font-weight:600">✅ Calificado</span>
                         <%}%>
@@ -395,12 +395,12 @@
         <div id="planFirst name" style="font-size:1.5rem;font-weight:800;letter-spacing:-.5px;color:var(--text-1);text-transform:capitalize;margin-bottom:.75rem">Starter</div>
         <div>
             <div style="display:flex;justify-content:space-between;font-size:.73rem">
-                <span style="color:var(--text-2)">Propiedades</span>
+                <span style="color:var(--text-2)">Properties</span>
                 <span id="planPropsLabel" class="pp-mono" style="color:var(--text-2)">— / —</span>
             </div>
             <div class="pp-bar-wrap"><div id="planPropsBar" class="pp-bar" style="width:0%"></div></div>
             <div style="display:flex;justify-content:space-between;font-size:.73rem;margin-top:.6rem">
-                <span style="color:var(--text-2)">Tickets activos</span>
+                <span style="color:var(--text-2)">Active tickets</span>
                 <span id="planTicketsLabel" class="pp-mono" style="color:var(--text-2)">— / —</span>
             </div>
             <div class="pp-bar-wrap"><div id="planTicketsBar" class="pp-bar" style="width:0%"></div></div>
@@ -413,9 +413,9 @@
         <div class="pp-widget-lbl" style="color:var(--accent)">New report</div>
         <p style="font-size:.82rem;color:var(--text-2);margin-bottom:1rem;line-height:1.6">Got a property issue? Report it now.</p>
         <% if (propiedades.length > 0) { %>
-            <button class="ppb ppb-primary ppb-full" onclick="abrirModal('ticketModal')">🎫 Crear reporte</button>
+            <button class="ppb ppb-primary ppb-full" onclick="abrirModal('ticketModal')">🎫 Create request</button>
         <% } else { %>
-            <button class="ppb ppb-ghost ppb-full" onclick="abrirPropiedadOPlan()">🏠 Añade una propiedad primero</button>
+            <button class="ppb ppb-ghost ppb-full" onclick="abrirPropiedadOPlan()">🏠 Add a property first</button>
         <% } %>
     </div>
 
@@ -462,7 +462,7 @@
         </div>
         <div class="form-group">
             <label class="form-label">Company <span style="color:var(--text-3);font-weight:400">(solo si eres empresa)</span></label>
-            <input type="text" id="p_empresa" class="form-input" placeholder="First name de empresa">
+            <input type="text" id="p_empresa" class="form-input" placeholder="Company display name">
         </div>
         <div id="perfilMsg" style="display:none;font-size:.8rem;padding:.5rem .75rem;border-radius:8px;margin-bottom:.75rem"></div>
         <button class="btn btn-primary btn-full" onclick="guardarPerfil()">Save changes</button>
@@ -473,7 +473,7 @@
 <div id="passwordModal" class="modal-overlay">
     <div class="modal" style="max-width:420px">
         <div class="modal-header">
-            <h2>🔑 Cambiar Contraseña</h2>
+            <h2>🔑 Change password</h2>
             <button class="modal-close" onclick="cerrarModal('passwordModal')">✕</button>
         </div>
         <div class="form-group">
@@ -482,9 +482,9 @@
         </div>
         <div class="form-group">
             <label class="form-label">New password</label>
-            <input type="password" id="p_pwd_nueva" class="form-input" placeholder="Mínimo 6 caracteres">
+            <input type="password" id="p_pwd_nueva" class="form-input" placeholder="At least 6 characters">
         </div>
-        <button class="btn btn-primary btn-full" onclick="cambiarPassword()">Actualizar contraseña</button>
+        <button class="btn btn-primary btn-full" onclick="cambiarPassword()">Update password</button>
     </div>
 </div>
 
@@ -492,12 +492,12 @@
     <div class="modal">
         <div class="modal-header"><h2>❌ Cancel ticket</h2><button class="modal-close" onclick="cerrarModal('cancelModal')">✕</button></div>
         <div class="form-group">
-            <label class="form-label">Motivo (opcional)</label>
+            <label class="form-label">Reason (optional)</label>
             <textarea id="cancelMotivo" class="form-textarea" placeholder="Why are you cancelling?" rows="3"></textarea>
         </div>
         <div style="display:flex;gap:.75rem;margin-top:1rem">
-            <button class="btn btn-secondary" style="flex:1" onclick="cerrarModal('cancelModal')">Volver</button>
-            <button class="btn btn-danger" style="flex:1" onclick="confirmarCancelacion()">Sí, cancelar</button>
+            <button class="btn btn-secondary" style="flex:1" onclick="cerrarModal('cancelModal')">Back</button>
+            <button class="btn btn-danger" style="flex:1" onclick="confirmarCancelacion()">Yes, cancel</button>
         </div>
     </div>
 </div>
@@ -521,7 +521,7 @@
 <div id="limitModal" class="modal-overlay">
     <div class="modal" style="max-width:400px;text-align:center">
         <div style="font-size:2.5rem;margin-bottom:1rem">🚀</div>
-        <h2 style="margin-bottom:.5rem" id="limitModalTitle">Límite alcanzado</h2>
+        <h2 style="margin-bottom:.5rem" id="limitModalTitle">Limit reached</h2>
         <p class="text-muted mb-4" id="limitModalMsg" style="font-size:.9rem"></p>
         <a href="/pricing" class="btn btn-primary btn-full">View plans →</a>
         <button class="btn btn-secondary btn-full" style="margin-top:.5rem" onclick="cerrarModal('limitModal')">Close</button>
@@ -531,40 +531,40 @@
 <!-- New ticket -->
 <div id="ticketModal" class="modal-overlay">
     <div class="modal">
-        <div class="modal-header"><h2>🎫 Nuevo Reporte</h2><button class="modal-close" onclick="cerrarModal('ticketModal')">✕</button></div>
+        <div class="modal-header"><h2>🎫 New request</h2><button class="modal-close" onclick="cerrarModal('ticketModal')">✕</button></div>
         <form id="ticketForm">
             <div class="form-group">
-                <label class="form-label">Propiedad afectada</label>
+                <label class="form-label">Affected property</label>
                 <select name="propiedad_id" class="form-select" required>
-                    <option value="">Selecciona una propiedad...</option>
+                    <option value="">Select a property…</option>
                     <% propiedades.forEach(function(p) { %><option value="<%= p.id %>"><%= p.direccion %></option><% }); %>
                 </select>
             </div>
             <div class="form-group">
-                <label class="form-label">Categoría</label>
+                <label class="form-label">Category</label>
                 <select name="categoria" id="selectCategoria" class="form-select" required onchange="actualizarMotivos()">
-                    <option value="">Selecciona una categoría...</option>
+                    <option value="">Select a category…</option>
                 </select>
             </div>
             <div class="form-group">
-                <label class="form-label">Motivo</label>
+                <label class="form-label">Issue</label>
                 <select name="motivo" id="selectMotivo" class="form-select" required disabled>
-                    <option value="">Primero selecciona una categoría...</option>
+                    <option value="">Choose a category first…</option>
                 </select>
             </div>
             <div class="form-group">
                 <label class="form-label">Description</label>
-                <textarea name="descripcion" class="form-textarea" placeholder="Describe el problema..." required></textarea>
+                <textarea name="descripcion" class="form-textarea" placeholder="Describe the issue..." required></textarea>
             </div>
             <div class="form-group">
-                <label class="form-label">Foto (opcional)</label>
+                <label class="form-label">Photo (optional)</label>
                 <input type="file" name="foto" id="fotoTicket" accept="image/*" class="form-input" onchange="previewFoto(this)">
                 <div id="fotoPreviewWrap" style="display:none;margin-top:.5rem">
                     <img id="fotoPreview" style="max-width:100%;border-radius:8px;max-height:160px;object-fit:cover">
                     <p id="fotoInfo" class="text-small text-muted mt-1"></p>
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary btn-full" id="btnTicket">Send reporte</button>
+            <button type="submit" class="btn btn-primary btn-full" id="btnTicket">Submit request</button>
         </form>
     </div>
 </div>
@@ -574,11 +574,11 @@
 <div id="planesModal" class="modal-overlay">
     <div class="modal" style="max-width:700px">
         <div class="modal-header">
-            <h2>🚀 Elige tu plan para continuar</h2>
+            <h2>🚀 Choose a plan to continue</h2>
             <button class="modal-close" onclick="cerrarModal('planesModal')">✕</button>
         </div>
         <p style="font-size:.875rem;color:var(--text-2);margin-bottom:1.5rem">
-            Selecciona un plan para empezar a gestionar tus propiedades. El plan Starter incluye <strong style="color:var(--green)">10 días gratis</strong>.
+            Pick a plan to start managing your properties. The Starter plan includes <strong style="color:var(--green)">10 free days</strong>.
         </p>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1.5rem">
 
@@ -586,27 +586,27 @@
             <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:1.25rem;display:flex;flex-direction:column;gap:.5rem">
                 <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3)">Starter</div>
                 <div style="font-size:2rem;font-weight:900;letter-spacing:-2px;color:var(--text-1)">$9<span style="font-size:.85rem;font-weight:400;color:var(--text-3)">/mes</span></div>
-                <div style="background:var(--green-soft);color:var(--green);font-size:.72rem;font-weight:700;padding:.2rem .5rem;border-radius:99px;display:inline-block;width:fit-content">✨ 10 días gratis</div>
+                <div style="background:var(--green-soft);color:var(--green);font-size:.72rem;font-weight:700;padding:.2rem .5rem;border-radius:99px;display:inline-block;width:fit-content">✨ 10 free days</div>
                 <ul style="list-style:none;font-size:.78rem;color:var(--text-2);display:flex;flex-direction:column;gap:.3rem;margin:auto 0">
-                    <li>✓ 3 propiedades</li>
-                    <li>✓ 10 tickets activos</li>
-                    <li>✓ 1 técnico</li>
+                    <li>✓ 3 properties</li>
+                    <li>✓ 10 active tickets</li>
+                    <li>✓ 1 technician</li>
                 </ul>
-                <button class="ppb ppb-ghost ppb-full" onclick="elegirPlan('starter')" style="margin-top:.5rem">Empezar gratis →</button>
+                <button class="ppb ppb-ghost ppb-full" onclick="elegirPlan('starter')" style="margin-top:.5rem">Start free →</button>
             </div>
 
             <!-- Pro -->
             <div style="background:var(--surface-2);border:2px solid var(--accent);border-radius:14px;padding:1.25rem;display:flex;flex-direction:column;gap:.5rem;position:relative">
-                <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:.65rem;font-weight:700;padding:.2rem .65rem;border-radius:99px;white-space:nowrap">⭐ Más popular</div>
+                <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:.65rem;font-weight:700;padding:.2rem .65rem;border-radius:99px;white-space:nowrap">⭐ Most popular</div>
                 <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent)">Pro</div>
                 <div style="font-size:2rem;font-weight:900;letter-spacing:-2px;color:var(--text-1)">$29<span style="font-size:.85rem;font-weight:400;color:var(--text-3)">/mes</span></div>
                 <div style="height:1.4rem"></div>
                 <ul style="list-style:none;font-size:.78rem;color:var(--text-2);display:flex;flex-direction:column;gap:.3rem;margin:auto 0">
-                    <li>✓ 15 propiedades</li>
-                    <li>✓ 50 tickets activos</li>
-                    <li>✓ 5 técnicos</li>
+                    <li>✓ 15 properties</li>
+                    <li>✓ 50 active tickets</li>
+                    <li>✓ 5 technicians</li>
                 </ul>
-                <button class="ppb ppb-primary ppb-full" onclick="elegirPlan('pro')" style="margin-top:.5rem">Elegir Pro →</button>
+                <button class="ppb ppb-primary ppb-full" onclick="elegirPlan('pro')" style="margin-top:.5rem">Choose Pro →</button>
             </div>
 
             <!-- Business -->
@@ -615,30 +615,30 @@
                 <div style="font-size:2rem;font-weight:900;letter-spacing:-2px;color:var(--text-1)">$79<span style="font-size:.85rem;font-weight:400;color:var(--text-3)">/mes</span></div>
                 <div style="height:1.4rem"></div>
                 <ul style="list-style:none;font-size:.78rem;color:var(--text-2);display:flex;flex-direction:column;gap:.3rem;margin:auto 0">
-                    <li>✓ Propiedades ilimitadas</li>
-                    <li>✓ Tickets ilimitados</li>
-                    <li>✓ Technicians ilimitados</li>
+                    <li>✓ Unlimited properties</li>
+                    <li>✓ Unlimited tickets</li>
+                    <li>✓ Unlimited technicians</li>
                 </ul>
-                <button class="ppb ppb-ghost ppb-full" disabled style="margin-top:.5rem;opacity:.5;cursor:not-allowed">🔒 Próximamente</button>
+                <button class="ppb ppb-ghost ppb-full" disabled style="margin-top:.5rem;opacity:.5;cursor:not-allowed">🔒 Coming soon</button>
             </div>
         </div>
-        <p style="font-size:.75rem;color:var(--text-3);text-align:center">Sin contratos · Cancela cuando quieras · Pago seguro con Stripe</p>
+        <p style="font-size:.75rem;color:var(--text-3);text-align:center">No contracts · Cancel anytime · Secure checkout with Stripe</p>
     </div>
 </div>
 
 <div id="propiedadModal" class="modal-overlay">
     <div class="modal">
-        <div class="modal-header"><h2 id="propModalTitle">Añadir Propiedad</h2><button class="modal-close" onclick="cerrarModal('propiedadModal')">✕</button></div>
+        <div class="modal-header"><h2 id="propModalTitle">Add property</h2><button class="modal-close" onclick="cerrarModal('propiedadModal')">✕</button></div>
         <form id="propiedadForm">
             <div class="form-group">
                 <label class="form-label">Address</label>
                 <input type="text" id="propDireccion" class="form-input" required placeholder="123 Main St, Miami, FL">
             </div>
             <div class="form-group">
-                <label class="form-label">Contracted services (opcional)</label>
-                <input type="text" id="propServicios" class="form-input" placeholder="HVAC, Plomería...">
+                <label class="form-label">Contracted services (optional)</label>
+                <input type="text" id="propServicios" class="form-input" placeholder="HVAC, plumbing...">
             </div>
-            <button type="submit" class="btn btn-primary btn-full" id="btnProp">Guardar</button>
+            <button type="submit" class="btn btn-primary btn-full" id="btnProp">Save</button>
         </form>
     </div>
 </div>
@@ -646,9 +646,9 @@
 <!-- Calificar -->
 <div id="calificarModal" class="modal-overlay">
     <div class="modal" style="max-width:420px">
-        <div class="modal-header"><h2>⭐ Calificar servicio</h2><button class="modal-close" onclick="cerrarModal('calificarModal')">✕</button></div>
+        <div class="modal-header"><h2>⭐ Rate service</h2><button class="modal-close" onclick="cerrarModal('calificarModal')">✕</button></div>
         <input type="hidden" id="cal_ticket_id">
-        <p class="text-muted mb-3" style="font-size:.9rem">Cómo fue el servicio de <strong id="cal_tecnico_nombre"></strong>?</p>
+        <p class="text-muted mb-3" style="font-size:.9rem">How was the service from <strong id="cal_tecnico_nombre"></strong>?</p>
         <div class="pp-stars" id="starsContainer" style="margin-bottom:.75rem">
             <button class="star" onclick="actualizarEstrellas(1)">★</button>
             <button class="star" onclick="actualizarEstrellas(2)">★</button>
@@ -658,10 +658,10 @@
         </div>
         <div id="calEtiqueta" style="text-align:center;font-size:.85rem;color:var(--text-3);margin-bottom:1rem;min-height:1.2em"></div>
         <div class="form-group">
-            <label class="form-label">Comentario (opcional)</label>
-            <textarea id="cal_comentario" class="form-textarea" rows="3" placeholder="Cuéntanos sobre el servicio..."></textarea>
+            <label class="form-label">Comment (optional)</label>
+            <textarea id="cal_comentario" class="form-textarea" rows="3" placeholder="Tell us about the visit…"></textarea>
         </div>
-        <button class="btn btn-primary btn-full" id="btnCalificar" onclick="enviarCalificacion()">Send calificación</button>
+        <button class="btn btn-primary btn-full" id="btnCalificar" onclick="enviarCalificacion()">Submit rating</button>
     </div>
 </div>
 
@@ -675,7 +675,7 @@ const selCat = document.getElementById('selectCategoria');
 Object.keys(MOTIVOS).forEach(cat => { const o=document.createElement('option'); o.value=cat; o.textContent=cat; selCat.appendChild(o); });
 function actualizarMotivos() {
     const cat=selCat.value, sel=document.getElementById('selectMotivo');
-    sel.innerHTML='<option value="">Selecciona un motivo...</option>';
+    sel.innerHTML='<option value="">Select an issue…</option>';
     sel.disabled=!cat;
     if(cat&&MOTIVOS[cat]) MOTIVOS[cat].forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;sel.appendChild(o);});
 }
@@ -689,25 +689,25 @@ document.querySelectorAll('.modal-overlay').forEach(el => el.addEventListener('c
 let estrellas=0;
 const etiquetas=['','Muy malo','Malo','Regular','Bueno','Excelente'];
 function actualizarEstrellas(v){ estrellas=v; document.querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('on',i<v)); document.getElementById('calEtiqueta').textContent=etiquetas[v]||''; }
-function abrirCalificar(btn){ estrellas=0; document.querySelectorAll('.star').forEach(s=>s.classList.remove('on')); document.getElementById('calEtiqueta').textContent=''; document.getElementById('cal_comentario').value=''; document.getElementById('cal_ticket_id').value=btn.dataset.ticket; document.getElementById('cal_tecnico_nombre').textContent=btn.dataset.tecnico||'el técnico'; abrirModal('calificarModal'); }
+function abrirCalificar(btn){ estrellas=0; document.querySelectorAll('.star').forEach(s=>s.classList.remove('on')); document.getElementById('calEtiqueta').textContent=''; document.getElementById('cal_comentario').value=''; document.getElementById('cal_ticket_id').value=btn.dataset.ticket; document.getElementById('cal_tecnico_nombre').textContent=btn.dataset.tecnico||'the technician'; abrirModal('calificarModal'); }
 async function enviarCalificacion(){
-    if(!estrellas) return alert('Selecciona una calificación');
-    const btn=document.getElementById('btnCalificar'); btn.disabled=true; btn.textContent='Enviando...';
+    if(!estrellas) return alert('Please select a star rating');
+    const btn=document.getElementById('btnCalificar'); btn.disabled=true; btn.textContent='Sending...';
     try{ const res=await fetch('/cliente/calificar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ticket_id:document.getElementById('cal_ticket_id').value,estrellas,comentario:document.getElementById('cal_comentario').value})}); const data=await res.json(); if(data.success){cerrarModal('calificarModal');showToast('✅ Rating enviada');setTimeout(()=>location.reload(),800);}else showToast(data.error||'Error','error'); }catch{showToast('Connection error','error');}
-    btn.disabled=false; btn.textContent='Send calificación';
+    btn.disabled=false; btn.textContent='Submit rating';
 }
 
 // PROPIEDADES
 let editPropId=null;
-function editarPropiedad(btn){ editPropId=btn.dataset.id; document.getElementById('propDireccion').value=btn.dataset.dir; document.getElementById('propServicios').value=btn.dataset.srv; document.getElementById('propModalTitle').textContent='Edit Propiedad'; abrirModal('propiedadModal'); }
+function editarPropiedad(btn){ editPropId=btn.dataset.id; document.getElementById('propDireccion').value=btn.dataset.dir; document.getElementById('propServicios').value=btn.dataset.srv; document.getElementById('propModalTitle').textContent='Edit property'; abrirModal('propiedadModal'); }
 document.getElementById('propiedadForm').addEventListener('submit',async function(e){
     e.preventDefault();
     const btn=document.getElementById('btnProp'); btn.disabled=true; btn.textContent='Saving...';
     const body={direccion:document.getElementById('propDireccion').value,servicios_contratados:document.getElementById('propServicios').value};
-    try{ const res=await fetch(editPropId?`/cliente/propiedades/${editPropId}`:'/cliente/propiedades',{method:editPropId?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); const data=await res.json(); if(data.success){cerrarModal('propiedadModal');showToast(editPropId?'✅ Propiedad actualizada':'✅ Propiedad añadida');setTimeout(()=>location.reload(),800);}else if(data.error==='limit_reached')mostrarLimitModal(data);else showToast(data.error||'Error','error');}catch{showToast('Connection error','error');}
+    try{ const res=await fetch(editPropId?`/cliente/propiedades/${editPropId}`:'/cliente/propiedades',{method:editPropId?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); const data=await res.json(); if(data.success){cerrarModal('propiedadModal');showToast(editPropId?'✅ Property updated':'✅ Property added');setTimeout(()=>location.reload(),800);}else if(data.error==='limit_reached')mostrarLimitModal(data);else showToast(data.error||'Error','error');}catch{showToast('Connection error','error');}
     btn.disabled=false; btn.textContent='Guardar'; editPropId=null;
 });
-async function eliminarPropiedad(id){ if(!await confirmAction('Delete esta propiedad?','Yes, delete'))return; try{const res=await fetch(`/cliente/propiedades/${id}`,{method:'DELETE'});const data=await res.json();if(data.success){showToast('✅ Eliminada');setTimeout(()=>location.reload(),800);}else showToast(data.error,'error');}catch{showToast('Error','error');} }
+async function eliminarPropiedad(id){ if(!await confirmAction('Delete this property?','Yes, delete'))return; try{const res=await fetch(`/cliente/propiedades/${id}`,{method:'DELETE'});const data=await res.json();if(data.success){showToast('✅ Removed');setTimeout(()=>location.reload(),800);}else showToast(data.error,'error');}catch{showToast('Error','error');} }
 
 // TICKETS
 document.getElementById('ticketForm').addEventListener('submit',async function(e){
@@ -783,7 +783,7 @@ function actualizarDisplayPerfil(p){
     if(t) t.textContent=p.telefono||'—';
 }
 async function cambiarPassword(){ const a=document.getElementById('p_pwd_actual').value,n=document.getElementById('p_pwd_nueva').value; if(!a||!n)return showToast('Completa ambos campos','error'); if(n.length<6)return showToast('Mínimo 6 caracteres','error'); try{const res=await fetch('/cliente/perfil',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre_contacto:document.getElementById('p_nombre').value,email:document.getElementById('p_email').value,telefono:document.getElementById('p_telefono').value,nombre_empresa:document.getElementById('p_empresa').value||'Individual',password:a,nueva_password:n})});const data=await res.json();if(data.success){showToast('✅ Current passwordizada');document.getElementById('p_pwd_actual').value='';document.getElementById('p_pwd_nueva').value='';}else showToast(data.error,'error');}catch{showToast('Error','error');} }
-async function eliminarCuenta(){ if(!await confirmAction('Delete tu cuenta? Esta acción es irreversible.','Yes, delete mi cuenta'))return; try{await fetch('/cliente/cuenta',{method:'DELETE'});window.location.href='/';}catch{showToast('Error','error');} }
+async function eliminarCuenta(){ if(!await confirmAction('Delete your account? This cannot be undone.','Yes, delete my account'))return; try{await fetch('/cliente/cuenta',{method:'DELETE'});window.location.href='/';}catch{showToast('Error','error');} }
 
 // PLAN
 function mostrarLimitModal(data){ document.getElementById('limitModalTitle').textContent='Límite del plan alcanzado'; document.getElementById('limitModalMsg').textContent=data.message||'Has alcanzado el límite de tu plan. Mejora para continuar.'; abrirModal('limitModal'); }

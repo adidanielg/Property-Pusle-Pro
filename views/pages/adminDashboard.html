@@ -149,7 +149,7 @@
         <a href="#tecnicos"    class="active">🔧 Technicians</a>
         <a href="#clientes">👥 Clients</a>
         <a href="#tickets">🎫 Tickets</a>
-        <a href="#cancelaciones">❌ Cancelaciones</a>
+        <a href="#cancelaciones">❌ Cancellations</a>
             </nav>
     <div id="lang-toggle" style="display:flex;gap:.2rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.2rem"></div>
     
@@ -162,7 +162,7 @@
         <div class="adm-stat">
             <div class="adm-stat-stripe" style="background:#7c74ff"></div>
             <div class="adm-stat-icon">👥</div>
-            <div class="adm-stat-num"><%= metricas.totalClients %></div>
+            <div class="adm-stat-num"><%= metricas.totalClientes %></div>
             <div class="adm-stat-lbl">Clients</div>
         </div>
         <div class="adm-stat">
@@ -180,7 +180,7 @@
         <div class="adm-stat">
             <div class="adm-stat-stripe" style="background:#10b981"></div>
             <div class="adm-stat-icon">✅</div>
-            <div class="adm-stat-num"><%= metricas.ticketsResolved %></div>
+            <div class="adm-stat-num"><%= metricas.ticketsResueltos %></div>
             <div class="adm-stat-lbl">Resolved</div>
         </div>
     </div>
@@ -220,7 +220,7 @@
                         </td>
                         <td>
                             <span class="adm-badge <%= t.ocupado ? 'adm-b-ocupado' : 'adm-b-libre' %>">
-                                <%= t.ocupado ? '🔨 Busy' : '✅ Libre' %>
+                                <%= t.ocupado ? '🔨 Busy' : '✅ Available' %>
                             </span>
                         </td>
                         <td>
@@ -261,7 +261,7 @@
                     </div>
                     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.3rem">
                         <span class="adm-badge <%= c.suscripcion_activa ? 'adm-b-completado' : 'adm-b-cancelado' %>">
-                            <%= c.suscripcion_activa ? '✅ Active' : '❌ Sin plan' %>
+                            <%= c.suscripcion_activa ? '✅ Active' : '❌ No plan' %>
                         </span>
                         <span class="adm-badge adm-b-cat" style="text-transform:capitalize"><%= c.plan || 'starter' %></span>
                     </div>
@@ -275,7 +275,7 @@
                 <!-- Propiedades -->
                 <% if (c.propiedades && c.propiedades.length > 0) { %>
                 <div style="border-top:1px solid #1e2235;padding-top:.5rem;margin-top:.25rem">
-                    <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#4a5568;margin-bottom:.4rem">🏠 Propiedades (<%= c.propiedades.length %>)</div>
+                    <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#4a5568;margin-bottom:.4rem">🏠 Properties (<%= c.propiedades.length %>)</div>
                     <% c.propiedades.forEach(function(p) { %>
                     <div style="font-size:.75rem;color:#8892a4;padding:.25rem .5rem;background:#141720;border-radius:6px;margin-bottom:.25rem">
                         📍 <%= p.direccion %>
@@ -298,7 +298,7 @@
                         data-id="<%= c.id %>"
                         style="background:<%= c.suscripcion_activa ? 'var(--green-soft)' : 'var(--surface-2)' %>;color:<%= c.suscripcion_activa ? 'var(--green)' : 'var(--text-2)' %>;border:1px solid <%= c.suscripcion_activa ? 'var(--green)' : 'var(--border)' %>"
                         onclick="toggleSuscripcion(this,'cliente')"
-                        title="<%= c.suscripcion_activa ? 'Desactivar' : 'Activar' %> suscripción">
+                        title="<%= c.suscripcion_activa ? 'Deactivate' : 'Activate' %> subscription">
                         <%= c.suscripcion_activa ? '✅ Active' : '⭕ Free' %>
                     </button>
                     <button class="ab ab-red ab-sm"
@@ -334,7 +334,7 @@
                     </div>
                     <div style="display:flex;align-items:center;gap:.5rem">
                         <span class="adm-badge <%= c.suscripcion_activa ? 'adm-b-completado' : 'adm-b-cancelado' %>">
-                            <%= c.suscripcion_activa ? '✅ Active' : '❌ Sin plan' %>
+                            <%= c.suscripcion_activa ? '✅ Active' : '❌ No plan' %>
                         </span>
                         <span class="adm-badge adm-b-cat" style="text-transform:capitalize"><%= c.plan || 'starter' %></span>
                         <span style="color:#4a5568;font-size:.85rem" id="arrow-<%= idx %>">▼</span>
@@ -354,7 +354,7 @@
                             <div style="font-size:.68rem;color:#4a5568;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.25rem">Subscription</div>
                             <div style="font-size:.82rem;color:#e2e8f0;font-weight:600;text-transform:capitalize"><%= c.plan || 'starter' %></div>
                             <div class="<%= c.suscripcion_activa ? 'adm-b-completado' : 'adm-b-cancelado' %>" style="font-size:.78rem">
-                                <%= c.suscripcion_activa ? '✅ Activa' : '❌ Sin suscripción' %>
+                                <%= c.suscripcion_activa ? '✅ Active' : '❌ No subscription' %>
                             </div>
                         </div>
                     </div>
@@ -362,7 +362,7 @@
                     <!-- Propiedades -->
                     <div>
                         <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#4a5568;margin-bottom:.5rem">
-                            🏠 Propiedades (<%= c.propiedades ? c.propiedades.length : 0 %>)
+                            🏠 Properties (<%= c.propiedades ? c.propiedades.length : 0 %>)
                         </div>
                         <% if (c.propiedades && c.propiedades.length > 0) { %>
                         <div style="display:flex;flex-direction:column;gap:.35rem">
@@ -403,7 +403,7 @@
         <div class="adm-section-head">
             <h2>🎫 Tickets <span id="ticketCount" style="color:#4a5568"></span></h2>
             <div class="adm-filters">
-                <input id="buscarTicket" class="adm-input" placeholder="Buscar..." oninput="filtrarTickets()">
+                <input id="buscarTicket" class="adm-input" placeholder="Search..." oninput="filtrarTickets()">
                 <select id="filtroCategoria" class="adm-select" onchange="filtrarTickets()">
                     <option value="">All categories</option>
                     <option>Climatización (HVAC)</option><option>Electricidad</option>
@@ -426,7 +426,7 @@
             <table class="adm-table">
                 <thead><tr>
                     <th>ID</th><th>Reason / Category</th><th>Address</th>
-                    <th>Cliente</th><th>Técnico</th><th>Status</th><th>Fecha</th>
+                    <th>Client</th><th>Technician</th><th>Status</th><th>Date</th>
                 </tr></thead>
                 <tbody id="ticketsBody">
                     <% if (tickets.length === 0) { %>
@@ -456,9 +456,9 @@
         <div class="adm-pagination">
             <span id="paginacionInfo" class="adm-pag-info"></span>
             <div class="adm-pag-btns">
-                <button id="btnPrev" class="ab ab-ghost ab-sm" onclick="cambiarPagina(-1)">← Anterior</button>
+                <button id="btnPrev" class="ab ab-ghost ab-sm" onclick="cambiarPagina(-1)">← Previous</button>
                 <span id="paginacionPages" class="adm-pag-page"></span>
-                <button id="btnNext" class="ab ab-ghost ab-sm" onclick="cambiarPagina(1)">Siguiente →</button>
+                <button id="btnNext" class="ab ab-ghost ab-sm" onclick="cambiarPagina(1)">Next →</button>
             </div>
         </div>
     </div>
@@ -466,15 +466,15 @@
     <!-- Cancelaciones -->
     <div class="adm-section" id="cancelaciones">
         <div class="adm-section-head">
-            <h2>❌ Cancelaciones <span id="cancel-count" style="color:#4a5568"></span></h2>
+            <h2>❌ Cancellations <span id="cancel-count" style="color:#4a5568"></span></h2>
         </div>
         <div class="adm-table-wrap">
             <table class="adm-table">
                 <thead><tr>
-                    <th>Fecha</th><th>Por</th><th>User</th><th>Ticket</th><th>Categoría</th><th>Motivo</th>
+                    <th>Date</th><th>By</th><th>User</th><th>Ticket</th><th>Category</th><th>Reason</th>
                 </tr></thead>
                 <tbody id="cancelaciones-tbody">
-                    <tr><td colspan="6" class="adm-empty">Loading...</td></tr>
+                    <tr><td colspan="6" class="adm-empty">Loading cancellations…</td></tr>
                 </tbody>
             </table>
         </div>
@@ -483,11 +483,11 @@
     <!-- Códigos de Invitación -->
     <div class="adm-section" id="codigos">
         <div class="adm-section-head">
-            <h2>🎟️ Códigos de Invitación</h2>
-            <button class="ab ab-green" onclick="generarCodigo()">+ Generar código</button>
+            <h2>🎟️ Invite codes</h2>
+            <button class="ab ab-green" onclick="generarCodigo()">+ Generate code</button>
         </div>
         <div id="codigos-lista" style="padding:1rem">
-            <div style="color:#4a5568;font-size:.85rem">Cargando códigos...</div>
+            <div style="color:#4a5568;font-size:.85rem">Loading codes…</div>
         </div>
     </div>
 
@@ -495,7 +495,7 @@
     <div class="adm-section" id="fees">
         <div class="adm-section-head">
             <h2>💰 Fees de Technicians</h2>
-            <button class="ab ab-ghost ab-sm" onclick="cargarFees()">↻ Actualizar</button>
+            <button class="ab ab-ghost ab-sm" onclick="cargarFees()">↻ Refresh</button>
         </div>
         <div id="feesBody">
             <div class="adm-empty">Loading...</div>
@@ -523,11 +523,11 @@
 <div id="editarTecnicoModal" class="adm-overlay">
     <div class="adm-modal">
         <div class="adm-modal-header">
-            <h2>✏️ Edit Técnico</h2>
+            <h2>✏️ Edit technician</h2>
             <button class="adm-modal-close" onclick="cerrarModal('editarTecnicoModal')">✕</button>
         </div>
         <input type="hidden" id="tec_id">
-        <div class="adm-form-group"><label class="adm-form-label">First name completo</label><input type="text" id="tec_nombre" class="adm-form-input"></div>
+        <div class="adm-form-group"><label class="adm-form-label">Full name</label><input type="text" id="tec_nombre" class="adm-form-input"></div>
         <div class="adm-form-row">
             <div class="adm-form-group"><label class="adm-form-label">Email</label><input type="email" id="tec_email" class="adm-form-input"></div>
             <div class="adm-form-group"><label class="adm-form-label">Phone</label><input type="text" id="tec_telefono" class="adm-form-input"></div>
@@ -564,16 +564,16 @@
 <div id="editarClienteModal" class="adm-overlay">
     <div class="adm-modal">
         <div class="adm-modal-header">
-            <h2>✏️ Edit Cliente</h2>
+            <h2>✏️ Edit client</h2>
             <button class="adm-modal-close" onclick="cerrarModal('editarClienteModal')">✕</button>
         </div>
         <input type="hidden" id="cli_id">
         <div class="adm-form-group">
-            <label class="adm-form-label">Tipo</label>
-            <select id="cli_tipo" class="adm-form-select"><option value="Individual">👤 Individual</option><option value="Compania">🏢 Compañía</option></select>
+            <label class="adm-form-label">Type</label>
+            <select id="cli_tipo" class="adm-form-select"><option value="Individual">👤 Individual</option><option value="Compania">🏢 Company</option></select>
         </div>
-        <div class="adm-form-group"><label class="adm-form-label">Company (solo compañías)</label><input type="text" id="cli_empresa" class="adm-form-input" placeholder="First name de empresa"></div>
-        <div class="adm-form-group"><label class="adm-form-label">First name contacto</label><input type="text" id="cli_nombre" class="adm-form-input"></div>
+        <div class="adm-form-group"><label class="adm-form-label">Company name (companies only)</label><input type="text" id="cli_empresa" class="adm-form-input" placeholder="Company display name"></div>
+        <div class="adm-form-group"><label class="adm-form-label">Contact name</label><input type="text" id="cli_nombre" class="adm-form-input"></div>
         <div class="adm-form-row">
             <div class="adm-form-group"><label class="adm-form-label">Email</label><input type="email" id="cli_email" class="adm-form-input"></div>
             <div class="adm-form-group"><label class="adm-form-label">Phone</label><input type="text" id="cli_telefono" class="adm-form-input"></div>
@@ -587,7 +587,7 @@
     <div class="adm-modal" style="max-width:400px;text-align:center">
         <div style="font-size:2.5rem;margin-bottom:1rem">⚠️</div>
         <h2 style="color:#e2e8f0;margin-bottom:.5rem">Delete record?</h2>
-        <p style="color:#f87171;font-weight:600;font-size:1rem;margin-bottom:.5rem" id="eliminarFirst name"></p>
+        <p style="color:#f87171;font-weight:600;font-size:1rem;margin-bottom:.5rem" id="eliminarNombre"></p>
         <p style="font-size:.83rem;color:#8892a4;margin-bottom:2rem">This action cannot be undone.</p>
         <div style="display:flex;gap:.75rem">
             <button class="ab ab-ghost ab-full" style="padding:.6rem" onclick="cerrarModal('eliminarModal')">Cancel</button>
@@ -614,7 +614,7 @@ async function toggleSuscripcion(btn, tipo) {
             btn.style.background = activo ? 'var(--green-soft)' : 'var(--surface-2)';
             btn.style.color      = activo ? 'var(--green)'      : 'var(--text-2)';
             btn.style.border     = `1px solid ${activo ? 'var(--green)' : 'var(--border)'}`;
-            showToast(activo ? '✅ Subscription activada' : '⭕ Subscription desactivada');
+            showToast(activo ? '✅ Subscription enabled' : '⭕ Subscription disabled');
         } else showToast(data.error || 'Error', 'error');
     } catch { showToast('Connection error', 'error'); }
 }

@@ -16,23 +16,30 @@ function confirmarEliminar(btn) {
 }
 
 function abrirEditarCliente(btn) {
-    document.getElementById('ecId').value      = btn.dataset.id;
-    document.getElementById('ecNombre').value  = btn.dataset.nombre;
-    document.getElementById('ecEmpresa').value = btn.dataset.empresa || '';
-    document.getElementById('ecEmail').value   = btn.dataset.email;
-    document.getElementById('ecTel').value     = btn.dataset.telefono;
-    document.getElementById('ecTipo').value    = btn.dataset.tipo;
+    document.getElementById('cli_id').value       = btn.dataset.id;
+    document.getElementById('cli_nombre').value   = btn.dataset.nombre;
+    document.getElementById('cli_empresa').value  = btn.dataset.empresa || '';
+    document.getElementById('cli_email').value    = btn.dataset.email;
+    document.getElementById('cli_telefono').value = btn.dataset.telefono;
+    document.getElementById('cli_tipo').value     = btn.dataset.tipo;
     document.getElementById('editarClienteModal').classList.add('open');
 }
 
 function abrirEditarTecnico(btn) {
-    document.getElementById('etId').value    = btn.dataset.id;
-    document.getElementById('etNombre').value= btn.dataset.nombre;
-    document.getElementById('etEmail').value = btn.dataset.email;
-    document.getElementById('etTel').value   = btn.dataset.telefono;
-    document.getElementById('etEsp').value   = btn.dataset.especialidad;
+    document.getElementById('tec_id').value          = btn.dataset.id;
+    document.getElementById('tec_nombre').value      = btn.dataset.nombre;
+    document.getElementById('tec_email').value       = btn.dataset.email;
+    document.getElementById('tec_telefono').value    = btn.dataset.telefono;
+    document.getElementById('tec_especialidad').value  = btn.dataset.especialidad;
+    document.getElementById('tec_activo').value      = btn.dataset.activo === 'true' ? 'true' : 'false';
     document.getElementById('editarTecnicoModal').classList.add('open');
 }
+
+/** Names used from adminDashboard onclick handlers */
+function abrirEditCliente(btn) { abrirEditarCliente(btn); }
+function abrirEditTecnico(btn) { abrirEditarTecnico(btn); }
+function confirmarDelete(btn) { confirmarEliminar(btn); }
+function ejecutarDelete() { ejecutarEliminar(); }
 
 // ─────────────────────────────────────────────────────────
 const ticketsSection = document.getElementById('tickets');
@@ -52,8 +59,8 @@ function updatePaginacionUI(page, pages, total) {
     const bP = document.getElementById('btnPrev');
     const bN = document.getElementById('btnNext');
     const tC = document.getElementById('ticketCount');
-    if (pI) pI.textContent = total + ' tickets en total';
-    if (pP) pP.textContent = `Pág ${page} / ${pages||1}`;
+    if (pI) pI.textContent = total + ' tickets total';
+    if (pP) pP.textContent = `Page ${page} / ${pages||1}`;
     if (bP) bP.disabled = page <= 1;
     if (bN) bN.disabled = page >= pages;
     if (tC) tC.textContent = '(' + total + ')';
@@ -64,35 +71,35 @@ async function cambiarPagina(dir) { const n=currentPage+dir; if(n<1||n>totalPage
 
 async function cargarTickets() {
     const cat    = document.getElementById('filtroCategoria').value;
-    const estado = document.getElementById('filtroEstado').value;
+    const estado = document.getElementById('filtroStatus')?.value || '';
     const search = document.getElementById('buscarTicket')?.value || '';
     const params = new URLSearchParams({ page: currentPage });
     if (cat)    params.append('categoria', cat);
     if (estado) params.append('estado', estado);
     if (search) params.append('search', search);
     const tbody = document.getElementById('ticketsBody');
-    tbody.innerHTML = '<tr><td colspan="7" class="adm-empty">Cargando...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="adm-empty">Loading...</td></tr>';
     try {
-        const res  = await fetch(`/admin/tickets?${params}`);
+        const res  = await fetch(`/admin/tickets?${params}`, { credentials: 'same-origin' });
         const data = await res.json();
         totalPages   = data.totalPages;
         totalTickets = data.total;
         updatePaginacionUI(data.page, data.totalPages, data.total);
         renderTickets(data.tickets);
-    } catch { tbody.innerHTML = '<tr><td colspan="7" class="adm-empty" style="color:#f87171">Error cargando tickets</td></tr>'; }
+    } catch { tbody.innerHTML = '<tr><td colspan="7" class="adm-empty" style="color:#f87171">Error loading tickets</td></tr>'; }
 }
 
 function renderTickets(tickets) {
     const tbody = document.getElementById('ticketsBody');
-    if (!tickets.length) { tbody.innerHTML='<tr><td colspan="7" class="adm-empty">No hay tickets.</td></tr>'; return; }
-    const badges = { pendiente:'<span class="adm-badge adm-b-pendiente">Pendiente</span>', en_proceso:'<span class="adm-badge adm-b-en_proceso">En proceso</span>', completado:'<span class="adm-badge adm-b-completado">Completado</span>', cancelado:'<span class="adm-badge adm-b-cancelado">Cancelado</span>' };
+    if (!tickets.length) { tbody.innerHTML='<tr><td colspan="7" class="adm-empty">No tickets yet.</td></tr>'; return; }
+    const badges = { pendiente:'<span class="adm-badge adm-b-pendiente">Pending</span>', en_proceso:'<span class="adm-badge adm-b-en_proceso">In progress</span>', completado:'<span class="adm-badge adm-b-completado">Completed</span>', cancelado:'<span class="adm-badge adm-b-cancelado">Cancelled</span>' };
     tbody.innerHTML = tickets.map(t => `
         <tr>
             <td class="adm-mono" style="font-size:.7rem;color:#4a5568">${t.id.slice(0,8)}…</td>
             <td><div style="font-weight:500;font-size:.83rem;color:#c9d1e0">${t.motivo||''}</div>${t.categoria?`<span class="adm-badge adm-b-cat" style="margin-top:.2rem">${t.categoria}</span>`:''}</td>
             <td style="font-size:.78rem;color:#8892a4">${t.propiedades?.direccion||'—'}</td>
             <td style="font-size:.78rem;color:#8892a4">${t.companias?.nombre_contacto||t.companias?.nombre_empresa||'—'}</td>
-            <td style="font-size:.78rem;color:#8892a4">${t.tecnicos?.nombre||'<span style="color:#252836">Sin asignar</span>'}</td>
+            <td style="font-size:.78rem;color:#8892a4">${t.tecnicos?.nombre||'<span style="color:#252836">Unassigned</span>'}</td>
             <td>${badges[t.estado]||t.estado}</td>
             <td class="adm-mono" style="font-size:.73rem;color:#4a5568">${new Date(t.created_at).toLocaleDateString()}</td>
         </tr>
@@ -102,36 +109,51 @@ function renderTickets(tickets) {
 // TÉCNICOS
 async function guardarTecnico() {
     const id=document.getElementById('tec_id').value, btn=document.getElementById('btnGuardarTec');
-    btn.disabled=true; btn.textContent='Guardando...';
+    btn.disabled=true; btn.textContent='Saving...';
     try {
-        const res=await fetch(`/admin/tecnicos/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre:document.getElementById('tec_nombre').value,email:document.getElementById('tec_email').value,telefono:document.getElementById('tec_telefono').value,especialidad:document.getElementById('tec_especialidad').value,activo:document.getElementById('tec_activo').value==='true'})});
+        const res=await fetch(`/admin/tecnicos/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({nombre:document.getElementById('tec_nombre').value,email:document.getElementById('tec_email').value,telefono:document.getElementById('tec_telefono').value,especialidad:document.getElementById('tec_especialidad').value,activo:document.getElementById('tec_activo').value==='true'})});
         const data=await res.json();
-        if(data.success){cerrarModal('editarTecnicoModal');showToast('✅ Técnico actualizado');setTimeout(()=>location.reload(),800);}
+        if(data.success){cerrarModal('editarTecnicoModal');showToast('✅ Technician updated');setTimeout(()=>location.reload(),800);}
         else showToast(data.error||'Error','error');
-    }catch{showToast('Error de conexión','error');}
-    btn.disabled=false; btn.textContent='Guardar cambios';
+    }catch{showToast('Connection error','error');}
+    btn.disabled=false; btn.textContent='Save changes';
 }
 
 // CLIENTES
 async function guardarCliente() {
     const id=document.getElementById('cli_id').value, btn=document.getElementById('btnGuardarCli');
-    btn.disabled=true; btn.textContent='Guardando...';
+    btn.disabled=true; btn.textContent='Saving...';
     try {
-        const res=await fetch(`/admin/clientes/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre_contacto:document.getElementById('cli_nombre').value,nombre_empresa:document.getElementById('cli_empresa').value||'Individual',email:document.getElementById('cli_email').value,telefono:document.getElementById('cli_telefono').value,tipo_cliente:document.getElementById('cli_tipo').value})});
+        const res=await fetch(`/admin/clientes/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({nombre_contacto:document.getElementById('cli_nombre').value,nombre_empresa:document.getElementById('cli_empresa').value||'Individual',email:document.getElementById('cli_email').value,telefono:document.getElementById('cli_telefono').value,tipo_cliente:document.getElementById('cli_tipo').value})});
         const data=await res.json();
-        if(data.success){cerrarModal('editarClienteModal');showToast('✅ Cliente actualizado');setTimeout(()=>location.reload(),800);}
+        if(data.success){cerrarModal('editarClienteModal');showToast('✅ Client updated');setTimeout(()=>location.reload(),800);}
         else showToast(data.error||'Error','error');
-    }catch{showToast('Error de conexión','error');}
-    btn.disabled=false; btn.textContent='Guardar cambios';
+    }catch{showToast('Connection error','error');}
+    btn.disabled=false; btn.textContent='Save changes';
 }
 
 // ELIMINAR
 async function ejecutarEliminar() {
-    if(!idAEliminar)return;
-    const btn=document.getElementById('btnEliminar'); btn.disabled=true; btn.textContent='Eliminando...';
-    const url=tipoAEliminar==='tecnico'?`/admin/tecnicos/${idAEliminar}`:`/admin/clientes/${idAEliminar}`;
-    try{const res=await fetch(url,{method:'DELETE'});const data=await res.json();if(data.success){cerrarModal('eliminarModal');showToast('✅ Eliminado');setTimeout(()=>location.reload(),800);}else showToast(data.error,'error');}catch{showToast('Error','error');}
-    btn.disabled=false; btn.textContent='Sí, eliminar'; idAEliminar=null; tipoAEliminar=null;
+    if (!idAEliminar) return;
+    const btn = document.getElementById('btnDelete');
+    if (btn) { btn.disabled = true; btn.textContent = 'Deleting...'; }
+    const url = tipoAEliminar === 'tecnico' ? `/admin/tecnicos/${idAEliminar}` : `/admin/clientes/${idAEliminar}`;
+    try {
+        const res = await fetch(url, { method: 'DELETE', credentials: 'same-origin' });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.success) {
+            cerrarModal('eliminarModal');
+            showToast('✅ Deleted');
+            setTimeout(() => location.reload(), 800);
+        } else {
+            showToast(data.error || res.statusText || 'Delete failed', 'error');
+        }
+    } catch {
+        showToast('Error', 'error');
+    }
+    if (btn) { btn.disabled = false; btn.textContent = 'Yes, delete'; }
+    idAEliminar = null;
+    tipoAEliminar = null;
 }
 
 // CANCELACIONES
@@ -141,7 +163,7 @@ async function cargarCancelaciones() {
         const tbody=document.getElementById('cancelaciones-tbody');
         const count=document.getElementById('cancel-count');
         if(count) count.textContent='('+( data.cancelaciones?.length||0)+')';
-        if(!data.cancelaciones?.length){tbody.innerHTML='<tr><td colspan="6" class="adm-empty">No hay cancelaciones registradas.</td></tr>';return;}
+        if(!data.cancelaciones?.length){tbody.innerHTML='<tr><td colspan="6" class="adm-empty">No cancellations recorded.</td></tr>';return;}
         tbody.innerHTML=data.cancelaciones.map(c=>`
             <tr>
                 <td class="adm-mono" style="font-size:.73rem;color:#4a5568">${new Date(c.created_at).toLocaleDateString()}</td>
@@ -169,7 +191,7 @@ async function cargarCodigos() {
         if (!lista) return;
 
         if (!data.codigos?.length) {
-            lista.innerHTML = '<div style="color:#4a5568;font-size:.85rem;font-style:italic">No hay códigos generados. Genera uno para invitar técnicos.</div>';
+            lista.innerHTML = '<div style="color:#4a5568;font-size:.85rem;font-style:italic">No invite codes yet. Generate one to invite technicians.</div>';
             return;
         }
 
@@ -178,8 +200,8 @@ async function cargarCodigos() {
                 <div style="display:flex;align-items:center;gap:.75rem">
                     <span style="font-family:monospace;font-size:.95rem;font-weight:700;color:${c.usado ? '#4a5568' : '#7c74ff'};letter-spacing:.1em">${c.codigo}</span>
                     ${c.usado
-                        ? `<span style="font-size:.72rem;color:#4a5568">Usado por <strong style="color:#8892a4">${c.tecnicos?.nombre || 'técnico'}</strong> · ${new Date(c.usado_at).toLocaleDateString()}</span>`
-                        : '<span style="background:rgba(52,211,153,.15);color:#34d399;font-size:.68rem;font-weight:700;padding:.2rem .5rem;border-radius:99px">✅ Disponible</span>'
+                        ? `<span style="font-size:.72rem;color:#4a5568">Used by <strong style="color:#8892a4">${c.tecnicos?.nombre || 'technician'}</strong> · ${new Date(c.usado_at).toLocaleDateString()}</span>`
+                        : '<span style="background:rgba(52,211,153,.15);color:#34d399;font-size:.68rem;font-weight:700;padding:.2rem .5rem;border-radius:99px">✅ Available</span>'
                     }
                 </div>
                 ${!c.usado ? `<button class="ab ab-red ab-sm" onclick="eliminarCodigo('${c.id}')">🗑️</button>` : ''}
@@ -198,22 +220,22 @@ async function generarCodigo() {
             await cargarCodigos();
             // Copiar al clipboard
             navigator.clipboard?.writeText(data.codigo.codigo).catch(() => {});
-            alert(`✅ Código generado: ${data.codigo.codigo}
+            alert(`✅ Code generated: ${data.codigo.codigo}
 
-(Copiado al portapapeles)`);
+(Copied to clipboard)`);
         }
     } catch (err) {
-        alert('Error generando código');
+        alert('Error generating code');
     }
 }
 
 async function eliminarCodigo(id) {
-    if (!confirm('¿Eliminar este código?')) return;
+    if (!confirm('Delete this invite code?')) return;
     try {
         await fetch(`/admin/codigos/${id}`, { method: 'DELETE' });
         await cargarCodigos();
     } catch (err) {
-        alert('Error eliminando código');
+        alert('Error deleting code');
     }
 }
 

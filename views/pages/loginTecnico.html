@@ -17,12 +17,12 @@
             <input type="hidden" name="role" value="tecnico">
 
             <div class="form-group">
-                <label class="form-label">Usuario</label>
+                <label class="form-label">Username</label>
                 <input type="text" name="username" class="form-input" placeholder="Your username" required autofocus>
             </div>
 
             <div class="form-group">
-                <label class="form-label">Contraseña</label>
+                <label class="form-label">Password</label>
                 <input type="password" name="password" class="form-input" placeholder="••••••••" required>
             </div>
 
@@ -73,7 +73,7 @@ if (new URLSearchParams(window.location.search).get('expired') === '1') {
         <p style="font-size:.875rem;color:var(--text-2);margin-bottom:1.25rem">Enter your email and we'll send your username.</p>
         <div class="form-group">
             <label class="form-label">Your account email</label>
-            <input type="email" id="recEmail" class="form-input" placeholder="tu@email.com">
+            <input type="email" id="recEmail" class="form-input" placeholder="you@email.com">
         </div>
         <div id="recUserMsg" style="display:none;font-size:.82rem;padding:.5rem .75rem;border-radius:8px;margin-bottom:.75rem"></div>
         <button class="btn btn-primary btn-full" onclick="enviarRecuperarUser()">Send my username →</button>
@@ -90,10 +90,10 @@ if (new URLSearchParams(window.location.search).get('expired') === '1') {
         <p style="font-size:.875rem;color:var(--text-2);margin-bottom:1.25rem">Enter your email and username to receive a reset link.</p>
         <div class="form-group">
             <label class="form-label">Email</label>
-            <input type="email" id="resetEmail" class="form-input" placeholder="tu@email.com">
+            <input type="email" id="resetEmail" class="form-input" placeholder="you@email.com">
         </div>
         <div class="form-group">
-            <label class="form-label">Usuario</label>
+            <label class="form-label">Username</label>
             <input type="text" id="resetUser" class="form-input" placeholder="Your username">
         </div>
         <div id="resetMsg" style="display:none;font-size:.82rem;padding:.5rem .75rem;border-radius:8px;margin-bottom:.75rem"></div>
@@ -119,8 +119,8 @@ async function enviarRecuperarUser() {
         msg.style.display  = 'block';
         msg.style.background = 'var(--green-soft)';
         msg.style.color      = 'var(--green)';
-        msg.textContent = data.message || '✅ Email enviado si el email está registrado';
-    } catch { msg.style.display='block'; msg.textContent='Error de conexión'; }
+        msg.textContent = data.message || '✅ If that email is registered, you will receive a message shortly';
+    } catch { msg.style.display='block'; msg.textContent='Connection error'; }
 }
 
 async function enviarResetPass() {
@@ -137,8 +137,8 @@ async function enviarResetPass() {
         msg.style.display    = 'block';
         msg.style.background = 'var(--green-soft)';
         msg.style.color      = 'var(--green)';
-        msg.textContent = data.message || '✅ Email enviado';
-    } catch { msg.style.display='block'; msg.textContent='Error de conexión'; }
+        msg.textContent = data.message || '✅ Email sent';
+    } catch { msg.style.display='block'; msg.textContent='Connection error'; }
 }
 </script>
 

@@ -146,10 +146,16 @@ router.delete('/clientes/:id', async (req, res) => {
             .from('companias')
             .delete()
             .eq('id', req.params.id);
-        if (error) throw error;
+        if (error) {
+            console.error('[ADMIN DELETE CLIENTE]', error);
+            return res.status(400).json({
+                success: false,
+                error:    error.message || 'Cannot delete client (foreign key or permission). Remove related tickets/properties first.'
+            });
+        }
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ success: false, error: err.message });
     }
 });
 
@@ -176,10 +182,16 @@ router.delete('/tecnicos/:id', async (req, res) => {
             .from('tecnicos')
             .delete()
             .eq('id', req.params.id);
-        if (error) throw error;
+        if (error) {
+            console.error('[ADMIN DELETE TECNICO]', error);
+            return res.status(400).json({
+                success: false,
+                error:    error.message || 'Cannot delete technician (foreign key or permission).'
+            });
+        }
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ success: false, error: err.message });
     }
 });
 
