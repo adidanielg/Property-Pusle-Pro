@@ -1,9 +1,7 @@
 <%- include('../layouts/mainLayout.html') %>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
-
-.tec-dash * { font-family: 'Outfit', system-ui, sans-serif; }
+.tec-dash * { font-family: var(--font), system-ui, sans-serif; }
 
 /* Topbar */
 .tec-topbar {
@@ -37,8 +35,8 @@
 .tec-nav-right { display: flex; align-items: center; gap: .6rem; margin-left: auto; flex-shrink: 0; }
 .tec-avatar {
     width: 30px; height: 30px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--green), #34d399);
-    color: #fff; font-weight: 700; font-size: .8rem;
+    background: linear-gradient(135deg, var(--green), var(--accent-secondary));
+    color: var(--on-accent); font-weight: 700; font-size: .8rem;
     border: none; display: grid; place-items: center; flex-shrink: 0;
 }
 .tec-logout {
@@ -51,7 +49,7 @@
     padding: .3rem .6rem; border-radius: 7px; border: 1px solid var(--border);
     background: var(--surface-2); color: var(--text-2);
     font-size: .78rem; font-weight: 600; cursor: pointer;
-    transition: all .15s; font-family: 'Outfit', sans-serif;
+    transition: all .15s; font-family: var(--font), sans-serif;
     white-space: nowrap;
 }
 .tec-topbar-btn:hover { border-color: var(--green); color: var(--green); }
@@ -120,23 +118,20 @@
 /* Badge */
 .tec-badge { display:inline-flex; align-items:center; gap:.3rem; padding:.18rem .55rem; border-radius:99px; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; }
 .tec-badge::before { content:''; width:5px; height:5px; border-radius:50%; background:currentColor; }
-.tec-b-pendiente  { background:var(--yellow-soft); color:#92400e; }
-.tec-b-en_proceso { background:var(--blue-soft);   color:#1e40af; }
-.tec-b-completado { background:var(--green-soft);  color:#065f46; }
-[data-theme="dark"] .tec-b-pendiente  { color:#fbbf24; }
-[data-theme="dark"] .tec-b-en_proceso { color:#60a5fa; }
-[data-theme="dark"] .tec-b-completado { color:#34d399; }
+.tec-b-pendiente  { background:var(--yellow-soft); color:var(--badge-warn-fg); }
+.tec-b-en_proceso { background:var(--blue-soft);   color:var(--badge-info-fg); }
+.tec-b-completado { background:var(--green-soft);  color:var(--badge-success-fg); }
 
 /* Btns */
-.tb { display:inline-flex; align-items:center; justify-content:center; gap:.3rem; padding:.35rem .8rem; border-radius:8px; font-size:.76rem; font-weight:600; border:none; cursor:pointer; transition:all .15s; white-space:nowrap; text-decoration:none; font-family:'Outfit',sans-serif; }
-.tb-green  { background:var(--green);      color:#fff; }
+.tb { display:inline-flex; align-items:center; justify-content:center; gap:.3rem; padding:.35rem .8rem; border-radius:8px; font-size:.76rem; font-weight:600; border:none; cursor:pointer; transition:all .15s; white-space:nowrap; text-decoration:none; font-family:var(--font),sans-serif; }
+.tb-green  { background:var(--green);      color:var(--on-accent); }
 .tb-green:hover  { opacity:.9; transform:translateY(-1px); }
 .tb-blue   { background:var(--blue-soft);  color:var(--blue); }
-.tb-blue:hover   { background:#bfdbfe; }
+.tb-blue:hover   { background:var(--blue-hover-bg); }
 .tb-ghost  { background:var(--surface-2);  color:var(--text-2); border:1px solid var(--border); }
 .tb-ghost:hover  { border-color:var(--green); color:var(--green); }
 .tb-danger { background:var(--red-soft);   color:var(--red); }
-.tb-danger:hover { background:#fecaca; }
+.tb-danger:hover { background:var(--danger-hover-bg); }
 .tb-full   { width:100%; }
 .tb-sm     { padding:.25rem .55rem; font-size:.72rem; }
 .tb[disabled] { opacity:.4; cursor:not-allowed; }
@@ -158,7 +153,7 @@
 .tec-earn-row { display:flex; justify-content:space-between; align-items:center; padding:.5rem 0; border-bottom:1px solid var(--border); }
 .tec-earn-row:last-child { border-bottom:none; }
 .tec-earn-label { font-size:.8rem; color:var(--text-2); }
-.tec-earn-value { font-size:.9rem; font-weight:700; font-family:'JetBrains Mono',monospace; color:var(--text-1); }
+.tec-earn-value { font-size:.9rem; font-weight:700; font-family:var(--font-mono),monospace; color:var(--text-1); }
 
 /* Profile */
 .tec-field { margin-bottom:.65rem; }
@@ -166,7 +161,7 @@
 .tec-field input, .tec-field select {
     width:100%; padding:.46rem .7rem; background:var(--surface-2);
     border:1px solid var(--border); border-radius:8px; color:var(--text-1);
-    font-size:.83rem; font-family:'Outfit',sans-serif; outline:none; transition:border-color .15s;
+    font-size:.83rem; font-family:var(--font),sans-serif; outline:none; transition:border-color .15s;
 }
 .tec-field input:focus, .tec-field select:focus { border-color:var(--green); box-shadow:0 0 0 3px var(--green-soft); }
 
@@ -176,7 +171,7 @@
 /* Chat */
 .tec-chat-box { height:240px; overflow-y:auto; display:flex; flex-direction:column; gap:.4rem; padding:.25rem 0; margin-bottom:.6rem; }
 .tec-chat-msg { max-width:76%; padding:.43rem .78rem; border-radius:10px; font-size:.83rem; line-height:1.5; }
-.tec-chat-msg.me    { background:var(--green); color:#fff; align-self:flex-end; border-bottom-right-radius:3px; }
+.tec-chat-msg.me    { background:var(--green); color:var(--on-accent); align-self:flex-end; border-bottom-right-radius:3px; }
 .tec-chat-msg.other { background:var(--surface-2); color:var(--text-1); align-self:flex-start; border-bottom-left-radius:3px; }
 .tec-chat-msg .who  { font-size:.63rem; font-weight:700; opacity:.6; margin-bottom:.1rem; }
 .tec-chat-send { display:flex; gap:.4rem; }
@@ -201,7 +196,7 @@
         <a href="#perfil">👤 Perfil</a>
     </nav>
     <div class="tec-nav-right">
-        <div id="lang-toggle" style="display:flex;gap:.2rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.2rem"></div>
+        <div id="lang-toggle" class="lang-toggle-shell"></div>
         
         <div class="tec-avatar" title="<%= tecnico.username %>"><%= tecnico.username.charAt(0).toUpperCase() %></div>
     </div>
@@ -211,12 +206,12 @@
 <% if (tecnico.ocupado) { %>
 <div class="tec-status-bar" style="background:var(--yellow-soft)">
     <div class="tec-status-dot" style="background:var(--yellow)"></div>
-    <span style="color:#92400e">Estás ocupado — completa o cancela tu trabajo actual para recibir nuevos tickets</span>
+    <span class="tec-status-warn">Estás ocupado — completa o cancela tu trabajo actual para recibir nuevos tickets</span>
 </div>
 <% } else { %>
 <div class="tec-status-bar" style="background:var(--green-soft)">
     <div class="tec-status-dot" style="background:var(--green)"></div>
-    <span style="color:#065f46">Available — puedes aceptar nuevos trabajos</span>
+    <span class="tec-status-ok">Available — puedes aceptar nuevos trabajos</span>
 </div>
 <% } %>
 
@@ -227,26 +222,26 @@
 
     <!-- Banner primer trabajo gratis -->
     <% if (!tecnico.suscripcion_activa && !tecnico.invitado && tecnico.trabajos_completados === 0) { %>
-    <div style="background:linear-gradient(135deg,rgba(124,109,250,.15),rgba(167,139,250,.1));border:1px solid rgba(124,109,250,.3);border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:center;gap:.75rem">
-        <div style="font-size:1.5rem">🎁</div>
+    <div class="tec-banner-promo">
+        <div class="tec-banner-icon">🎁</div>
         <div>
-            <div style="font-weight:700;color:var(--accent);font-size:.9rem">¡Tu primer trabajo es gratis!</div>
-            <div style="font-size:.78rem;color:var(--text-2);margin-top:.2rem">Acepta tu primer trabajo para conocer cómo funciona la plataforma. Después necesitarás una suscripción de $19.99/mes.</div>
+            <div class="tec-banner-promo-title">¡Tu primer trabajo es gratis!</div>
+            <div class="tec-banner-sub">Acepta tu primer trabajo para conocer cómo funciona la plataforma. Después necesitarás una suscripción de $19.99/mes.</div>
         </div>
     </div>
     <% } %>
 
     <!-- Banner suscripción requerida -->
     <% if (!tecnico.suscripcion_activa && !tecnico.invitado && tecnico.trabajos_completados > 0) { %>
-    <div style="background:linear-gradient(135deg,rgba(251,191,36,.1),rgba(245,158,11,.05));border:1px solid rgba(251,191,36,.3);border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:.75rem">
-        <div style="display:flex;align-items:center;gap:.75rem">
-            <div style="font-size:1.5rem">⚠️</div>
+    <div class="tec-banner-warn-row">
+        <div class="tec-banner-warn-inner">
+            <div class="tec-banner-icon">⚠️</div>
             <div>
-                <div style="font-weight:700;color:#f59e0b;font-size:.9rem">Subscription required</div>
-                <div style="font-size:.78rem;color:var(--text-2);margin-top:.2rem">Ya usaste tu trabajo gratuito. Suscríbete para seguir recibiendo trabajos.</div>
+                <div class="tec-warn-heading">Subscription required</div>
+                <div class="tec-banner-sub">Ya usaste tu trabajo gratuito. Suscríbete para seguir recibiendo trabajos.</div>
             </div>
         </div>
-        <button onclick="abrirModal('modalSuscripcionTec')" style="background:linear-gradient(135deg,#7c6dfa,#a78bfa);color:#fff;border:none;border-radius:8px;padding:.5rem 1rem;font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap">
+        <button type="button" class="tec-cta-gradient tec-cta-gradient--sm" onclick="abrirModal('modalSuscripcionTec')">
             Suscribirme →
         </button>
     </div>
@@ -319,7 +314,7 @@
                             <% } %>
                         </span>
                         <span>👤 <%= ticket.companias ? (ticket.companias.nombre_empresa !== 'Individual' ? ticket.companias.nombre_empresa : ticket.companias.nombre_contacto) : '—' %></span>
-                        <span style="font-family:'JetBrains Mono',monospace;font-size:.7rem"><%= new Date(ticket.created_at).toLocaleDateString() %></span>
+                        <span class="text-mono text-small"><%= new Date(ticket.created_at).toLocaleDateString() %></span>
                     </div>
                     <% if (ticket.descripcion) { %><div class="tec-t-desc"><%= ticket.descripcion %></div><% } %>
                     <div class="tec-t-actions">
@@ -720,7 +715,7 @@ async function enviarCotizacion() {
                     <div>✅ Chat con clientes · Cancela cuando quieras</div>
                 </div>
             </div>
-            <button onclick="suscribirseTecnico(this)" style="width:100%;padding:14px 20px;background:linear-gradient(135deg,#7c6dfa,#a78bfa);color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;box-shadow:0 4px 24px rgba(124,109,250,.4);transition:all .2s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+            <button type="button" class="tec-cta-gradient tec-cta-gradient--lg" onclick="suscribirseTecnico(this)">
                 🚀 Suscribirme por $19.99/mes →
             </button>
             <p style="font-size:.72rem;color:var(--text-3);margin-top:.75rem">Pago seguro con Stripe · Sin contratos</p>

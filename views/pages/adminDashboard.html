@@ -1,145 +1,5 @@
 <%- include('../layouts/mainLayout.html') %>
 
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
-
-.adm-dash * { font-family: 'Outfit', system-ui, sans-serif; }
-.adm-mono   { font-family: 'JetBrains Mono', monospace !important; }
-
-/* Topbar */
-.adm-topbar {
-    position: sticky; top: 0; z-index: 200;
-    height: 54px; display: flex; align-items: center;
-    padding: 0 1.5rem; gap: 1rem;
-    background: #0d0f14; border-bottom: 1px solid #1a1d2e;
-}
-.adm-logo {
-    display: flex; align-items: center; gap: .5rem;
-    font-weight: 800; font-size: 1rem; letter-spacing: -.4px;
-    color: #e2e8f0; text-decoration: none; flex-shrink: 0;
-}
-.adm-logo span { color: #3b82f6; }
-.adm-logo-role {
-    font-size: .62rem; font-weight: 700;
-    background: rgba(59,130,246,.15); color: #3b82f6;
-    padding: .15rem .5rem; border-radius: 99px;
-    text-transform: uppercase; letter-spacing: .08em;
-}
-.adm-nav { display: flex; align-items: center; gap: .15rem; flex: 1; overflow-x: auto; }
-.adm-nav a {
-    display: flex; align-items: center; gap: .4rem;
-    padding: .38rem .7rem; border-radius: 7px;
-    font-size: .82rem; font-weight: 500;
-    color: #8892a4; text-decoration: none;
-    white-space: nowrap; transition: all .15s;
-}
-.adm-nav a:hover  { background: #1a1d2e; color: #e2e8f0; }
-.adm-nav a.active { background: rgba(59,130,246,.15); color: #3b82f6; font-weight: 600; }
-.adm-logout { font-size:.78rem; color:#4a5568; text-decoration:none; padding:.3rem .6rem; border-radius:6px; margin-left:auto; flex-shrink:0; transition:all .15s; }
-.adm-logout:hover { color:#ef4444; background:rgba(239,68,68,.1); }
-
-/* Body */
-.adm-body { max-width:1280px; width:100%; margin:0 auto; padding:1.75rem 1.5rem; display:flex; flex-direction:column; gap:2rem; }
-
-/* Stats */
-.adm-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:.75rem; }
-.adm-stat {
-    background: #141720; border: 1px solid #1e2235;
-    border-radius: 14px; padding: 1.1rem 1.2rem;
-    position: relative; overflow: hidden;
-    transition: transform .15s, box-shadow .15s;
-}
-.adm-stat:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.3); }
-.adm-stat-stripe { position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0; }
-.adm-stat-icon { font-size:1.1rem; opacity:.6; margin-bottom:.45rem; }
-.adm-stat-num  { font-size:2.4rem; font-weight:800; letter-spacing:-2.5px; line-height:1; color:#e2e8f0; margin-bottom:.2rem; }
-.adm-stat-lbl  { font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#4a5568; }
-
-/* Section */
-.adm-section { background:#141720; border:1px solid #1e2235; border-radius:16px; overflow:hidden; }
-.adm-section-head {
-    display:flex; align-items:center; justify-content:space-between;
-    padding:1.1rem 1.25rem; border-bottom:1px solid #1e2235;
-}
-.adm-section-head h2 { font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:#4a5568; }
-
-/* Table */
-.adm-table-wrap { overflow-x:auto; }
-.adm-table { width:100%; border-collapse:collapse; font-size:.83rem; }
-.adm-table thead { background:#0d0f14; }
-.adm-table th { padding:.75rem 1rem; text-align:left; font-size:.67rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#4a5568; border-bottom:1px solid #1e2235; white-space:nowrap; }
-.adm-table td { padding:.85rem 1rem; border-bottom:1px solid #1a1d2e; color:#c9d1e0; vertical-align:middle; }
-.adm-table tr:last-child td { border-bottom:none; }
-.adm-table tbody tr:hover td { background:#1a1d2e; }
-
-/* Badges */
-.adm-badge { display:inline-flex; align-items:center; gap:.3rem; padding:.2rem .6rem; border-radius:99px; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
-.adm-badge::before { content:''; width:5px; height:5px; border-radius:50%; background:currentColor; }
-.adm-b-pendiente  { background:rgba(245,158,11,.15); color:#f59e0b; }
-.adm-b-en_proceso { background:rgba(59,130,246,.15);  color:#60a5fa; }
-.adm-b-completado { background:rgba(16,185,129,.15);  color:#34d399; }
-.adm-b-cancelado  { background:rgba(239,68,68,.15);   color:#f87171; }
-.adm-b-active   { background:rgba(16,185,129,.15); color:#34d399; }
-.adm-b-inactive { background:rgba(245,158,11,.15); color:#f59e0b; }
-.adm-b-libre    { background:rgba(16,185,129,.15); color:#34d399; }
-.adm-b-ocupado  { background:rgba(245,158,11,.15); color:#f59e0b; }
-.adm-b-cat      { background:rgba(124,116,255,.15);color:#a78bfa; }
-
-/* Btns */
-.ab { display:inline-flex; align-items:center; justify-content:center; gap:.3rem; padding:.3rem .7rem; border-radius:7px; font-size:.75rem; font-weight:600; border:none; cursor:pointer; transition:all .15s; white-space:nowrap; font-family:'Outfit',sans-serif; }
-.ab-blue   { background:rgba(59,130,246,.15); color:#60a5fa; }
-.ab-blue:hover   { background:rgba(59,130,246,.25); }
-.ab-red    { background:rgba(239,68,68,.12);  color:#f87171; }
-.ab-red:hover    { background:rgba(239,68,68,.22); }
-.ab-ghost  { background:#1a1d2e; color:#8892a4; border:1px solid #252836; }
-.ab-ghost:hover  { border-color:#3b82f6; color:#60a5fa; }
-.ab-green  { background:rgba(16,185,129,.15); color:#34d399; }
-.ab-green:hover  { background:rgba(16,185,129,.25); }
-.ab-full   { width:100%; }
-.ab-sm     { padding:.22rem .5rem; font-size:.7rem; }
-
-/* Filters */
-.adm-filters { display:flex; gap:.5rem; flex-wrap:wrap; align-items:center; }
-.adm-select, .adm-input {
-    padding:.35rem .7rem; border-radius:7px; font-size:.78rem;
-    background:#0d0f14; border:1px solid #252836; color:#c9d1e0;
-    font-family:'Outfit',sans-serif; outline:none; transition:border-color .15s;
-}
-.adm-select:focus, .adm-input:focus { border-color:#3b82f6; }
-.adm-input { width:160px; }
-
-/* Paginación */
-.adm-pagination { display:flex; align-items:center; justify-content:space-between; padding:.85rem 1.25rem; border-top:1px solid #1e2235; }
-.adm-pag-info { font-size:.75rem; color:#4a5568; }
-.adm-pag-btns { display:flex; gap:.4rem; align-items:center; }
-.adm-pag-page { font-size:.78rem; color:#8892a4; padding:0 .5rem; font-family:'JetBrains Mono',monospace; }
-
-/* Empty */
-.adm-empty { text-align:center; padding:2.5rem; color:#4a5568; font-size:.875rem; }
-
-/* Fees */
-
-
-/* Modal override para dark */
-.adm-modal { background:#141720; border:1px solid #252836; border-radius:20px; padding:2rem; width:100%; max-width:520px; box-shadow:0 20px 60px rgba(0,0,0,.6); animation:modalIn .2s cubic-bezier(.34,1.56,.64,1); }
-.adm-modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; }
-.adm-modal-header h2 { font-size:1.05rem; font-weight:700; color:#e2e8f0; }
-.adm-modal-close { background:none; border:none; cursor:pointer; font-size:1.2rem; color:#4a5568; transition:color .15s; }
-.adm-modal-close:hover { color:#e2e8f0; }
-.adm-form-label { display:block; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:#4a5568; margin-bottom:.25rem; }
-.adm-form-input, .adm-form-select {
-    width:100%; padding:.5rem .75rem; background:#0d0f14; border:1px solid #252836;
-    border-radius:8px; color:#c9d1e0; font-size:.85rem; font-family:'Outfit',sans-serif; outline:none; transition:border-color .15s;
-}
-.adm-form-input:focus, .adm-form-select:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.12); }
-.adm-form-row { display:flex; gap:.75rem; }
-.adm-form-row > div { flex:1; }
-.adm-form-group { margin-bottom:.9rem; }
-
-@media (max-width:960px) { .adm-stats { grid-template-columns:1fr 1fr; } }
-@media (max-width:560px) { .adm-nav { display:none; } .adm-stats { grid-template-columns:1fr 1fr; } }
-</style>
-
 <div class="adm-dash">
 
 <!-- Topbar -->
@@ -151,7 +11,7 @@
         <a href="#tickets">🎫 Tickets</a>
         <a href="#cancelaciones">❌ Cancellations</a>
             </nav>
-    <div id="lang-toggle" style="display:flex;gap:.2rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.2rem"></div>
+    <div id="lang-toggle" class="lang-toggle-shell"></div>
     
 </header>
 
@@ -160,25 +20,25 @@
     <!-- Stats -->
     <div class="adm-stats">
         <div class="adm-stat">
-            <div class="adm-stat-stripe" style="background:#7c74ff"></div>
+            <div class="adm-stat-stripe adm-stripe-accent"></div>
             <div class="adm-stat-icon">👥</div>
             <div class="adm-stat-num"><%= metricas.totalClientes %></div>
             <div class="adm-stat-lbl">Clients</div>
         </div>
         <div class="adm-stat">
-            <div class="adm-stat-stripe" style="background:#3b82f6"></div>
+            <div class="adm-stat-stripe adm-stripe-blue"></div>
             <div class="adm-stat-icon">🔧</div>
             <div class="adm-stat-num"><%= metricas.totalTecnicos %></div>
             <div class="adm-stat-lbl">Technicians</div>
         </div>
         <div class="adm-stat">
-            <div class="adm-stat-stripe" style="background:#f59e0b"></div>
+            <div class="adm-stat-stripe adm-stripe-yellow"></div>
             <div class="adm-stat-icon">⏳</div>
             <div class="adm-stat-num"><%= metricas.ticketsAbiertos %></div>
             <div class="adm-stat-lbl">Open tickets</div>
         </div>
         <div class="adm-stat">
-            <div class="adm-stat-stripe" style="background:#10b981"></div>
+            <div class="adm-stat-stripe adm-stripe-green"></div>
             <div class="adm-stat-icon">✅</div>
             <div class="adm-stat-num"><%= metricas.ticketsResueltos %></div>
             <div class="adm-stat-lbl">Resolved</div>
@@ -202,15 +62,15 @@
                     <% } %>
                     <% tecnicos.forEach(function(t) { %>
                     <tr>
-                        <td style="font-weight:600;color:#e2e8f0"><%= t.nombre %></td>
+                        <td class="adm-cell-name"><%= t.nombre %></td>
                         <td><span class="adm-badge adm-b-cat"><%= t.especialidad %></span></td>
-                        <td class="adm-mono" style="font-size:.75rem;color:#8892a4"><%= t.email %></td>
+                        <td class="adm-mono adm-cell-email"><%= t.email %></td>
                         <td>
                             <% if (t.promedio) { %>
-                                <span style="color:#f59e0b;font-weight:700"><%= t.promedio %> ★</span>
-                                <span style="font-size:.72rem;color:#4a5568">(<%= t.totalCalif %>)</span>
+                                <span class="adm-rating-star"><%= t.promedio %> ★</span>
+                                <span class="adm-rating-meta">(<%= t.totalCalif %>)</span>
                             <% } else { %>
-                                <span style="color:#4a5568;font-size:.75rem">No reviews</span>
+                                <span class="adm-muted-sm">No reviews</span>
                             <% } %>
                         </td>
                         <td>
@@ -504,7 +364,7 @@
 
     <!-- Sign out -->
     <div style="display:flex;justify-content:flex-end;margin-top:.5rem">
-        <a href="/auth/logout" style="display:inline-flex;align-items:center;gap:.4rem;padding:.45rem 1rem;border-radius:8px;background:rgba(239,68,68,.12);color:#f87171;font-size:.82rem;font-weight:600;text-decoration:none;transition:all .15s" onmouseover="this.style.background='rgba(239,68,68,.22)'" onmouseout="this.style.background='rgba(239,68,68,.12)'">🚪 Sign out</a>
+        <a href="/auth/logout" class="adm-logout-link">🚪 Sign out</a>
     </div>
 
 </div>
