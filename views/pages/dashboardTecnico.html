@@ -31,7 +31,12 @@
     white-space: nowrap; transition: all .15s;
 }
 .tec-nav a:hover  { background: var(--surface-2); color: var(--text-1); }
-.tec-nav a.active { background: var(--green-soft); color: var(--green); font-weight: 600; }
+.tec-nav a.active {
+    background: var(--nav-active-bg);
+    color: var(--nav-active-fg);
+    font-weight: 600;
+    border-radius: 999px;
+}
 .tec-nav-right { display: flex; align-items: center; gap: .6rem; margin-left: auto; flex-shrink: 0; }
 .tec-avatar {
     width: 30px; height: 30px; border-radius: 50%;
@@ -105,7 +110,7 @@
 .tec-ticket.mio:hover        { border-color: rgba(59,130,246,.35); box-shadow: 0 2px 12px rgba(59,130,246,.08); }
 .tec-tdot { width:10px; height:10px; border-radius:50%; margin-top:5px; flex-shrink:0; }
 .tec-tdot.pendiente  { background:var(--yellow); box-shadow:0 0 0 3px rgba(245,158,11,.18); }
-.tec-tdot.en_proceso { background:var(--blue);   box-shadow:0 0 0 3px rgba(59,130,246,.18); }
+.tec-tdot.en_proceso { background:var(--accent); box-shadow:0 0 0 3px var(--accent-tint-22); }
 .tec-tdot.completado { background:var(--green);  box-shadow:0 0 0 3px rgba(16,185,129,.18); }
 .tec-t-header { display:flex; align-items:center; gap:.45rem; flex-wrap:wrap; margin-bottom:.25rem; }
 .tec-t-title  { font-weight:600; font-size:.88rem; color:var(--text-1); }
@@ -119,7 +124,7 @@
 .tec-badge { display:inline-flex; align-items:center; gap:.3rem; padding:.18rem .55rem; border-radius:99px; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; }
 .tec-badge::before { content:''; width:5px; height:5px; border-radius:50%; background:currentColor; }
 .tec-b-pendiente  { background:var(--yellow-soft); color:var(--badge-warn-fg); }
-.tec-b-en_proceso { background:var(--blue-soft);   color:var(--badge-info-fg); }
+.tec-b-en_proceso { background:var(--ticket-progress-bg); color:var(--ticket-progress-fg); }
 .tec-b-completado { background:var(--green-soft);  color:var(--badge-success-fg); }
 
 /* Btns */
