@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { clearJwtCookie } = require('./jwtCookieHelpers');
 
 const requireAuth = (rolesPermitidos = []) => {
     return (req, res, next) => {
@@ -29,7 +30,8 @@ const requireAuth = (rolesPermitidos = []) => {
 
             // Rol no permitido
             if (rolesPermitidos.length > 0 && !rolesPermitidos.includes(decoded.role)) {
-                res.clearCookie('jwt');
+                clearJwtCookie(res, 'jwt');
+                clearJwtCookie(res, cookieName);
                 return res.redirect(loginUrl());
             }
 
@@ -37,8 +39,8 @@ const requireAuth = (rolesPermitidos = []) => {
             next();
 
         } catch (err) {
-            res.clearCookie('jwt');
-            res.clearCookie(cookieName);
+            clearJwtCookie(res, 'jwt');
+            clearJwtCookie(res, cookieName);
             const expired = err.name === 'TokenExpiredError';
 
             // Petición AJAX/API — devolver JSON con código claro

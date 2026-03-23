@@ -4,6 +4,7 @@ const { requireAuth } = require('../middleware/authMiddleware');
 const ticketService   = require('../services/ticketService');
 const supabase        = require('../services/supabaseClient');
 const { validate, schemas } = require('../middleware/validate');
+const { clearJwtCookie } = require('../middleware/jwtCookieHelpers');
 
 router.use(requireAuth(['tecnico']));
 
@@ -237,7 +238,8 @@ router.delete('/cuenta', async (req, res) => {
         const id = req.user.id;
         await supabase.from('tecnicos').update({ push_subscription: null }).eq('id', id);
         await supabase.from('tecnicos').delete().eq('id', id);
-        res.clearCookie('jwt');
+        clearJwtCookie(res, 'jwt');
+        clearJwtCookie(res, 'jwt_tecnico');
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });

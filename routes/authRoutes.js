@@ -5,6 +5,7 @@ const authService = require('../services/authService');
 const supabase    = require('../services/supabaseClient');
 const { validate, schemas } = require('../middleware/validate');
 const { loginLimiter, registerLimiter } = require('../middleware/rateLimiter');
+const { jwtCookieOptions, clearJwtCookie } = require('../middleware/jwtCookieHelpers');
 
 // ── Helper: leer el token correcto según las cookies disponibles ──
 // FIX A-4: set-theme y set-lang usaban solo 'jwt', ignorando cookies por rol
@@ -14,16 +15,6 @@ function getTokenFromCookies(cookies) {
         || cookies?.jwt_cliente
         || cookies?.jwt // fallback legacy
         || null;
-}
-
-// ── Helper: opciones base para cookies JWT ────────────────────
-function jwtCookieOptions(maxAgeMs = 8 * 60 * 60 * 1000) {
-    return {
-        httpOnly: true,
-        secure:   process.env.NODE_ENV === 'production',
-        sameSite: 'strict', // FIX B-2: era 'lax', ahora 'strict'
-        maxAge:   maxAgeMs,
-    };
 }
 
 // ── Vistas login ──────────────────────────────────────────────
@@ -72,7 +63,8 @@ router.post('/login', loginLimiter, validate(schemas.login), async (req, res) =>
 
         // Cookie separada por rol — evita que múltiples sesiones se sobreescriban
         const cookieName = role === 'admin' ? 'jwt_admin' : role === 'tecnico' ? 'jwt_tecnico' : 'jwt_cliente';
-        res.cookie(cookieName, token, jwtCookieOptions());
+        const maxAgeMs = role === 'admin' ? 12 * 60 * 60 * 1000 : 8 * 60 * 60 * 1000;
+        res.cookie(cookieName, token, jwtCookieOptions(maxAgeMs));
 
         // Sincronizar tema guardado en Supabase al browser
         if (user?.theme) {
@@ -346,10 +338,10 @@ router.post('/reset-password', async (req, res) => {
 
 // ── GET /auth/logout ──────────────────────────────────────────
 router.get('/logout', (req, res) => {
-    res.clearCookie('jwt',          { sameSite: 'strict' });
-    res.clearCookie('jwt_cliente',  { sameSite: 'strict' });
-    res.clearCookie('jwt_tecnico',  { sameSite: 'strict' });
-    res.clearCookie('jwt_admin',    { sameSite: 'strict' });
+    clearJwtCookie(res, 'jwt');
+    clearJwtCookie(res, 'jwt_cliente');
+    clearJwtCookie(res, 'jwt_tecnico');
+    clearJwtCookie(res, 'jwt_admin');
     res.redirect('/');
 });
 

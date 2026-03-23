@@ -7,6 +7,7 @@ const notificationService = require('../services/notificationService');
 const ticketService        = require('../services/ticketService');
 const { validate, schemas }   = require('../middleware/validate');
 const { checkPropiedadLimit, checkTicketLimit, getSiguientePlan } = require('../services/planLimits');
+const { clearJwtCookie } = require('../middleware/jwtCookieHelpers');
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -429,8 +430,8 @@ router.delete('/cuenta', async (req, res) => {
         await supabase.from('companias').update({ push_subscription: null }).eq('id', id);
         // Eliminar la compañía (cuenta)
         await supabase.from('companias').delete().eq('id', id);
-        // Limpiar cookie
-        res.clearCookie('jwt');
+        clearJwtCookie(res, 'jwt');
+        clearJwtCookie(res, 'jwt_cliente');
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
