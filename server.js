@@ -1,5 +1,7 @@
 require('dotenv').config();
 
+// Deploy check: commit/push verificado 2025-03-22
+
 // ── Validar env vars ANTES de arrancar ───────────────────────
 const validateEnv = require('./middleware/validateEnv');
 validateEnv();
