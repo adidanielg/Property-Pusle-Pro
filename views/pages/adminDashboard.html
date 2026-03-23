@@ -232,7 +232,7 @@
                                     onclick="abrirEditTecnico(this)">✏️ Edit</button>
                                 <button class="ab ab-red ab-sm"
                                     data-id="<%= t.id %>" data-nombre="<%= t.nombre %>" data-tipo="tecnico"
-                                    onclick="confirmarDelete(this)">🗑️</button>
+                                    onclick="confirmarEliminar(this)">🗑️</button>
                             </div>
                         </td>
                     </tr>
@@ -303,7 +303,7 @@
                     </button>
                     <button class="ab ab-red ab-sm"
                         data-id="<%= c.id %>" data-nombre="<%= c.nombre_contacto %>" data-tipo="cliente"
-                        onclick="confirmarDelete(this)">🗑️</button>
+                        onclick="confirmarEliminar(this)">🗑️</button>
                 </div>
             </div>
             <% }); %>
@@ -389,7 +389,7 @@
                             onclick="abrirEditCliente(this)">✏️ Edit cliente</button>
                         <button class="ab ab-red ab-sm"
                             data-id="<%= c.id %>" data-nombre="<%= c.nombre_empresa %>" data-tipo="cliente"
-                            onclick="confirmarDelete(this)">🗑️ Delete</button>
+                            onclick="confirmarEliminar(this)">🗑️ Delete</button>
                     </div>
                 </div>
             </div>
@@ -591,7 +591,7 @@
         <p style="font-size:.83rem;color:#8892a4;margin-bottom:2rem">This action cannot be undone.</p>
         <div style="display:flex;gap:.75rem">
             <button class="ab ab-ghost ab-full" style="padding:.6rem" onclick="cerrarModal('eliminarModal')">Cancel</button>
-            <button class="ab ab-red ab-full" id="btnDelete" style="padding:.6rem" onclick="ejecutarDelete()">Yes, delete</button>
+            <button class="ab ab-red ab-full" id="btnDelete" style="padding:.6rem" onclick="ejecutarEliminar()">Yes, delete</button>
         </div>
     </div>
 </div>
