@@ -73,6 +73,18 @@ router.post('/tickets', upload.single('foto'), validate(schemas.crearTicket), as
     try {
         const { propiedad_id, categoria, motivo, descripcion } = req.body;
 
+        const { data: propiedadValida, error: propErr } = await supabase
+            .from('propiedades')
+            .select('id')
+            .eq('id', propiedad_id)
+            .eq('compania_id', req.user.id)
+            .is('deleted_at', null)
+            .maybeSingle();
+
+        if (propErr || !propiedadValida) {
+            return res.status(403).json({ error: 'Invalid or unauthorized property' });
+        }
+
         // ── Verificar límite de tickets del plan ──────────────
         const limitCheck = await checkTicketLimit(req.user.id);
         if (!limitCheck.allowed) {

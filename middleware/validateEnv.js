@@ -13,6 +13,7 @@ const REQUIRED = [
     'STRIPE_PRICE_BUSINESS',
     'RESEND_API_KEY',
     'STRIPE_PRICE_TECNICO',
+    'BASE_URL',
 ];
 
 function validateEnv() {

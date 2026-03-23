@@ -8,6 +8,24 @@ const { clearJwtCookie } = require('../middleware/jwtCookieHelpers');
 
 router.use(requireAuth(['tecnico']));
 
+// Soft-deleted technicians cannot use the API (even with a valid JWT)
+router.use(async (req, res, next) => {
+    try {
+        const { data, error } = await supabase
+            .from('tecnicos')
+            .select('deleted_at')
+            .eq('id', req.user.id)
+            .maybeSingle();
+        if (error) return next();
+        if (data?.deleted_at) {
+            clearJwtCookie(res, 'jwt');
+            clearJwtCookie(res, 'jwt_tecnico');
+            return res.status(403).json({ error: 'Account deactivated' });
+        }
+    } catch (_) { /* ignore if schema has no deleted_at yet */ }
+    next();
+});
+
 // ── Dashboard ─────────────────────────────────────────────────
 router.get('/dashboard', async (req, res) => {
     try {
@@ -200,6 +218,11 @@ router.post('/tickets/:id/cancelar', validate(schemas.cancelarTicket), async (re
 // ── Chat: obtener mensajes ────────────────────────────────────
 router.get('/tickets/:id/mensajes', async (req, res) => {
     try {
+        const access = await ticketService.tecnicoPuedeAccederTicket(req.user.id, req.params.id);
+        if (!access.allowed) {
+            return res.status(access.status || 403).json({ error: 'Not authorized' });
+        }
+
         const { data } = await supabase
             .from('ticket_mensajes')
             .select('*')
@@ -214,6 +237,11 @@ router.get('/tickets/:id/mensajes', async (req, res) => {
 // ── Chat: enviar mensaje ──────────────────────────────────────
 router.post('/tickets/:id/mensajes', validate(schemas.mensajeChat), async (req, res) => {
     try {
+        const access = await ticketService.tecnicoPuedeAccederTicket(req.user.id, req.params.id);
+        if (!access.allowed) {
+            return res.status(access.status || 403).json({ error: 'Not authorized' });
+        }
+
         const { mensaje } = req.body;
         const { data: tec } = await supabase
             .from('tecnicos').select('nombre').eq('id', req.user.id).single();

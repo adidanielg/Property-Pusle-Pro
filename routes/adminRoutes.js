@@ -23,7 +23,7 @@ router.get('/dashboard', async (req, res) => {
             { data: calificaciones    }
         ] = await Promise.all([
             supabase.from('companias').select('*', { count: 'exact', head: true }),
-            supabase.from('tecnicos').select('*',  { count: 'exact', head: true }),
+            supabase.from('tecnicos').select('*',  { count: 'exact', head: true }).is('deleted_at', null),
             supabase.from('tickets').select('*',   { count: 'exact', head: true }).neq('estado', 'completado'),
             supabase.from('tickets').select('*',   { count: 'exact', head: true }).eq('estado', 'completado'),
             // Solo primera página al cargar
@@ -41,6 +41,7 @@ router.get('/dashboard', async (req, res) => {
                 .order('created_at', { ascending: false }),
             supabase.from('tecnicos')
                 .select('id, nombre, email, telefono, especialidad, activo, created_at')
+                .is('deleted_at', null)
                 .order('created_at', { ascending: false }),
             supabase.from('calificaciones')
                 .select('tecnico_id, estrellas')
@@ -175,20 +176,44 @@ router.put('/tecnicos/:id', validate(schemas.editarTecnico), async (req, res) =>
     }
 });
 
-// ── Eliminar técnico ──────────────────────────────────────────
+// ── Eliminar técnico (soft delete) + liberar tickets asignados ─
 router.delete('/tecnicos/:id', async (req, res) => {
     try {
+        const id = req.params.id;
+
+        const { data: existe } = await supabase
+            .from('tecnicos')
+            .select('id, deleted_at')
+            .eq('id', id)
+            .maybeSingle();
+
+        if (!existe || existe.deleted_at) {
+            return res.status(404).json({ success: false, error: 'Technician not found' });
+        }
+
+        await supabase
+            .from('tickets')
+            .update({ estado: 'pendiente', tecnico_asignado: null })
+            .eq('tecnico_asignado', id);
+
         const { error } = await supabase
             .from('tecnicos')
-            .delete()
-            .eq('id', req.params.id);
+            .update({
+                deleted_at: new Date().toISOString(),
+                activo:     false,
+                ocupado:    false
+            })
+            .eq('id', id)
+            .is('deleted_at', null);
+
         if (error) {
             console.error('[ADMIN DELETE TECNICO]', error);
             return res.status(400).json({
                 success: false,
-                error:    error.message || 'Cannot delete technician (foreign key or permission).'
+                error:    error.message || 'Could not deactivate technician. Ensure column tecnicos.deleted_at exists (run migracion_security.sql).'
             });
         }
+
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });

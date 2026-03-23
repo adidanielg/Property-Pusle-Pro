@@ -125,15 +125,53 @@ const ticketService = {
     }
 };
 
+/**
+ * IDOR guard: technician may only access chat if they are assigned to the ticket,
+ * or the ticket is still unassigned/pending in their specialty pool (same as dashboard list).
+ */
+ticketService.tecnicoPuedeAccederTicket = async function (tecnicoId, ticketId) {
+    const { data: ticket, error: tErr } = await supabase
+        .from('tickets')
+        .select('id, estado, tecnico_asignado, categoria, deleted_at')
+        .eq('id', ticketId)
+        .maybeSingle();
+
+    if (tErr || !ticket || ticket.deleted_at) {
+        return { allowed: false, status: 404 };
+    }
+
+    if (ticket.tecnico_asignado === tecnicoId) {
+        return { allowed: true };
+    }
+
+    const { data: tec } = await supabase
+        .from('tecnicos')
+        .select('especialidad')
+        .eq('id', tecnicoId)
+        .maybeSingle();
+
+    if (ticket.estado === 'pendiente') {
+        const sinAsignar = ticket.tecnico_asignado == null;
+        const categoriaOk = ticket.categoria === tec?.especialidad;
+        if (sinAsignar && categoriaOk) {
+            return { allowed: true };
+        }
+    }
+
+    return { allowed: false, status: 403 };
+};
+
 // Notificar a técnicos disponibles por email cuando hay nuevo ticket
 ticketService.notificarTecnicosNuevoTicket = async function(ticket, propiedadDireccion, clienteNombre) {
     try {
         const emailService = require('./emailService');
-        const { data: tecnicos } = await supabase
+        let q = supabase
             .from('tecnicos')
             .select('nombre, email')
             .eq('activo', true)
             .eq('ocupado', false);
+        q = q.is('deleted_at', null);
+        const { data: tecnicos } = await q;
 
         if (!tecnicos?.length) return;
 

@@ -568,3 +568,5 @@ SELECT 'tecnicos (columnas nuevas)' AS tabla,
        WHERE table_name = 'tecnicos'
          AND column_name IN ('deleted_at','invitado','suscripcion_activa',
                              'stripe_customer_id','trabajos_completados','ocupado');
+
+ALTER TABLE tecnicos ADD COLUMN IF NOT EXISTS deleted_at timestamptz NULL;

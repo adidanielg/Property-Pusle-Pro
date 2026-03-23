@@ -123,7 +123,9 @@ app.get('/pub/tecnicos', async (req, res) => {
     try {
         const { data: tecnicos } = await supabasePub
             .from('tecnicos').select('id, nombre, especialidad, ocupado, trabajos_completados, activo')
-            .eq('activo', true).order('trabajos_completados', { ascending: false });
+            .eq('activo', true)
+            .is('deleted_at', null)
+            .order('trabajos_completados', { ascending: false });
         const { data: califs } = await supabasePub.from('calificaciones').select('tecnico_id, estrellas');
         const sm = {};
         (califs||[]).forEach(c => { if(!sm[c.tecnico_id]) sm[c.tecnico_id]={suma:0,total:0}; sm[c.tecnico_id].suma+=c.estrellas; sm[c.tecnico_id].total+=1; });
